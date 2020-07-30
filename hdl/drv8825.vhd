@@ -28,6 +28,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 
 entity drv8825 is
+	 generic ( REVERSE_DIRECTION : boolean := true );
     Port ( clk_50 : in STD_LOGIC;
            rstn_50 : in STD_LOGIC;
            drv8825_mode : out STD_LOGIC_VECTOR (2 downto 0);
@@ -68,7 +69,7 @@ architecture Behavioral of drv8825 is
     TYPE state_machine_backlash IS (seek, processing, done, disabled);  -- Define the states
     signal state_backlash : state_machine_backlash := seek;
     
-    signal stepping_clk, cnt_enable : std_logic := '0';
+    signal drv8825_direction_out, stepping_clk, cnt_enable : std_logic := '0';
     signal current_stepper_counter : std_logic_vector(29 downto 0) := (others => '0');
     
     TYPE state_machine_motor IS (idle, tracking, command, park);  -- Define the states
@@ -126,12 +127,13 @@ begin
         end if;
     end process; 
         
+	 drv8825_direction <= not drv8825_direction_out when REVERSE_DIRECTION = true else drv8825_direction_out;
     registered_output : process(clk_50, rstn_50) begin
         if (rstn_50 = '0') then
             drv8825_enable_n<='1';
             drv8825_sleep_n<= '0';
             drv8825_rst_n  <= '0';
-            drv8825_direction <= '0';
+            drv8825_direction_out <= '0';
             drv8825_mode <= (others => '0');
             drv8825_step <= '0';
             ctrl_status <= (others => '0');
@@ -139,7 +141,7 @@ begin
             drv8825_enable_n<='1';
             drv8825_sleep_n<= '0';
             drv8825_rst_n  <= '0';
-            drv8825_direction <= '0';
+            drv8825_direction_out <= '0';
             drv8825_step <= '0';
             drv8825_mode <= "000";
             ctrl_status <= (others => '0');
@@ -153,7 +155,7 @@ begin
             end if;
             case state_motor is
                 when tracking =>
-                    drv8825_direction <= current_direction_buf(0);
+                    drv8825_direction_out <= current_direction_buf(0);
                     drv8825_step <= stepping_clk;
                     drv8825_mode <= current_mode_out;
                     drv8825_enable_n<='0';
@@ -163,7 +165,7 @@ begin
                     ctrl_status(0) <= '1';
                     ctrl_status(2) <= '0';
                 when command => 
-                    drv8825_direction <= current_direction_buf(0);
+                    drv8825_direction_out <= current_direction_buf(0);
                     drv8825_step <= stepping_clk;
                     drv8825_mode <= current_mode_out;
                     drv8825_enable_n<='0';
@@ -173,7 +175,7 @@ begin
                     ctrl_status(1) <= '1';
                     --ctrl_status(0) <= '0';
                 when park =>
-                    drv8825_direction <= current_direction_buf(0);
+                    drv8825_direction_out <= current_direction_buf(0);
                     drv8825_step <= stepping_clk;
                     drv8825_mode <= current_mode_out;
                     drv8825_enable_n<='0';
@@ -183,7 +185,7 @@ begin
                     ctrl_status(1) <= '1';
                     --ctrl_status(0) <= '0';
                 when others => 
-                    drv8825_direction <= '0';
+                    drv8825_direction_out <= '0';
                     drv8825_step <= '0';
                     drv8825_mode <= current_mode_out;
                     ctrl_status(0) <= '0';

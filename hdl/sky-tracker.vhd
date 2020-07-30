@@ -609,6 +609,7 @@ begin
   );
 
 DRV_RA :  entity work.drv8825	
+	generic map ( REVERSE_DIRECTION => false )
 	port map (
 		clk_50 => clk_50,
 		ctrl_backlash_duration => ra_backlash_duration_sync,
@@ -633,6 +634,7 @@ DRV_RA :  entity work.drv8825
 	);
 	
 	DRV_DE :  entity work.drv8825	
+	generic map ( REVERSE_DIRECTION => true )
 	port map (
 		clk_50 => clk_50,
 		ctrl_backlash_duration => de_backlash_duration_sync,
