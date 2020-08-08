@@ -710,7 +710,7 @@ begin
    -- End of MMCME2_BASE_inst instantiation
    
    
-   mmcm_rst <= rstn_12;
+   mmcm_rst <= '0';
    t_rst <= not KEY(0);
    trst : BUFG port map (I => t_rst ,  O => rstn_12); 
    clock12 : BUFG port map (I => FPGA_CLK0_12 ,  O => clock_12); 
@@ -734,7 +734,7 @@ begin
             led_level(1) <= '1';
             counter_50 <= 0;
         elsif (rising_edge(clock_50)) then
-            if(counter_50 = 14999999) then
+            if(counter_50 = 29999999) then
                 led_level(1) <= not led_level(1);
                 counter_50 <= 0;
 	    else
@@ -749,7 +749,7 @@ begin
             led_level(0) <= '1';
             counter_12 <= 0;
         elsif (rising_edge(clock_12)) then
-            if(counter_12 = 14999999) then
+            if(counter_12 = 29999999) then
                 led_level(0) <= not led_level(0);
                 counter_12 <= 0;
 	    else
@@ -764,7 +764,7 @@ begin
             led_level(2) <= '1';
             counter_100 <= 0;
         elsif (rising_edge(clock_100)) then
-            if(counter_100 = 14999999) then
+            if(counter_100 = 29999999) then
                 led_level(2) <= not led_level(2);
                 counter_100 <= 0;
 	    else
@@ -779,7 +779,7 @@ begin
             led_level(3) <= '1';
             counter_125 <= 0;
         elsif (rising_edge(clock_125)) then
-            if(counter_125 = 14999999) then
+            if(counter_125 = 29999999) then
                 led_level(3) <= not led_level(3);
                 counter_125 <= 0;
 	    else
@@ -794,7 +794,7 @@ begin
             led_level(4) <= '1';
             counter_150 <= 0;
         elsif (rising_edge(clock_150)) then
-            if(counter_150 = 14999999) then
+            if(counter_150 = 29999999) then
                 led_level(4) <= not led_level(4);
                 counter_150 <= 0;
 	    else
@@ -802,7 +802,11 @@ begin
             end if;
         end if;
     end process;	
-    LED <= led_level(1 downto 0);
+    LED(0) <= led_level(1);
+    LED(1) <= led_level(4);
+    LED_RBG(0) <= led_level(3);
+    LED_RBG(1) <= led_level(2);
+    LED_RBG(2) <= led_level(0);
 end block MMCM_block;
 	 
 end rtl;
