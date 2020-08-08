@@ -127,7 +127,6 @@ set_property -name "ip_output_repo" -value "$proj_dir/${_xil_proj_name_}.cache/i
 set_property -name "legacy_ip_repo_paths" -value "" -objects $obj
 set_property -name "mem.enable_memory_map_generation" -value "1" -objects $obj
 set_property -name "part" -value "xc7a35tcpg236-1" -objects $obj
-set_property -name "platform.board_id" -value "cmod_a7-35t" -objects $obj
 set_property -name "platform.default_output_type" -value "undefined" -objects $obj
 set_property -name "platform.design_intent.datacenter" -value "undefined" -objects $obj
 set_property -name "platform.design_intent.embedded" -value "undefined" -objects $obj
