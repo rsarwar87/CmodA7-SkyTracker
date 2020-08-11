@@ -2,7 +2,7 @@ create_debug_core u_ila_0 ila
 set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]
 set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0]
 set_property C_ADV_TRIGGER false [get_debug_cores u_ila_0]
-set_property C_DATA_DEPTH 2048 [get_debug_cores u_ila_0]
+set_property C_DATA_DEPTH 4096 [get_debug_cores u_ila_0]
 set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_0]
 set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_0]
 set_property C_TRIGIN_EN false [get_debug_cores u_ila_0]
@@ -14,20 +14,20 @@ set_property port_width 32 [get_debug_ports u_ila_0/probe0]
 connect_debug_port u_ila_0/probe0 [get_nets [list {SPI_INTERFACE.u_spislave/wb_data_i0[0]} {SPI_INTERFACE.u_spislave/wb_data_i0[1]} {SPI_INTERFACE.u_spislave/wb_data_i0[2]} {SPI_INTERFACE.u_spislave/wb_data_i0[3]} {SPI_INTERFACE.u_spislave/wb_data_i0[4]} {SPI_INTERFACE.u_spislave/wb_data_i0[5]} {SPI_INTERFACE.u_spislave/wb_data_i0[6]} {SPI_INTERFACE.u_spislave/wb_data_i0[7]} {SPI_INTERFACE.u_spislave/wb_data_i0[8]} {SPI_INTERFACE.u_spislave/wb_data_i0[9]} {SPI_INTERFACE.u_spislave/wb_data_i0[10]} {SPI_INTERFACE.u_spislave/wb_data_i0[11]} {SPI_INTERFACE.u_spislave/wb_data_i0[12]} {SPI_INTERFACE.u_spislave/wb_data_i0[13]} {SPI_INTERFACE.u_spislave/wb_data_i0[14]} {SPI_INTERFACE.u_spislave/wb_data_i0[15]} {SPI_INTERFACE.u_spislave/wb_data_i0[16]} {SPI_INTERFACE.u_spislave/wb_data_i0[17]} {SPI_INTERFACE.u_spislave/wb_data_i0[18]} {SPI_INTERFACE.u_spislave/wb_data_i0[19]} {SPI_INTERFACE.u_spislave/wb_data_i0[20]} {SPI_INTERFACE.u_spislave/wb_data_i0[21]} {SPI_INTERFACE.u_spislave/wb_data_i0[22]} {SPI_INTERFACE.u_spislave/wb_data_i0[23]} {SPI_INTERFACE.u_spislave/wb_data_i0[24]} {SPI_INTERFACE.u_spislave/wb_data_i0[25]} {SPI_INTERFACE.u_spislave/wb_data_i0[26]} {SPI_INTERFACE.u_spislave/wb_data_i0[27]} {SPI_INTERFACE.u_spislave/wb_data_i0[28]} {SPI_INTERFACE.u_spislave/wb_data_i0[29]} {SPI_INTERFACE.u_spislave/wb_data_i0[30]} {SPI_INTERFACE.u_spislave/wb_data_i0[31]}]]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe1]
-set_property port_width 16 [get_debug_ports u_ila_0/probe1]
-connect_debug_port u_ila_0/probe1 [get_nets [list {SPI_INTERFACE.u_spislave/wb_address[0]} {SPI_INTERFACE.u_spislave/wb_address[1]} {SPI_INTERFACE.u_spislave/wb_address[2]} {SPI_INTERFACE.u_spislave/wb_address[3]} {SPI_INTERFACE.u_spislave/wb_address[4]} {SPI_INTERFACE.u_spislave/wb_address[5]} {SPI_INTERFACE.u_spislave/wb_address[6]} {SPI_INTERFACE.u_spislave/wb_address[7]} {SPI_INTERFACE.u_spislave/wb_address[8]} {SPI_INTERFACE.u_spislave/wb_address[9]} {SPI_INTERFACE.u_spislave/wb_address[10]} {SPI_INTERFACE.u_spislave/wb_address[11]} {SPI_INTERFACE.u_spislave/wb_address[12]} {SPI_INTERFACE.u_spislave/wb_address[13]} {SPI_INTERFACE.u_spislave/wb_address[14]} {SPI_INTERFACE.u_spislave/wb_address[15]}]]
+set_property port_width 8 [get_debug_ports u_ila_0/probe1]
+connect_debug_port u_ila_0/probe1 [get_nets [list {SPI_INTERFACE.u_spislave/wb_address[0]} {SPI_INTERFACE.u_spislave/wb_address[1]} {SPI_INTERFACE.u_spislave/wb_address[2]} {SPI_INTERFACE.u_spislave/wb_address[3]} {SPI_INTERFACE.u_spislave/wb_address[4]} {SPI_INTERFACE.u_spislave/wb_address[5]} {SPI_INTERFACE.u_spislave/wb_address[6]} {SPI_INTERFACE.u_spislave/wb_address[7]}]]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe2]
-set_property port_width 10 [get_debug_ports u_ila_0/probe2]
-connect_debug_port u_ila_0/probe2 [get_nets [list {SKYTRACKER.U_SKYTRACKER/ctrl_address[0]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[1]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[2]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[3]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[4]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[5]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[6]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[7]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[8]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[9]}]]
+set_property port_width 5 [get_debug_ports u_ila_0/probe2]
+connect_debug_port u_ila_0/probe2 [get_nets [list {SKYTRACKER.U_SKYTRACKER/ctrl_address[0]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[1]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[2]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[3]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[4]} ]]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe3]
 set_property port_width 2 [get_debug_ports u_ila_0/probe3]
 connect_debug_port u_ila_0/probe3 [get_nets [list {SPI_INTERFACE.u_spislave/spi_ce[0]} {SPI_INTERFACE.u_spislave/spi_ce[1]}]]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe4]
-set_property port_width 16 [get_debug_ports u_ila_0/probe4]
-connect_debug_port u_ila_0/probe4 [get_nets [list {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[0]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[1]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[2]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[3]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[4]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[5]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[6]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[7]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[8]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[9]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[10]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[11]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[12]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[13]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[14]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[15]}]]
+set_property port_width 8 [get_debug_ports u_ila_0/probe4]
+connect_debug_port u_ila_0/probe4 [get_nets [list {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[0]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[1]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[2]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[3]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[4]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[5]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[6]} {SPI_INTERFACE.u_spislave/spi_addr_shift_reg[7]}]]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe5]
 set_property port_width 32 [get_debug_ports u_ila_0/probe5]
@@ -58,8 +58,8 @@ set_property port_width 2 [get_debug_ports u_ila_0/probe11]
 connect_debug_port u_ila_0/probe11 [get_nets [list {SPI_INTERFACE.u_spislave/wb_strobe[0]} {SPI_INTERFACE.u_spislave/wb_strobe[1]}]]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe12]
-set_property port_width 32 [get_debug_ports u_ila_0/probe12]
-connect_debug_port u_ila_0/probe12 [get_nets [list {SPI_INTERFACE.u_spislave/spi_shift_in_reg[0]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[1]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[2]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[3]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[4]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[5]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[6]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[7]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[8]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[9]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[10]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[11]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[12]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[13]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[14]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[15]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[16]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[17]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[18]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[19]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[20]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[21]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[22]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[23]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[24]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[25]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[26]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[27]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[28]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[29]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[30]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[31]}]]
+set_property port_width 40 [get_debug_ports u_ila_0/probe12]
+connect_debug_port u_ila_0/probe12 [get_nets [list {SPI_INTERFACE.u_spislave/spi_shift_in_reg[0]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[1]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[2]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[3]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[4]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[5]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[6]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[7]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[8]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[9]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[10]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[11]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[12]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[13]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[14]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[15]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[16]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[17]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[18]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[19]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[20]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[21]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[22]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[23]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[24]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[25]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[26]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[27]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[28]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[29]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[30]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[31]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[32]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[33]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[34]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[35]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[36]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[37]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[38]} {SPI_INTERFACE.u_spislave/spi_shift_in_reg[39]} ]]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe13]
 set_property port_width 32 [get_debug_ports u_ila_0/probe13]
@@ -100,6 +100,17 @@ create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe22]
 set_property port_width 1 [get_debug_ports u_ila_0/probe22]
 connect_debug_port u_ila_0/probe22 [get_nets [list SPI_INTERFACE.u_spislave/spi_clk]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe23]
+set_property port_width 32 [get_debug_ports u_ila_0/probe23]
+connect_debug_port u_ila_0/probe23 [get_nets [list {SPI_INTERFACE.u_spislave/spi_shift_out_reg[0]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[1]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[2]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[3]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[4]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[5]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[6]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[7]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[8]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[9]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[10]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[11]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[12]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[13]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[14]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[15]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[16]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[17]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[18]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[19]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[20]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[21]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[22]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[23]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[24]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[25]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[26]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[27]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[28]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[29]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[30]} {SPI_INTERFACE.u_spislave/spi_shift_out_reg[31]}]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe24]
+set_property port_width 1 [get_debug_ports u_ila_0/probe24]
+connect_debug_port u_ila_0/probe24 [get_nets [list SPI_INTERFACE.u_spislave/spi_out_en]]
+
+
+
 set_property C_CLK_INPUT_FREQ_HZ 300000000 [get_debug_cores dbg_hub]
 set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
 set_property C_USER_SCAN_CHAIN 1 [get_debug_cores dbg_hub]

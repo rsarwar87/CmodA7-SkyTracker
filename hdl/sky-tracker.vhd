@@ -37,7 +37,7 @@ entity sky_tracker is
 			  
 		   sts_acknowledge                           : out    std_logic                     := 'X';             -- acknowledge
            sts_irq                                   : out    std_logic                     := 'X';             -- irq
-           sts_address                               : in   std_logic_vector(9 downto 0);                    -- address
+           sts_address                               : in   std_logic_vector(4 downto 0);                    -- address
            sts_bus_enable                            : in    std_logic;                                        -- bus_enable
            sts_byte_enable                           : in    std_logic_vector(3 downto 0);                     -- byte_enable
            sts_rw                                    : in    std_logic;                                        -- rw
@@ -46,7 +46,7 @@ entity sky_tracker is
            
 		   ctrl_acknowledge                          : out    std_logic                     := 'X';             -- acknowledge
            ctrl_irq                                  : out    std_logic                     := 'X';             -- irq
-           ctrl_address                              : in   std_logic_vector(9 downto 0);                    -- address
+           ctrl_address                              : in   std_logic_vector(4 downto 0);                    -- address
            ctrl_bus_enable                           : in   std_logic;                                        -- bus_enable
            ctrl_byte_enable                          : in   std_logic_vector(3 downto 0);                     -- byte_enable
            ctrl_rw                                   : in   std_logic;                                        -- rw
@@ -146,7 +146,7 @@ begin
 			sts_acknowledge <= sts_ack;
 			sts_ack <= '0';
 			if (sts_bus_enable = '1' and ctrl_rw = '1') then
-			case sts_address(4 downto 2) is
+			case sts_address(2 downto 0) is
 				when "000" =>
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -219,7 +219,7 @@ begin
 			ctrl_acknowledge <= ctrl_ack;
 			ctrl_ack <= '0';
 			if (ctrl_bus_enable = '1') then
-			case ctrl_address(6 downto 2) is
+			case ctrl_address(4 downto 0) is
 				when "00000" =>
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop

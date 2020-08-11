@@ -50,13 +50,13 @@ entity SKY_TOP is
 end SKY_TOP;
 
 architecture rtl of SKY_TOP is
-    constant ADDR_WIDTH : Positive range 8 to 64 := 16;
+    constant ADDR_WIDTH : Positive range 8 to 64 := 8;
 	constant DATA_WIDTH : Positive range 8 to 64 := 32;
 	constant AUTO_INC_ADDRESS : STD_LOGIC := '0';
     signal sts_byte_enable                           : std_logic_vector(3 downto 0);                     -- byte_enable
     signal sts_irq                                   : std_logic                     := 'X';             -- irq
     signal sts_acknowledge                           : std_logic                     := 'X';             -- acknowledge
-    signal sts_address                               : std_logic_vector(9 downto 0);                    -- address
+    signal sts_address                               : std_logic_vector(4 downto 0);                    -- address
     signal sts_bus_enable                            : std_logic;                                        -- bus_enable
     signal sts_rw                                    : std_logic_vector(0 downto 0);                                        -- rw
     signal sts_write_data                            : std_logic_vector(31 downto 0);                    -- write_data
@@ -65,14 +65,14 @@ architecture rtl of SKY_TOP is
     signal ctrl_byte_enable                          : std_logic_vector(3 downto 0);                     -- byte_enable
     signal ctrl_irq                                  : std_logic                     := 'X';             -- irq
     signal ctrl_acknowledge                          : std_logic                     := 'X';             -- acknowledge
-    signal ctrl_address                              : std_logic_vector(9 downto 0);                    -- address
+    signal ctrl_address                              : std_logic_vector(4 downto 0);                    -- address
     signal ctrl_bus_enable                           : std_logic;                                        -- bus_enable
     signal ctrl_rw                                   : std_logic_vector(0 downto 0);                                        -- rw
     signal ctrl_write_data                           : std_logic_vector(31 downto 0);                    -- write_data
     signal ctrl_read_data                            : std_logic_vector(31 downto 0) := (others => 'X');  -- read_data
     
 
-    signal spi_ctrl_address                              : std_logic_vector(9 downto 0);                    -- address
+    signal spi_ctrl_address                              : std_logic_vector(4 downto 0);                    -- address
     signal spi_ctrl_rw                                   : std_logic_vector(0 downto 0);                                        -- rw
     signal spi_ctrl_write_data                           : std_logic_vector(31 downto 0);                    -- write_data
     signal spi_ctrl_read_data                            : std_logic_vector(31 downto 0) := (others => 'X');  -- read_data
@@ -215,7 +215,7 @@ SKYTRACKER : block
 			  
 		   sts_acknowledge                           : out    std_logic                     := 'X';             -- acknowledge
            sts_irq                                   : out    std_logic                     := 'X';             -- irq
-           sts_address                               : in   std_logic_vector(9 downto 0);                    -- address
+           sts_address                               : in   std_logic_vector(4 downto 0);                    -- address
            sts_bus_enable                            : in    std_logic;                                        -- bus_enable
            sts_byte_enable                           : in    std_logic_vector(3 downto 0);                     -- byte_enable
            sts_rw                                    : in    std_logic;                                        -- rw
@@ -224,7 +224,7 @@ SKYTRACKER : block
            
 		   ctrl_acknowledge                          : out    std_logic                     := 'X';             -- acknowledge
            ctrl_irq                                  : out    std_logic                     := 'X';             -- irq
-           ctrl_address                              : in   std_logic_vector(9 downto 0);                    -- address
+           ctrl_address                              : in   std_logic_vector(4 downto 0);                    -- address
            ctrl_bus_enable                           : in   std_logic;                                        -- bus_enable
            ctrl_byte_enable                          : in   std_logic_vector(3 downto 0);                     -- byte_enable
            ctrl_rw                                   : in   std_logic;                                        -- rw
@@ -320,14 +320,14 @@ begin
       );
 	               -- acknowledge
 	 sts_address <= ctrl_address;
-     sts_bus_enable  <= spi_wb_strobe(0);              -- bus_enable
+     sts_bus_enable  <= wb_address(5) and (spi_wb_strobe(0) or spi_wb_strobe(1));              -- bus_enable
      sts_byte_enable <= "1111";             -- byte_enable
      sts_rw          <= ctrl_rw;               -- rw
      sts_write_data  <= spi_ctrl_write_data;             -- write_data
-     wb_data_i0      <= spi_sts_read_data;                -- read_data
+     wb_data_i0      <= spi_sts_read_data when wb_address(5) = '1' else spi_ctrl_read_data;                -- read_data
     
-     spi_ctrl_address     <= wb_address(9 downto 0);             -- address
-     ctrl_bus_enable  <= spi_wb_strobe(1);           -- bus_enable
+     spi_ctrl_address     <= wb_address(4 downto 0);             -- address
+     ctrl_bus_enable  <= not wb_address(5) and (spi_wb_strobe(0) or spi_wb_strobe(1));           -- bus_enable
      ctrl_byte_enable <= "1111";           -- byte_enable
      spi_ctrl_rw(0)          <= not wb_write;           -- rw
      spi_ctrl_write_data  <= wb_data_o;           -- write_data
@@ -350,13 +350,13 @@ begin
       
       SyncBusToClock_sts_address : sync_Vector 
       generic map (
-        MASTER_BITS => 10, SYNC_DEPTH => 2
+        MASTER_BITS => 5, SYNC_DEPTH => 2
       )
       port map(
         Clock1        => spi_delayed_clk ,                                                  -- <Clock>  input clock
 		Clock2        => clock_150,                                                 -- <Clock>  output clock
-		Input         => spi_ctrl_address(9 downto 0),   -- @Clock1:  input vector
-		Output        => ctrl_address(9 downto 0) ,  -- @Clock2:  output vector
+		Input         => spi_ctrl_address,   -- @Clock1:  input vector
+		Output        => ctrl_address,  -- @Clock2:  output vector
 		Busy          => open,                                                -- @Clock1:  busy bit
 		Changed       => open                                                -- @Clock2:  changed bit
       );
@@ -504,7 +504,7 @@ begin
             S_LED(7 downto 5) <= "111";
             S_LED(4 downto 0) <= led_level_sync;
           elsif (ip_addr = "11111111") then
-            S_LED <= (others => led_level_sync(0));
+            S_LED <= (others => led_level_sync(2));
           -- device status 
           -- elsif bla bla
 			 elsif (led_status_sync = "00000000") then
@@ -521,6 +521,7 @@ SPI_INTERFACE : block
 	 Generic (
 				  ADDR_WIDTH : Positive range 8 to 64 := 8;
 				  DATA_WIDTH : Positive range 8 to 64 := 8;
+				  HOLDOFF : Positive range 0 to 16 := 8;
 				  AUTO_INC_ADDRESS : STD_LOGIC := '1'
 				  );
     Port ( sys_clk : in  STD_LOGIC;
@@ -547,6 +548,7 @@ begin
 	 Generic map (
 				  ADDR_WIDTH => ADDR_WIDTH,
 				  DATA_WIDTH => DATA_WIDTH,
+				  HOLDOFF => 8,
 				  AUTO_INC_ADDRESS => AUTO_INC_ADDRESS
 				  )
       Port map ( 
