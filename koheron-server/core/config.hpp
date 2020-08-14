@@ -38,12 +38,12 @@ namespace koheron {
         constexpr int tcp_worker_connections = 100;
 
         /// Websocket listening port
-        constexpr unsigned int websocket_port = 8080;
+        constexpr unsigned int websocket_port = 8081;
         /// Websocket max parallel connections
         constexpr int websocket_worker_connections = 100;
 
         /// Unix socket file path
-        constexpr char unix_socket_path[unix_socket_path_len] = "/var/run/koheron-server.sock";
+        constexpr char unix_socket_path[unix_socket_path_len] = "/tmp/koheron-server.sock";
         /// Unix socket max parallel connections
         constexpr int unix_socket_worker_connections = 100;
     }

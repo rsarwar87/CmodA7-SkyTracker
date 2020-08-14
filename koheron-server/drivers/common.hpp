@@ -58,50 +58,82 @@ class Common
         return CFG_JSON;
     }
 
+
     void ip_on_leds() {
-        struct ifaddrs *addrs;
+        struct ifaddrs* addrs;
         getifaddrs(&addrs);
-        ifaddrs *tmp = addrs;
-
+        ifaddrs* tmp = addrs;
+        size_t cnt = get_iplist();
+        bool found = false;
         // Turn all the leds ON
-        int ip = 255;
+        int ip = 25;
         spi.write_at<reg::led/4, mem::control_addr, 1> (&ip); 
+        for (size_t i = 0; i < cnt; i++) {
 
-        char interface[] = "eth0";
-
-        while (tmp) {
+          while (tmp) {
             // Works only for IPv4 address
             if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_INET) {
-                #pragma GCC diagnostic push
-                #pragma GCC diagnostic ignored "-Wcast-align"
-                struct sockaddr_in *pAddr = reinterpret_cast<struct sockaddr_in *>(tmp->ifa_addr);
-                #pragma GCC diagnostic pop
-                int val = strcmp(tmp->ifa_name,interface);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+              struct sockaddr_in* pAddr =
+                  reinterpret_cast<struct sockaddr_in*>(tmp->ifa_addr);
+#pragma GCC diagnostic pop
+              int val = strcmp(tmp->ifa_name, iplist.at(i).c_str());
 
-                if (val != 0) {
-                    tmp = tmp->ifa_next;
-                    continue;
-                }
+              if (val != 0) {
+                tmp = tmp->ifa_next;
+                continue;
+              }
 
-                printf("Interface %s found: %s\n",
-                       tmp->ifa_name, inet_ntoa(pAddr->sin_addr));
-                ip = htonl(pAddr->sin_addr.s_addr);
+              ip = htonl(pAddr->sin_addr.s_addr);
+              ctx.log<PANIC>("TRACE: successfully retrieved value: %d\n",ip);
 
-                // Write IP address in FPGA memory
-                // The 8 Least Significant Bits should be connected to the FPGA LEDs
-                spi.write_at<reg::led/4, mem::control_addr, 1> (&ip); 
-                break;
+              // Write IP address in FPGA memory
+              // The 8 Least Significant Bits should be connected to the FPGA
+              // LEDs
+              spi.write_at<reg::led/4, mem::control_addr, 1> (&ip); 
+              found = true;
+              break;
             }
 
             tmp = tmp->ifa_next;
+          }
+          if (found) break;
         }
-
         freeifaddrs(addrs);
     }
-
   private:
     Context& ctx;
     SpiDev& spi;
+        std::vector<std::string> iplist;
+
+    size_t get_iplist () {
+        std::string s = exec("find /sys/class/net -type l -not -lname '*virtual*' -printf '%f\n'");
+        std::string delimiter = "\n";
+        size_t pos = 0;
+        std::string token;
+        while ((pos = s.find(delimiter)) != std::string::npos) {
+          token = s.substr(0, pos);
+          if (token.size() > 2) {
+             iplist.push_back(token);
+          }
+          s.erase(0, pos + delimiter.length());
+        }
+        return iplist.size();
+    }
+
+    std::string exec(const char* cmd) {
+      std::array<char, 128> buffer;
+      std::string result;
+      std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+      if (!pipe) {
+        return "";
+      }
+      while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        result += buffer.data();
+      }
+      return result;
+    }
 };
 
 #endif // __DRIVERS_COMMON_HPP__

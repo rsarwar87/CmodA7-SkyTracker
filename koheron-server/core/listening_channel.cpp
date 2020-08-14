@@ -7,6 +7,7 @@
 #include "session.hpp"
 
 #include <thread>
+#include <libexplain/bind.h>
 
 extern "C" {
   #include <sys/socket.h>   // socket definitions
@@ -15,7 +16,7 @@ extern "C" {
   #include <sys/types.h>    // socket types
   #include <sys/un.h>
 }
-
+#include <errno.h>
 namespace koheron {
 
 static int create_tcp_listening_socket(unsigned int port, SysLog *syslog)
@@ -31,7 +32,7 @@ static int create_tcp_listening_socket(unsigned int port, SysLog *syslog)
     // See http://beej.us/guide/bgnet/output/html/singlepage/bgnet.html#bind
     int yes = 1;
 
-    if (setsockopt(listen_fd_, SOL_SOCKET, SO_REUSEADDR,
+    if (setsockopt(listen_fd_, SOL_SOCKET, SO_REUSEADDR  | SO_REUSEPORT,
                   &yes, sizeof(int))==-1) {
         syslog->print<CRITICAL>("Cannot set SO_REUSEADDR\n");
     }
@@ -55,9 +56,10 @@ static int create_tcp_listening_socket(unsigned int port, SysLog *syslog)
     servaddr.sin_port = htons(port);
 
     // Assign name (address) to socket
-    if (bind(listen_fd_, reinterpret_cast<struct sockaddr *>(&servaddr),
-             sizeof(servaddr)) < 0) {
-        syslog->print<PANIC>("Binding error\n");
+    int ret = bind(listen_fd_, reinterpret_cast<struct sockaddr *>(&servaddr),
+             sizeof(servaddr));
+    if (ret < 0) {
+        syslog->print<PANIC>("Binding error %s\n", explain_errno_bind(errno, listen_fd_, reinterpret_cast<struct sockaddr *>(&servaddr), sizeof(servaddr)));
         close(listen_fd_);
         return -1;
     }
@@ -210,8 +212,10 @@ static int create_unix_listening_socket(const char *unix_sock_path, SysLog *sysl
     unlink(local.sun_path);
     auto len = strlen(local.sun_path) + sizeof(local.sun_family);
 
-    if (bind(listen_fd_, reinterpret_cast<struct sockaddr *>(&local), len) < 0) {
-        syslog->print<PANIC>("Unix socket binding error\n");
+    int ret = bind(listen_fd_, reinterpret_cast<struct sockaddr *>(&local), len);
+    if (ret < 0) {
+        syslog->print<PANIC>("Binding error %s\n", explain_errno_bind(errno, listen_fd_, reinterpret_cast<struct sockaddr *>(&local), sizeof(len)));
+        syslog->print<PANIC>("Unix socket binding error %d\n", ret);
         close(listen_fd_);
         return -1;
     }
