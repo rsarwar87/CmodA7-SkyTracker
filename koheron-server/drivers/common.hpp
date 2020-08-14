@@ -60,16 +60,16 @@ class Common
 
 
     void ip_on_leds() {
-        struct ifaddrs* addrs;
-        getifaddrs(&addrs);
-        ifaddrs* tmp = addrs;
         size_t cnt = get_iplist();
         bool found = false;
         // Turn all the leds ON
-        int ip = 25;
+        uint32_t ip = 255;
         spi.write_at<reg::led/4, mem::control_addr, 1> (&ip); 
         for (size_t i = 0; i < cnt; i++) {
 
+          struct ifaddrs* addrs;
+          getifaddrs(&addrs);
+          ifaddrs* tmp = addrs;
           while (tmp) {
             // Works only for IPv4 address
             if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_INET) {
@@ -86,7 +86,6 @@ class Common
               }
 
               ip = htonl(pAddr->sin_addr.s_addr);
-              ctx.log<PANIC>("TRACE: successfully retrieved value: %d\n",ip);
 
               // Write IP address in FPGA memory
               // The 8 Least Significant Bits should be connected to the FPGA
@@ -98,9 +97,9 @@ class Common
 
             tmp = tmp->ifa_next;
           }
+          freeifaddrs(addrs);
           if (found) break;
         }
-        freeifaddrs(addrs);
     }
   private:
     Context& ctx;
