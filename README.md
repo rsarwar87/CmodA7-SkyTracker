@@ -69,6 +69,20 @@ The following shows the pinmap on the board:
 ### Top Level
 The two ips are controllerd from the RPi over SPI. The the SPI is handled in `hdl/spi_slave.vhd`, one for status and one for control. The are mapped onto the registers which feed the two ips.
 
+#### SPI
+Each SPI command consists of size 8-bit words.  It operates at a maximum or 32.1 MHz. 
+
+##### Read commands
+bits -> 0XZYYYYY - 8-bit DONTCARE - 32 bit DATA.
+
+the first bit of the transaction denotes if it is read or write command, read is active low. the third bit, Z denotes it is the status registers or control registers. the following 5-bits are the address of the register.
+The next 8 bits are ignored by the hardware, and is in place to allow proper 2-cycle clock domain cross over. Data is to be ignored during this word. the final 4 8-bit words are the returned register values.
+
+##### Read commands
+bits -> 1XZYYYYY - 32 bit DATA - 8-bit DONT CARE. 
+
+the first bit of the transaction denotes if it is read or write command, write is active high. the third bit, Z denotes it is the status registers or control registers. the following 5-bits are the address of the register.
+The following 4 8-bit words are written to the register pointed by the address. The last 8 bits are ignored by the hardware, and is in place to allow proper 2-cycle clock domain cross over. Data is to be ignored during this word. 
 
 #### Camera Triggers
 To facilitate the use of older cameras which cannot be triggered in bulb mode over the usb, there are two gpios which are used to send triggers. they can be passed to an optoisolator to connect to the camera remote trigger ports.
@@ -106,11 +120,11 @@ The following are the status registers in the
 | Ports | Offset w.r.t. 0x20   | size | Description  
 |--|--|--| -- |
 | dna            | 0x0 | 64-bit word | Returns fixed value, design ID
-| step_count[0]   | 0x8 | 32-bit word | Current RA step count
-| step_count[1]   | 0xC | 32-bit word | Current DE step count
-| status[0]  | 0x10 | 32-bit word | Current RA status
-| status[1]      | 0x14 | 32-bit word | Current DE status
-| forty_two      | 0x18 | 32-bit word | always returns 42, to check if device is working properly
+| step_count[0]   | 0x2 | 32-bit word | Current RA step count
+| step_count[1]   | 0x3 | 32-bit word | Current DE step count
+| status[0]  | 0x4 | 32-bit word | Current RA status
+| status[1]      | 0x5 | 32-bit word | Current DE status
+| forty_two      | 0x6 | 32-bit word | always returns 42, to check if device is working properly
 
 #### Control
 
@@ -118,24 +132,24 @@ The following are the status registers in the
 |Ports |Offset w.r.t. 0x00  | size | Description 
 |----------------|--------|--------|--------------
 | counter_load[0] | 0x0 | 32-bit word | RA load counter
-| counter_load[1] | 0x4 | 32-bit word | DE load counter
-| counter_max[0]   | 0x8 | 32-bit word | RA max count
-| counter_max[1]   | 0xC | 32-bit word | DE max count
-| cmdcontrol[0]  | 0x10 | 32-bit word | RA Command control
-| cmdcontrol[1]      | 0x14 | 32-bit word | DE  Command control
-| cmdduration[0]  | 0x18 | 32-bit word | RA Command duration
-| cmdduration[1]      | 0x1C | 32-bit word | DE Command duration
-| trackctrl[0]  | 0x20 | 32-bit word | RA tracking control
-| trackctrl[1]      | 0x24 | 32-bit word | DE tracking control
-| cmdtick[0]  | 0x28 | 32-bit word | RA Command period
-| cmdtick[1]      | 0x2C | 32-bit word | DE Command period
-| backlash_tick[0]  | 0x30 | 32-bit word | RA Backlash period
-| backlash_tick[1]      | 0x34 | 32-bit word | DE Backlash period
-| backlash_duration[0]  | 0x38 | 32-bit word | RA Backlash duration
-| backlash_duration[1]      | 0x3c | 32-bit word | DE Backlash duration
-| led  | 0x40 | 32-bit word | IP address of the device
-| led_pwm      | 0x44 | 32-bit word | Polar LED
-| camera_trigger      | 0x48 | 32-bit word | Current RA status
+| counter_load[1] | 0x1 | 32-bit word | DE load counter
+| counter_max[0]   | 0x2 | 32-bit word | RA max count
+| counter_max[1]   | 0x3 | 32-bit word | DE max count
+| cmdcontrol[0]  | 0x4 | 32-bit word | RA Command control
+| cmdcontrol[1]      | 0x5 | 32-bit word | DE  Command control
+| cmdduration[0]  | 0x6 | 32-bit word | RA Command duration
+| cmdduration[1]      | 0x7 | 32-bit word | DE Command duration
+| trackctrl[0]  | 0x8 | 32-bit word | RA tracking control
+| trackctrl[1]      | 0x9 | 32-bit word | DE tracking control
+| cmdtick[0]  | 0xa | 32-bit word | RA Command period
+| cmdtick[1]      | 0xb | 32-bit word | DE Command period
+| backlash_tick[0]  | 0xc | 32-bit word | RA Backlash period
+| backlash_tick[1]      | 0xd | 32-bit word | DE Backlash period
+| backlash_duration[0]  | 0xe | 32-bit word | RA Backlash duration
+| backlash_duration[1]      | 0xf | 32-bit word | DE Backlash duration
+| led  | 0x10 | 32-bit word | IP address of the device
+| led_pwm      | 0x11 | 32-bit word | Polar LED
+| camera_trigger      | 0x12 | 32-bit word | Current RA status
 
 
 
