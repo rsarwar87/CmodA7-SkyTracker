@@ -39,22 +39,17 @@ class PiPwmWrapper
       m_duty = 100;
       FILE *fhandle = fopen(m_export.c_str(), "w");
       string out = (m_gpio_id);
-    cout << __func__ << endl;
       if (fwrite(out.c_str(), out.size(), 1, fhandle)){
         fclose(fhandle);
         m_henable = m_henable + out + "/enable";
         m_hfreq = m_hfreq + out + "/period";
         m_hduty = m_hduty + out + "/duty_cycle";
-    cout << m_henable << endl;
-    cout << m_hfreq << endl;
-    cout << m_hduty << endl;
         using namespace std::chrono_literals;
         std::this_thread::sleep_for(100ms);
         SetFreq(freq);
         SetDuty(0);
         SetEnable(true);
       }
-    cout << __func__ << endl;
    }
    ~PiPwmWrapper()
    {
@@ -66,35 +61,29 @@ class PiPwmWrapper
 
    void SetEnable(bool value)
    {
-    cout << __func__ << endl;
      string val = "1";
      if (!value) val = "0";
      ptr_henable = fopen(m_henable.c_str(), "w");
      if (fwrite(val.c_str(), val.size(), 1, ptr_henable) == 1)
      fclose(ptr_henable);
-    cout << __func__ << endl;
    }
    bool SetFreq(uint32_t value)
    {
-    cout << __func__ << endl;
      m_freq = value;
      ptr_hfreq = fopen(m_hfreq.c_str(), "w");
      const string out = std::to_string(m_freq);
      if (!fwrite(out.c_str(), out.size(), 1, ptr_hfreq))
        return false;
-    cout << __func__ << endl;
      fclose(ptr_hfreq);
      return true;
    }
    bool SetDuty(uint32_t value)
    {
-    cout << __func__ << endl;
-     m_duty = value;
+     m_duty = value % m_freq;
      ptr_hduty = fopen(m_hduty.c_str(), "w");
      const string out = std::to_string(m_duty);
      if (!fwrite(out.c_str(), out.size(), 1, ptr_hduty))
        return false;
-    cout << __func__ << endl;
      fclose(ptr_hduty);
      return true;
    }
@@ -117,7 +106,6 @@ class PiPolarLed
       return;
 
 		}
-    cout << __func__ << endl;
 		ptr_gpio = make_unique<PiPwmWrapper>(port, freq);
   }
 
