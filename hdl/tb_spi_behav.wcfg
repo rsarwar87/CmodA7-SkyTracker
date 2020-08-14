@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="tb_spi_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="tb_spi" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="8105001fs"></ZoomEndTime>
+      <Cursor1Time time="746250fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="629"></NameColumnWidth>
+      <ValueColumnWidth column_width="176"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="36" />
+   <wvobject type="logic" fp_name="/tb_spi/clk_150">
+      <obj_property name="ElementShortName">clk_150</obj_property>
+      <obj_property name="ObjectShortName">clk_150</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi/spi_clk_mux">
+      <obj_property name="ElementShortName">spi_clk_mux</obj_property>
+      <obj_property name="ObjectShortName">spi_clk_mux</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi/spi_clk_buf">
+      <obj_property name="ElementShortName">spi_clk_buf</obj_property>
+      <obj_property name="ObjectShortName">spi_clk_buf</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi/spi_clk">
+      <obj_property name="ElementShortName">spi_clk</obj_property>
+      <obj_property name="ObjectShortName">spi_clk</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi/spi_mosi">
+      <obj_property name="ElementShortName">spi_mosi</obj_property>
+      <obj_property name="ObjectShortName">spi_mosi</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi/spi_miso">
+      <obj_property name="ElementShortName">spi_miso</obj_property>
+      <obj_property name="ObjectShortName">spi_miso</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/spi_ce">
+      <obj_property name="ElementShortName">spi_ce[1:0]</obj_property>
+      <obj_property name="ObjectShortName">spi_ce[1:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi/wb_cycle">
+      <obj_property name="ElementShortName">wb_cycle</obj_property>
+      <obj_property name="ObjectShortName">wb_cycle</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi/wb_write">
+      <obj_property name="ElementShortName">wb_write</obj_property>
+      <obj_property name="ObjectShortName">wb_write</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/wb_address">
+      <obj_property name="ElementShortName">wb_address[7:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_address[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/wb_data_i1">
+      <obj_property name="ElementShortName">wb_data_i1[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_data_i1[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/wb_data_i0">
+      <obj_property name="ElementShortName">wb_data_i0[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_data_i0[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/wb_data_o">
+      <obj_property name="ElementShortName">wb_data_o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_data_o[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/wb_ack">
+      <obj_property name="ElementShortName">wb_ack[0:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_ack[0:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/spi_wb_ack">
+      <obj_property name="ElementShortName">spi_wb_ack[0:0]</obj_property>
+      <obj_property name="ObjectShortName">spi_wb_ack[0:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/wb_strobe">
+      <obj_property name="ElementShortName">wb_strobe[1:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_strobe[1:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/spi_data">
+      <obj_property name="ElementShortName">spi_data[91:0]</obj_property>
+      <obj_property name="ObjectShortName">spi_data[91:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/spi_mask">
+      <obj_property name="ElementShortName">spi_mask[91:0]</obj_property>
+      <obj_property name="ObjectShortName">spi_mask[91:0]</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_spi/idx">
+      <obj_property name="ElementShortName">idx</obj_property>
+      <obj_property name="ObjectShortName">idx</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_spi/idx2">
+      <obj_property name="ElementShortName">idx2</obj_property>
+      <obj_property name="ObjectShortName">idx2</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_spi/ADDR_WIDTH">
+      <obj_property name="ElementShortName">ADDR_WIDTH</obj_property>
+      <obj_property name="ObjectShortName">ADDR_WIDTH</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_spi/DATA_WIDTH">
+      <obj_property name="ElementShortName">DATA_WIDTH</obj_property>
+      <obj_property name="ObjectShortName">DATA_WIDTH</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi/AUTO_INC_ADDRESS">
+      <obj_property name="ElementShortName">AUTO_INC_ADDRESS</obj_property>
+      <obj_property name="ObjectShortName">AUTO_INC_ADDRESS</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_spi/CLK_PERIOD">
+      <obj_property name="ElementShortName">CLK_PERIOD</obj_property>
+      <obj_property name="ObjectShortName">CLK_PERIOD</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_spi/CLK_PERIOD_SPI">
+      <obj_property name="ElementShortName">CLK_PERIOD_SPI</obj_property>
+      <obj_property name="ObjectShortName">CLK_PERIOD_SPI</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/u_spislave/spi_addr_shift_reg">
+      <obj_property name="ElementShortName">spi_addr_shift_reg[7:0]</obj_property>
+      <obj_property name="ObjectShortName">spi_addr_shift_reg[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/u_spislave/spi_shift_in_reg">
+      <obj_property name="ElementShortName">spi_shift_in_reg[39:0]</obj_property>
+      <obj_property name="ObjectShortName">spi_shift_in_reg[39:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/u_spislave/spi_shift_out_reg">
+      <obj_property name="ElementShortName">spi_shift_out_reg[31:0]</obj_property>
+      <obj_property name="ObjectShortName">spi_shift_out_reg[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_spi/u_spislave/spi_shift_count">
+      <obj_property name="ElementShortName">spi_shift_count</obj_property>
+      <obj_property name="ObjectShortName">spi_shift_count</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/u_spislave/wb_data_i1">
+      <obj_property name="ElementShortName">wb_data_i1[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_data_i1[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_spi/u_spislave/wb_data_i0">
+      <obj_property name="ElementShortName">wb_data_i0[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_data_i0[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi/u_spislave/spi_out_en">
+      <obj_property name="ElementShortName">spi_out_en</obj_property>
+      <obj_property name="ObjectShortName">spi_out_en</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi/u_spislave/wb_cycle_reg">
+      <obj_property name="ElementShortName">wb_cycle_reg</obj_property>
+      <obj_property name="ObjectShortName">wb_cycle_reg</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi/u_spislave/wb_strobe_reg">
+      <obj_property name="ElementShortName">wb_strobe_reg</obj_property>
+      <obj_property name="ObjectShortName">wb_strobe_reg</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi/u_spislave/wb_write_reg">
+      <obj_property name="ElementShortName">wb_write_reg</obj_property>
+      <obj_property name="ObjectShortName">wb_write_reg</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_spi/u_spislave/wb_ack">
+      <obj_property name="ElementShortName">wb_ack</obj_property>
+      <obj_property name="ObjectShortName">wb_ack</obj_property>
+   </wvobject>
+</wave_config>
