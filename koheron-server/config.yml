@@ -13,7 +13,7 @@ memory:
     offset: '0x00'
     range: 32K
   - name: status
-    offset: '0x80'
+    offset: '0x20'
     range: 32K
 
 control_registers:
