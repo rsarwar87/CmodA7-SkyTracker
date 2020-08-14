@@ -1,0 +1,56 @@
+---
+name: rpi_artix7_star_tracker
+board: boards/mars_zx3
+version: 0.1.1
+
+cores:
+  - fpga/cores/axi_ctl_register_v1_0
+  - fpga/cores/axi_sts_register_v1_0
+  - fpga/cores/dna_reader_v1_0
+
+memory:
+  - name: control
+    offset: '0x00'
+    range: 32K
+  - name: status
+    offset: '0x80'
+    range: 32K
+
+control_registers:
+  - counter_load[2]
+  - counter_max[2]
+  - cmdcontrol[2]
+  - cmdduration[2]
+  - trackctrl[2]
+  - cmdtick[2]
+  - backlash_tick[2]
+  - backlash_duration[2]
+  - led
+  - led_pwm
+  - camera_trigger
+
+status_registers:
+  - step_count[2]
+  - status[2]
+  - forty_two
+
+parameters:
+  fclk0: 50000000 # FPGA clock speed in Hz
+
+xdc:
+  - ./../../../boards/mars_zx3/config/ports.xdc 
+  - ./constraints.xdc
+
+drivers:
+  - ./drivers/common.hpp
+  - ./drv8825.hpp
+  - ./sky-tracker.hpp
+  - ./ascom_interface.hpp
+  - ./camera.hpp
+
+web:
+  - ./web/index.html
+  - web/koheron.ts
+  - web/led-blinker.ts
+  - ./web/app.ts
+  - web/main.css
