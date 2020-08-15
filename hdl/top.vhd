@@ -14,7 +14,10 @@ entity SKY_TOP is
         VP_IN, VN_IN		: in 	std_logic;
         VA_P, VA_N  		: in 	std_logic_vector(1 downto 0);
         
-        
+        pi_camera_trigger_in  : in std_logic;
+        pi_camera_trigger_out : out std_logic;
+        pi_pwm_led_in         : in std_logic;
+        pi_pwm_led_out        : out std_logic;
        
         ------- INPUT/OUTPUT --------------------
         KEY			: in	std_logic_vector(1 downto 0);
@@ -260,6 +263,10 @@ SKYTRACKER : block
     signal led_level_sync : std_logic_vector(4 downto 0);
     
 begin
+    
+    pi_camera_trigger_out <= pi_camera_trigger_in;
+    pi_pwm_led_out        <= pi_pwm_led_in;
+
 	 U_SKYTRACKER :  component sky_tracker	
 		port map (
 		   clk_50  => clock_50,
