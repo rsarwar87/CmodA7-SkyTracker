@@ -1,0 +1,16 @@
+[Unit]
+Description=Koheron TCP/Websocket server
+After=network.target 
+
+[Service]
+Type=notify
+NotifyAccess=all
+ExecStart=/usr/bin/serverd
+ExecStop=/usr/bin/pkill -SIGINT serverd
+KillSignal=SIGKILL
+
+# No limitation in the number of restarts per time interval
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target

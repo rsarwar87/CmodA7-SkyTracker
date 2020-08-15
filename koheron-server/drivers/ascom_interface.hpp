@@ -143,7 +143,7 @@ class ASCOMInterface {
     if (isSlew)
       ret = sti.start_tracking(axis, isSlew);
     else
-      ret = sti.send_command(axis, isSlew, isGoto, use_accel);
+      ret = sti.send_command(axis, isSlew, use_accel, isGoto);
     return ret;
   }
   // GetHomePosition           = 'd', // Get Home position encoder count

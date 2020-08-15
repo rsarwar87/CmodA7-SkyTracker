@@ -55,7 +55,7 @@ uint32_t ASCOM_sky_interface::SwpGetHomePosition(uint8_t axis) {
 // StartMotion               = 'J', // start
 bool ASCOM_sky_interface::SwpCmdStartMotion(uint8_t axis, bool isSlew,
                                               bool isGoto, bool use_accel) {
-  klog << __func__ << " Axis " <<  std::to_string(axis) << " isSLew: " << isSlew << "; Accel: " << use_accel << std::endl;
+  klog << __func__ << " Axis " <<  std::to_string(axis) << " isSLew: " << isSlew << "; isGoto: " << isGoto << "; Accel: " << use_accel << std::endl;
   client->call<op::ASCOMInterface::SwpCmdStartMotion>(axis, isSlew, use_accel, isGoto);
   auto buffer = client->recv<op::ASCOMInterface::SwpCmdStartMotion, bool>();
   return buffer;
