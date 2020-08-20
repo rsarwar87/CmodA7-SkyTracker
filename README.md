@@ -78,7 +78,7 @@ bits -> 0XZYYYYY - 8-bit DONTCARE - 32 bit DATA.
 the first bit of the transaction denotes if it is read or write command, read is active low. the third bit, Z denotes it is the status registers or control registers. the following 5-bits are the address of the register.
 The next 8 bits are ignored by the hardware, and is in place to allow proper 2-cycle clock domain cross over. Data is to be ignored during this word. the final 4 8-bit words are the returned register values.
 
-##### Read commands
+##### Write commands
 bits -> 1XZYYYYY - 32 bit DATA - 8-bit DONT CARE. 
 
 the first bit of the transaction denotes if it is read or write command, write is active high. the third bit, Z denotes it is the status registers or control registers. the following 5-bits are the address of the register.
