@@ -28,7 +28,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 
 entity drv8825 is
-	 generic ( REVERSE_DIRECTION : boolean := true );
+	 generic ( REVERSE_DIRECTION : boolean := true; ALWAYS_ENABLE : boolean := true );
     Port ( clk_50 : in STD_LOGIC;
            rstn_50 : in STD_LOGIC;
            drv8825_mode : out STD_LOGIC_VECTOR (2 downto 0);
@@ -138,9 +138,15 @@ begin
             drv8825_step <= '0';
             ctrl_status <= (others => '0');
         elsif (rising_edge(clk_50)) then
+            if (ALWAYS_ENABLE = false) then
             drv8825_enable_n<='1';
             drv8825_sleep_n<= '0';
             drv8825_rst_n  <= '0';
+            else
+            drv8825_enable_n<='0';
+            drv8825_sleep_n<= '1';
+            drv8825_rst_n  <= '1';
+            end if;
             drv8825_direction_out <= '0';
             drv8825_step <= '0';
             drv8825_mode <= "000";
