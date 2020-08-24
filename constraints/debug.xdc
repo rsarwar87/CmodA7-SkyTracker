@@ -19,7 +19,7 @@ connect_debug_port u_ila_0/probe1 [get_nets [list {SPI_INTERFACE.u_spislave/wb_a
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe2]
 set_property port_width 5 [get_debug_ports u_ila_0/probe2]
-connect_debug_port u_ila_0/probe2 [get_nets [list {SKYTRACKER.U_SKYTRACKER/ctrl_address[0]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[1]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[2]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[3]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[4]} ]]
+connect_debug_port u_ila_0/probe2 [get_nets [list {SKYTRACKER.U_SKYTRACKER/sts_address[0]} {SKYTRACKER.U_SKYTRACKER/sts_address[1]} {SKYTRACKER.U_SKYTRACKER/sts_address[2]} {SKYTRACKER.U_SKYTRACKER/sts_address[3]} {SKYTRACKER.U_SKYTRACKER/ctrl_address[4]} ]]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe3]
 set_property port_width 2 [get_debug_ports u_ila_0/probe3]

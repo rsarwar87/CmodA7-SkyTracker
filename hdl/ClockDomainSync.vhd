@@ -59,6 +59,28 @@ entity ClockDomainSync is
      de_counter_load 		 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
      de_counter_max 		 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
      de_trackctrl 			 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+     
+     fc_step_count 		 : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+     fc_status     		 : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+     fc_cmdcontrol 		 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- steps, go, stop, direction
+     fc_cmdtick           : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');    -- speed of command
+     fc_cmdduration 		 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');    -- speed of command
+     fc_backlash_tick 	 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');  -- speed of backlash
+     fc_backlash_duration : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
+     fc_counter_load 		 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
+     fc_counter_max 		 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
+     fc_trackctrl 			 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+    
+     fc_step_count_sync 		 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+     fc_status_sync     		 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+     fc_cmdcontrol_sync 		 : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- steps, go, stop, direction
+     fc_cmdtick_sync           : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');    -- speed of command
+     fc_cmdduration_sync 		 : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');    -- speed of command
+     fc_backlash_tick_sync 	 : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');  -- speed of backlash
+     fc_backlash_duration_sync : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
+     fc_counter_load_sync 		 : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
+     fc_counter_max_sync 		 : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
+     fc_trackctrl_sync 			 : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
     
      ra_step_count_sync 		 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
      ra_status_sync     		 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
@@ -116,6 +138,18 @@ begin
 		Busy          => open,                                                -- @Clock1:  busy bit
 		Changed       => open                                                -- @Clock2:  changed bit
       );
+      SyncBusToClock_fc_step_count : sync_Vector 
+      generic map (
+        MASTER_BITS => 32, SYNC_DEPTH => 3
+      )
+      port map(
+        Clock1        => clk_50,                                                  -- <Clock>  input clock
+		Clock2        => clk_150,                                                 -- <Clock>  output clock
+		Input         => fc_step_count_sync,   -- @Clock1:  input vector
+		Output        => fc_step_count ,  -- @Clock2:  output vector
+		Busy          => open,                                                -- @Clock1:  busy bit
+		Changed       => open                                                -- @Clock2:  changed bit
+      );
     SyncBusToClock_de_status : sync_Vector 
       generic map (
         MASTER_BITS => 32, SYNC_DEPTH => 3
@@ -125,6 +159,18 @@ begin
 		Clock2        => clk_150,                                                 -- <Clock>  output clock
 		Input         => de_status_sync,   -- @Clock1:  input vector
 		Output        => de_status ,  -- @Clock2:  output vector
+		Busy          => open,                                                -- @Clock1:  busy bit
+		Changed       => open                                                -- @Clock2:  changed bit
+      );
+    SyncBusToClock_fc_status : sync_Vector 
+      generic map (
+        MASTER_BITS => 32, SYNC_DEPTH => 3
+      )
+      port map(
+        Clock1        => clk_50,                                                  -- <Clock>  input clock
+		Clock2        => clk_150,                                                 -- <Clock>  output clock
+		Input         => fc_status_sync,   -- @Clock1:  input vector
+		Output        => fc_status ,  -- @Clock2:  output vector
 		Busy          => open,                                                -- @Clock1:  busy bit
 		Changed       => open                                                -- @Clock2:  changed bit
       );
@@ -348,4 +394,102 @@ begin
 		Busy          => open,                                                -- @Clock1:  busy bit
 		Changed       => open                                                -- @Clock2:  changed bit
       );
+      
+      SyncBusToClock_fc_cmdcontrol : sync_Vector 
+      generic map (
+        MASTER_BITS => 32, SYNC_DEPTH => 3
+      )
+      port map(
+        Clock1        => clk_150,                                                  -- <Clock>  input clock
+		Clock2        => clk_50,                                                 -- <Clock>  output clock
+		Input         => fc_cmdcontrol,   -- @Clock1:  input vector
+		Output        => fc_cmdcontrol_sync ,  -- @Clock2:  output vector
+		Busy          => open,                                                -- @Clock1:  busy bit
+		Changed       => open                                                -- @Clock2:  changed bit
+      );
+     SyncBusToClock_fc_cmdtick_sync : sync_Vector 
+      generic map (
+        MASTER_BITS => 32, SYNC_DEPTH => 3
+      )
+      port map(
+        Clock1        => clk_150,                                                  -- <Clock>  input clock
+		Clock2        => clk_50,                                                 -- <Clock>  output clock
+		Input         => fc_cmdtick,   -- @Clock1:  input vector
+		Output        => fc_cmdtick_sync ,  -- @Clock2:  output vector
+		Busy          => open,                                                -- @Clock1:  busy bit
+		Changed       => open                                                -- @Clock2:  changed bit
+      );
+     SyncBusToClock_fc_cmdduration : sync_Vector 
+      generic map (
+        MASTER_BITS => 32, SYNC_DEPTH => 3
+      )
+      port map(
+        Clock1        => clk_150,                                                  -- <Clock>  input clock
+		Clock2        => clk_50,                                                 -- <Clock>  output clock
+		Input         => fc_cmdduration,   -- @Clock1:  input vector
+		Output        => fc_cmdduration_sync ,  -- @Clock2:  output vector
+		Busy          => open,                                                -- @Clock1:  busy bit
+		Changed       => open                                                -- @Clock2:  changed bit
+      );
+     SyncBusToClock_fc_backlash_tick : sync_Vector 
+      generic map (
+        MASTER_BITS => 32, SYNC_DEPTH => 3
+      )
+      port map(
+        Clock1        => clk_150,                                                  -- <Clock>  input clock
+		Clock2        => clk_50,                                                 -- <Clock>  output clock
+		Input         => fc_backlash_tick,   -- @Clock1:  input vector
+		Output        => fc_backlash_tick_sync ,  -- @Clock2:  output vector
+		Busy          => open,                                                -- @Clock1:  busy bit
+		Changed       => open                                                -- @Clock2:  changed bit
+      );
+     SyncBusToClock_fc_backlash_duration_sync : sync_Vector 
+      generic map (
+        MASTER_BITS => 32, SYNC_DEPTH => 3
+      )
+      port map(
+        Clock1        => clk_150,                                                  -- <Clock>  input clock
+		Clock2        => clk_50,                                                 -- <Clock>  output clock
+		Input         => fc_backlash_duration,   -- @Clock1:  input vector
+		Output        => fc_backlash_duration_sync ,  -- @Clock2:  output vector
+		Busy          => open,                                                -- @Clock1:  busy bit
+		Changed       => open                                                -- @Clock2:  changed bit
+      );
+     SyncBusToClock_fc_counter_load_sync : sync_Vector 
+      generic map (
+        MASTER_BITS => 32, SYNC_DEPTH => 3
+      )
+      port map(
+        Clock1        => clk_150,                                                  -- <Clock>  input clock
+		Clock2        => clk_50,                                                 -- <Clock>  output clock
+		Input         => fc_counter_load,   -- @Clock1:  input vector
+		Output        => fc_counter_load_sync ,  -- @Clock2:  output vector
+		Busy          => open,                                                -- @Clock1:  busy bit
+		Changed       => open                                                -- @Clock2:  changed bit
+      );
+     SyncBusToClock_fc_trackctrl_sync : sync_Vector 
+      generic map (
+        MASTER_BITS => 32, SYNC_DEPTH => 3
+      )
+      port map(
+        Clock1        => clk_150,                                                  -- <Clock>  input clock
+		Clock2        => clk_50,                                                 -- <Clock>  output clock
+		Input         => fc_trackctrl,   -- @Clock1:  input vector
+		Output        => fc_trackctrl_sync ,  -- @Clock2:  output vector
+		Busy          => open,                                                -- @Clock1:  busy bit
+		Changed       => open                                                -- @Clock2:  changed bit
+      );
+     SyncBusToClock_fc_counter_max_sync : sync_Vector 
+      generic map (
+        MASTER_BITS => 32, SYNC_DEPTH => 3
+      )
+      port map(
+        Clock1        => clk_150,                                                  -- <Clock>  input clock
+		Clock2        => clk_50,                                                 -- <Clock>  output clock
+		Input         => fc_counter_max,   -- @Clock1:  input vector
+		Output        => fc_counter_max_sync ,  -- @Clock2:  output vector
+		Busy          => open,                                                -- @Clock1:  busy bit
+		Changed       => open                                                -- @Clock2:  changed bit
+      );
+
 end Behavioral;

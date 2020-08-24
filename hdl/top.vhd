@@ -44,6 +44,13 @@ entity SKY_TOP is
         de_direction : out STD_LOGIC;
         de_fault_n : in STD_LOGIC;
         
+		fc_mode : out STD_LOGIC_VECTOR (2 downto 0);
+        fc_enable_n : out STD_LOGIC;
+        fc_sleep_n : out STD_LOGIC;
+        fc_rst_n : out STD_LOGIC;
+        fc_step : out STD_LOGIC;
+        fc_direction : out STD_LOGIC;
+        fc_fault_n : in STD_LOGIC;
         ------- Pi-SPI 			--------------------
         PI_SCLK 		: in	std_logic;
         PI_SS_N			: in	std_logic_vector(1 downto 0);
@@ -210,6 +217,14 @@ SKYTRACKER : block
            de_step : out STD_LOGIC;
            de_direction : out STD_LOGIC;
            de_fault_n : in STD_LOGIC;
+		   
+		   fc_mode : out STD_LOGIC_VECTOR (2 downto 0);
+           fc_enable_n : out STD_LOGIC;
+           fc_sleep_n : out STD_LOGIC;
+           fc_rst_n : out STD_LOGIC;
+           fc_step : out STD_LOGIC;
+           fc_direction : out STD_LOGIC;
+           fc_fault_n : in STD_LOGIC;
 		   led_pwm : out STD_LOGIC;
 			  
 		   camera_trigger : out STD_LOGIC_VECTOR (1 downto 0);
@@ -290,6 +305,14 @@ begin
            de_direction => de_direction,
            de_fault_n => de_fault_n,
 		   
+		   fc_mode => fc_mode,
+           fc_enable_n => fc_enable_n,
+           fc_sleep_n => fc_sleep_n,
+           fc_rst_n => fc_rst_n,
+           fc_step => fc_step,
+           fc_direction => fc_direction,
+           fc_fault_n => fc_fault_n,
+           
 		   led_pwm => led_out,
 		   camera_trigger => camera_triggers,
 		   ip_addr => ip_addr,
