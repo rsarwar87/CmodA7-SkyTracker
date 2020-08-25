@@ -22,7 +22,7 @@ entity sky_tracker is
            ra_direction : out STD_LOGIC;
            ra_fault_n : in STD_LOGIC;
 		   
-		   de_mode : out STD_LOGIC_VECTOR (2 downto 0);
+		       de_mode : out STD_LOGIC_VECTOR (2 downto 0);
            de_enable_n : out STD_LOGIC;
            de_sleep_n : out STD_LOGIC;
            de_rst_n : out STD_LOGIC;
@@ -38,13 +38,17 @@ entity sky_tracker is
            fc_direction : out STD_LOGIC;
            fc_fault_n : in STD_LOGIC;
            
-		   led_pwm : out STD_LOGIC;
-			  
-		   camera_trigger : out STD_LOGIC_VECTOR (1 downto 0);
-		   ip_addr : out STD_LOGIC_VECTOR (7 downto 0);
-		   led_status : out STD_LOGIC_VECTOR (7 downto 0);
-			  
-		   sts_acknowledge                           : out    std_logic                     := 'X';             -- acknowledge
+		       led_pwm : out STD_LOGIC;
+			      
+		       camera_trigger : out STD_LOGIC_VECTOR (1 downto 0);
+		       ip_addr : out STD_LOGIC_VECTOR (7 downto 0);
+		       led_status : out STD_LOGIC_VECTOR (7 downto 0);
+
+           adc_address : out std_logic_vector (6 downto 0);
+           adc_dbus : in std_logic_vector (15 downto 0);
+
+			      
+		       sts_acknowledge                           : out    std_logic                     := 'X';             -- acknowledge
            sts_irq                                   : out    std_logic                     := 'X';             -- irq
            sts_address                               : in   std_logic_vector(4 downto 0);                    -- address
            sts_bus_enable                            : in    std_logic;                                        -- bus_enable
@@ -53,7 +57,7 @@ entity sky_tracker is
            sts_write_data                            : in    std_logic_vector(31 downto 0);                    -- write_data
            sts_read_data                             : out   std_logic_vector(31 downto 0) := (others => 'X'); -- read_data
            
-		   ctrl_acknowledge                          : out    std_logic                     := 'X';             -- acknowledge
+		       ctrl_acknowledge                          : out    std_logic                     := 'X';             -- acknowledge
            ctrl_irq                                  : out    std_logic                     := 'X';             -- irq
            ctrl_address                              : in   std_logic_vector(4 downto 0);                    -- address
            ctrl_bus_enable                           : in   std_logic;                                        -- bus_enable
@@ -134,6 +138,9 @@ signal fc_counter_load_sync 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0
 signal fc_counter_max_sync 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
 signal fc_trackctrl_sync 			 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 
+signal adc_channel 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
+signal adc_data 			 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+
 signal ip_addr_buf, led_brightness, camera_trig : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 signal led_count : STD_LOGIC_VECTOR (7 downto 0) := (others => '0');
 signal led_out : STD_LOGIC := '0';
@@ -141,9 +148,14 @@ signal led_out : STD_LOGIC := '0';
 ATTRIBUTE MARK_DEBUG of ctrl_acknowledge, ctrl_address, ctrl_bus_enable, ctrl_read_data: SIGNAL IS "TRUE";
 ATTRIBUTE MARK_DEBUG of de_cmdduration_sync, de_counter_max_sync, de_counter_load_sync, de_trackctrl_sync: SIGNAL IS "TRUE";
 begin
+
   camera_trigger <= camera_trig(1 downto 0);
   ip_addr <= ip_addr_buf(7 downto 0);
   led_pwm <= led_out;
+
+  adc_address <= adc_channel(6 downto 0);
+  adc_data(15 downto 0) <= adc_dbus;
+
 bus_imp : block
 signal sts_ack, ctrl_ack : std_logic := '0';
 begin
@@ -239,6 +251,13 @@ begin
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
 					      sts_read_data <= x"00000042";
+					      sts_ack <= '1';
+							end if;
+						end loop;
+				when "1001" => 
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+					      sts_read_data <= adc_data;
 					      sts_ack <= '1';
 							end if;
 						end loop;
@@ -668,6 +687,21 @@ begin
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
 								camera_trig(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					end if;
+					ctrl_ack <= '1';
+				when "11011" => 
+					if ctrl_rw = '1' then
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= adc_channel(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					else
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+								adc_channel(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;

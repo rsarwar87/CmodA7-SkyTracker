@@ -60,6 +60,24 @@ entity SKY_TOP is
 end SKY_TOP;
 
 architecture rtl of SKY_TOP is
+    subtype T_MISC_SYNC_DEPTH    is integer range 2 to 16;
+    component sync_Vector is
+	generic (
+		MASTER_BITS   : positive            := 8;                       -- number of bit to be synchronized
+		SLAVE_BITS    : natural             := 0;
+		INIT          : std_logic_vector    := x"00000000";             --
+		SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := 2    -- generate SYNC_DEPTH many stages, at least 2
+	);
+	port (
+		Clock1        : in  std_logic;                                                  -- <Clock>  input clock
+		Clock2        : in  std_logic;                                                  -- <Clock>  output clock
+		Input         : in  std_logic_vector((MASTER_BITS + SLAVE_BITS) - 1 downto 0);  -- @Clock1:  input vector
+		Output        : out std_logic_vector((MASTER_BITS + SLAVE_BITS) - 1 downto 0);  -- @Clock2:  output vector
+		Busy          : out  std_logic;                                                 -- @Clock1:  busy bit
+		Changed       : out  std_logic                                                  -- @Clock2:  changed bit
+	);
+    end component;
+
     constant ADDR_WIDTH : Positive range 8 to 64 := 8;
 	constant DATA_WIDTH : Positive range 8 to 64 := 32;
 	constant AUTO_INC_ADDRESS : STD_LOGIC := '0';
@@ -98,15 +116,16 @@ architecture rtl of SKY_TOP is
     
     signal wb_strobe :  STD_LOGIC_VECTOR(1 downto 0) := "00";
     signal spi_wb_strobe :  STD_LOGIC_VECTOR(1 downto 0) := "00";
-	signal wb_cycle :  STD_LOGIC;
-	signal wb_write :  STD_LOGIC;
-	signal wb_address :  STD_LOGIC_VECTOR(ADDR_WIDTH-1 downto 0);
-	signal wb_data_i1 :  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-	signal wb_data_i0 :  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-	signal wb_data_o :  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-	signal wb_ack, spi_wb_ack :  STD_LOGIC_VECTOR(0 downto 0);
+	  signal wb_cycle :  STD_LOGIC;
+	  signal wb_write :  STD_LOGIC;
+	  signal wb_address :  STD_LOGIC_VECTOR(ADDR_WIDTH-1 downto 0);
+	  signal wb_data_i1 :  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+	  signal wb_data_i0 :  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+	  signal wb_data_o :  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+	  signal wb_ack, spi_wb_ack :  STD_LOGIC_VECTOR(0 downto 0);
     
     signal daddr_in : STD_LOGIC_VECTOR(7 downto 0) := X"14";
+    signal daddr_buf : STD_LOGIC_VECTOR(7 downto 0) := X"14";
     signal alm_int: STD_LOGIC_VECTOR(7 downto 0);
     signal enable:  STD_LOGIC;
     signal di_in : STD_LOGIC_VECTOR(15 downto 0):= (others => '0');
@@ -119,6 +138,8 @@ architecture rtl of SKY_TOP is
     signal  drdy_out:  STD_LOGIC;
     signal  eos_out:  STD_LOGIC;
     signal  alarm_out:  STD_LOGIC;
+    signal  adc_address : std_logic_vector (6 downto 0);
+    signal  adc_dbus : std_logic_vector (15 downto 0);
 begin
     rstn_50 <= rstn_12;
     rstn_100 <= rstn_12;
@@ -192,14 +213,47 @@ begin
       DI => di_in,                     -- 16-bit input: DRP input data bus
       DWE => dwe_in                    -- 1-bit input: DRP write enable
    );
+   process (clock_100)
+   begin
+      if (rising_edge(clock_100)) then
+        if (drdy_out = '1') then
+          daddr_in <= daddr_buf;
+        end if;
+      end if;
+   end process;
    
+   SyncBusToClock_adcaddr_strobe  : sync_Vector 
+   generic map (
+     MASTER_BITS => 7, SYNC_DEPTH => 2
+   )
+   port map(
+     Clock1        => clock_150 ,                                                  -- <Clock>  input clock
+	   Clock2        => clock_100 ,                                                 -- <Clock>  output clock
+	   Input         => adc_address,   -- @Clock1:  input vector
+	   Output        => daddr_buf(6 downto 0),  -- @Clock2:  output vector
+	   Busy          => open,                                                -- @Clock1:  busy bit
+	   Changed       => open                                                -- @Clock2:  changed bit
+   );
+
+   SyncBusToClock_adcdata_strobe : sync_Vector 
+   generic map (
+     MASTER_BITS => 16, SYNC_DEPTH => 2
+   )
+   port map(
+     Clock1        => clock_100,                                                  -- <Clock>  input clock
+	   Clock2        => clock_150 ,                                                 -- <Clock>  output clock
+	   Input         => do_out,   -- @Clock1:  input vector
+	   Output        => adc_dbus,  -- @Clock2:  output vector
+	   Busy          => open,                                                -- @Clock1:  busy bit
+	   Changed       => open                                                -- @Clock2:  changed bit
+   );
 
 SKYTRACKER : block
     component sky_tracker is
     Port ( 
-		   clk_50 : in STD_LOGIC := '0';
+		       clk_50 : in STD_LOGIC := '0';
            rstn_50 : in STD_LOGIC := '1';
-		   clk_150 : in STD_LOGIC := '0';
+		       clk_150 : in STD_LOGIC := '0';
            rstn_150 : in STD_LOGIC := '1';
 			  
            ra_mode : out STD_LOGIC_VECTOR (2 downto 0);
@@ -210,7 +264,7 @@ SKYTRACKER : block
            ra_direction : out STD_LOGIC;
            ra_fault_n : in STD_LOGIC;
 		   
-		   de_mode : out STD_LOGIC_VECTOR (2 downto 0);
+		       de_mode : out STD_LOGIC_VECTOR (2 downto 0);
            de_enable_n : out STD_LOGIC;
            de_sleep_n : out STD_LOGIC;
            de_rst_n : out STD_LOGIC;
@@ -218,20 +272,23 @@ SKYTRACKER : block
            de_direction : out STD_LOGIC;
            de_fault_n : in STD_LOGIC;
 		   
-		   fc_mode : out STD_LOGIC_VECTOR (2 downto 0);
+		       fc_mode : out STD_LOGIC_VECTOR (2 downto 0);
            fc_enable_n : out STD_LOGIC;
            fc_sleep_n : out STD_LOGIC;
            fc_rst_n : out STD_LOGIC;
            fc_step : out STD_LOGIC;
            fc_direction : out STD_LOGIC;
            fc_fault_n : in STD_LOGIC;
-		   led_pwm : out STD_LOGIC;
+		       led_pwm : out STD_LOGIC;
 			  
-		   camera_trigger : out STD_LOGIC_VECTOR (1 downto 0);
-		   ip_addr : out STD_LOGIC_VECTOR (7 downto 0);
-		   led_status : out STD_LOGIC_VECTOR (7 downto 0);
+		       camera_trigger : out STD_LOGIC_VECTOR (1 downto 0);
+		       ip_addr : out STD_LOGIC_VECTOR (7 downto 0);
+		       led_status : out STD_LOGIC_VECTOR (7 downto 0);
 			  
-		   sts_acknowledge                           : out    std_logic                     := 'X';             -- acknowledge
+           adc_address : out std_logic_vector (6 downto 0);
+           adc_dbus : in std_logic_vector (15 downto 0);
+
+		       sts_acknowledge                           : out    std_logic                     := 'X';             -- acknowledge
            sts_irq                                   : out    std_logic                     := 'X';             -- irq
            sts_address                               : in   std_logic_vector(4 downto 0);                    -- address
            sts_bus_enable                            : in    std_logic;                                        -- bus_enable
@@ -240,7 +297,7 @@ SKYTRACKER : block
            sts_write_data                            : in    std_logic_vector(31 downto 0);                    -- write_data
            sts_read_data                             : out   std_logic_vector(31 downto 0) := (others => 'X'); -- read_data
            
-		   ctrl_acknowledge                          : out    std_logic                     := 'X';             -- acknowledge
+		       ctrl_acknowledge                          : out    std_logic                     := 'X';             -- acknowledge
            ctrl_irq                                  : out    std_logic                     := 'X';             -- irq
            ctrl_address                              : in   std_logic_vector(4 downto 0);                    -- address
            ctrl_bus_enable                           : in   std_logic;                                        -- bus_enable
@@ -251,23 +308,7 @@ SKYTRACKER : block
 
         );
     end component sky_tracker;
-    subtype T_MISC_SYNC_DEPTH    is integer range 2 to 16;
-    component sync_Vector is
-	generic (
-		MASTER_BITS   : positive            := 8;                       -- number of bit to be synchronized
-		SLAVE_BITS    : natural             := 0;
-		INIT          : std_logic_vector    := x"00000000";             --
-		SYNC_DEPTH    : T_MISC_SYNC_DEPTH   := 2    -- generate SYNC_DEPTH many stages, at least 2
-	);
-	port (
-		Clock1        : in  std_logic;                                                  -- <Clock>  input clock
-		Clock2        : in  std_logic;                                                  -- <Clock>  output clock
-		Input         : in  std_logic_vector((MASTER_BITS + SLAVE_BITS) - 1 downto 0);  -- @Clock1:  input vector
-		Output        : out std_logic_vector((MASTER_BITS + SLAVE_BITS) - 1 downto 0);  -- @Clock2:  output vector
-		Busy          : out  std_logic;                                                 -- @Clock1:  busy bit
-		Changed       : out  std_logic                                                  -- @Clock2:  changed bit
-	);
-    end component;
+
     signal ip_addr, led_status, led_status_sync: STD_LOGIC_VECTOR (7 downto 0);
     signal led_out : std_logic;
     signal led_level0_b, led_level0_sync : std_logic_vector(0 downto 0);
@@ -282,11 +323,11 @@ begin
     pi_camera_trigger_out <= pi_camera_trigger_in;
     pi_pwm_led_out        <= pi_pwm_led_in;
 
-	 U_SKYTRACKER :  component sky_tracker	
+	  U_SKYTRACKER :  component sky_tracker	
 		port map (
-		   clk_50  => clock_50,
+		       clk_50  => clock_50,
            rstn_50 => rstn_50,
-		   clk_150  => clock_150,
+		       clk_150  => clock_150,
            rstn_150 => rstn_150,
 			  
            ra_mode => ra_mode,
@@ -297,7 +338,7 @@ begin
            ra_direction => ra_direction,
            ra_fault_n => ra_fault_n,
 		   
-		   de_mode => de_mode,
+		       de_mode => de_mode,
            de_enable_n => de_enable_n,
            de_sleep_n => de_sleep_n,
            de_rst_n => de_rst_n,
@@ -305,7 +346,7 @@ begin
            de_direction => de_direction,
            de_fault_n => de_fault_n,
 		   
-		   fc_mode => fc_mode,
+		       fc_mode => fc_mode,
            fc_enable_n => fc_enable_n,
            fc_sleep_n => fc_sleep_n,
            fc_rst_n => fc_rst_n,
@@ -313,12 +354,15 @@ begin
            fc_direction => fc_direction,
            fc_fault_n => fc_fault_n,
            
-		   led_pwm => led_out,
-		   camera_trigger => camera_triggers,
-		   ip_addr => ip_addr,
-		   led_status => led_status,
+		       led_pwm => led_out,
+		       camera_trigger => camera_triggers,
+		       ip_addr => ip_addr,
+		       led_status => led_status,
 		   
-   		    sts_acknowledge                           => sts_acknowledge,                           --                            sts.acknowledge
+           adc_address => adc_address,
+           adc_dbus => adc_dbus,
+
+   		     sts_acknowledge                           => sts_acknowledge,                           --                            sts.acknowledge
            
             sts_irq                                   => sts_irq,                                   --                               .irq
             sts_address                               => sts_address,                               --                               .address
@@ -396,11 +440,11 @@ begin
       )
       port map(
         Clock1        => spi_delayed_clk ,                                                  -- <Clock>  input clock
-		Clock2        => clock_150,                                                 -- <Clock>  output clock
-		Input         => wb_strobe,   -- @Clock1:  input vector
-		Output        => spi_wb_strobe,  -- @Clock2:  output vector
-		Busy          => open,                                                -- @Clock1:  busy bit
-		Changed       => open                                                -- @Clock2:  changed bit
+		    Clock2        => clock_150,                                                 -- <Clock>  output clock
+		    Input         => wb_strobe,   -- @Clock1:  input vector
+		    Output        => spi_wb_strobe,  -- @Clock2:  output vector
+		    Busy          => open,                                                -- @Clock1:  busy bit
+		    Changed       => open                                                -- @Clock2:  changed bit
       );
       SyncBusToClock_ctrl_rw : sync_Vector 
       generic map (
