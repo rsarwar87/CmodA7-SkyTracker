@@ -374,7 +374,8 @@ class SkyTrackerInterface {
       stepper.disable_tracking<1>(instant);
     return true;
   }
-  bool start_tracking(uint8_t axis, bool isSlew) {
+  bool start_tracking(uint8_t axis) {
+      uint32_t isSlew = true;
       return start_raw_tracking(axis, m_params.motorDirection[isSlew][axis],
                               m_params.period_ticks[isSlew][axis],
                               m_params.motorMode[isSlew][axis]);
@@ -397,7 +398,8 @@ class SkyTrackerInterface {
       stepper.set_park<1>(isForward, period_ticks, mode, use_accel);
     return true;
   }
-  bool send_command(uint8_t axis, bool isSlew, bool use_accel, bool isGoto) {
+  bool send_command(uint8_t axis, bool use_accel, bool isGoto) {
+      uint32_t isSlew = false;
       return send_raw_command(axis, m_params.motorDirection[isSlew][axis],
                              isGoto ? m_params.GotoTarget[axis] : m_params.GotoNCycles[axis],
                              m_params.period_ticks[isSlew][axis],
@@ -470,7 +472,7 @@ class SkyTrackerInterface {
   parameters m_params;
 
   bool check_axis_id(uint8_t axis, std::string str) {
-    if (axis > 1) {
+    if (axis > 2) {
       ctx.log<ERROR>("ASCOMInteface: %s- Invalid axis: %u\n", str, axis);
       return false;
     }

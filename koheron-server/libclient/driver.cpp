@@ -201,14 +201,14 @@ uint32_t ASCOM_sky_interface::get_forty_two() {
   return buffer;
 }
 uint32_t ASCOM_sky_interface::get_maximum_period(uint8_t axis) {
-  client->call<op::SkyTrackerInterface::get_max_period_ticks>(axis);
-  auto buffer = client->recv<op::SkyTrackerInterface::get_max_period_ticks, uint32_t>();
+  client->call<op::ASCOMInterface::get_max_period_ticks>(axis);
+  auto buffer = client->recv<op::ASCOMInterface::get_max_period_ticks, uint32_t>();
   klog << __func__ << ": " << buffer << " Axis: " << std::to_string(axis) << std::endl;
   return buffer;
 }
 uint32_t ASCOM_sky_interface::get_minimum_period(uint8_t axis) {
-  client->call<op::SkyTrackerInterface::get_min_period_ticks>(axis);
-  auto buffer = client->recv<op::SkyTrackerInterface::get_min_period_ticks, uint32_t>();
+  client->call<op::ASCOMInterface::get_min_period_ticks>(axis);
+  auto buffer = client->recv<op::ASCOMInterface::get_min_period_ticks, uint32_t>();
   klog << __func__ << ": " << buffer << " Axis: " << std::to_string(axis) << std::endl;
   return buffer;
 }

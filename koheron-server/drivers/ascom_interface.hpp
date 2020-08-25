@@ -43,6 +43,7 @@ class ASCOMInterface {
   }
   // InquireGridPerRevolution  = 'a', // steps per axis revolution
   uint32_t SwpGetGridPerRevolution(uint8_t axis) {
+    if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
     return sti.get_steps_per_rotation(axis);
   }
 
@@ -54,11 +55,12 @@ class ASCOMInterface {
   // Encoder stuff (g) // speed scalar for high speed skew
   // InquireHighSpeedRatio     = 'g',
   double SwpGetHighSpeedRatio(uint8_t axis) {
+    if (!check_axis_id(axis, __func__)) return 0.;
     return sti.get_speed_ratio(axis, false);
   }
   // InstantAxisStop (L) + NotInstantAxisStop (K)
   bool SwpCmdStopAxis(uint8_t axis, bool instant) {
-    if (instant || !check_axis_id(axis, __func__)) return false;
+    if (!check_axis_id(axis, __func__)) return false;
     ctx.log<INFO>("ASCOMInteface: %s(%u)- isInstant: %u\n", __func__, axis, instant);
     uint32_t status = sti.get_raw_status(axis);
     bool ret = true;
@@ -68,15 +70,19 @@ class ASCOMInterface {
   }
   // SetAxisPositionCmd        = 'E', set current position
   bool SwpSetAxisPosition(uint8_t axis, uint32_t value) {
+    if (!check_axis_id(axis, __func__)) return false;
     return sti.set_current_position(axis, value);
   }
   // GetAxisPosition           = 'j', // current position
   uint32_t SwpGetAxisPosition(uint8_t axis) {
+    if (!check_axis_id(axis, __func__)) return false;
     return sti.get_raw_stepcount(axis);
   }
   // GetAxisStatus             = 'f',
   std::array<bool, 8> SwpGetAxisStatus(uint8_t axis) {
     // Initialized, running, direction, speedmode, isGoto, isSlew
+    std::array<bool, 8> ret;
+    if (!check_axis_id(axis, __func__)) return ret;
     uint32_t status = sti.get_raw_status(axis);
     bool isGoto = (status >> 1) & 0x1;
     bool isSlew = status & 0x1;
@@ -85,7 +91,7 @@ class ASCOMInterface {
     bool direction = sti.get_motor_direction(axis, !isGoto);
     bool running = isGoto || isSlew;
     bool speedmode = sti.get_motor_highspeedmode(axis, isSlew);
-    std::array<bool, 8> ret = { sti.get_init(axis),  running,
+    ret = { sti.get_init(axis),  running,
       direction, speedmode, isGoto, isSlew, backlash, fault
     };
     return ret;
@@ -106,6 +112,7 @@ class ASCOMInterface {
   }
   // set goto target - SetGotoTargetIncrement    = 'H', // set goto position
   bool SwpSetGotoTargetIncrement(uint8_t axis, uint32_t ncycles) {
+    if (!check_axis_id(axis, __func__)) return false;
     return sti.set_goto_increment(axis, ncycles);
   }
   // NOT SURE SetBreakPointIncrement    = 'M',
@@ -129,10 +136,12 @@ class ASCOMInterface {
   }
   // SetGotoTarget             = 'S', // does nothing??
   bool SwpSetGotoTarget(uint8_t axis, uint32_t target) {
+    if (!check_axis_id(axis, __func__)) return false;
     return sti.set_goto_target(axis, target);
   }
   // SetStepPeriod             = 'I', //set slew speed
   bool SwpSetStepPeriod(uint8_t axis, bool isSlew, uint32_t period_ticks) {
+    if (!check_axis_id(axis, __func__)) return false;
     return sti.set_motor_period_ticks(axis, isSlew, period_ticks);
   }
   // StartMotion               = 'J', // start
@@ -141,9 +150,9 @@ class ASCOMInterface {
 
     bool ret = false;
     if (isSlew)
-      ret = sti.start_tracking(axis, isSlew);
+      ret = sti.start_tracking(axis);
     else
-      ret = sti.send_command(axis, isSlew, use_accel, isGoto);
+      ret = sti.send_command(axis, use_accel, isGoto);
     return ret;
   }
   // GetHomePosition           = 'd', // Get Home position encoder count
@@ -151,7 +160,8 @@ class ASCOMInterface {
   // not used in eqmod
   uint32_t SwpGetHomePosition(uint8_t axis) {
     if (!check_axis_id(axis, __func__)) return 0;
-    return 0;
+    if (axis == 0) return sti.get_steps_per_rotation(axis)/2;
+    else return sti.get_steps_per_rotation(axis)/4;
   }
   // InquireAuxEncoder         = 'd', // EQ8/AZEQ6/AZEQ5 only
   uint32_t SwpGetAuxEncoder(uint8_t axis) {
@@ -176,18 +186,36 @@ class ASCOMInterface {
   // SetPolarScopeLED          = 'V',
   bool SwpSetPolarScopeLED(uint8_t value, bool fpga) { return sti.set_led_pwm(value, fpga); }
 
-
   bool enable_backlash(uint8_t axis, bool enable) {
+    if (!check_axis_id(axis, __func__)) return false;
     if (enable) return sti.enable_backlash(axis);
     else return sti.disable_raw_backlash(axis);
   }
   bool set_backlash_period(uint8_t axis, uint32_t ticks)
   {
+    if (!check_axis_id(axis, __func__)) return false;
     return sti.set_backlash_period(axis, ticks);
   }
   bool set_backlash_cycles(uint8_t axis, uint32_t cycles)
   {
+    if (!check_axis_id(axis, __func__)) return false;
     return sti.set_backlash_cycles(axis, cycles);
+  }
+  bool set_min_period(uint8_t axis, double val_usec) {
+    if (!check_axis_id(axis, __func__)) return false;
+    return sti.set_min_period(axis, val_usec);
+  }
+  bool set_max_period(uint8_t axis, double val_usec) {
+    if (!check_axis_id(axis, __func__)) return false;
+    return sti.set_max_period(axis, val_usec);
+  }
+  uint32_t get_min_period_ticks(uint8_t axis) {
+    if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
+    return sti.get_min_period_ticks(axis);
+  }
+  uint32_t get_max_period_ticks(uint8_t axis) {
+    if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
+    return sti.get_max_period_ticks(axis);
   }
  private:
   Context& ctx;
