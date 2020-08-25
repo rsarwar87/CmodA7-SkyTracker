@@ -39,6 +39,11 @@ add_library(fpgacameratrigger SHARED driver_camera.cpp)
 set_target_properties(fpgacameratrigger  PROPERTIES PUBLIC_HEADER "fpgacameratrigger.hpp")
 install(TARGETS fpgacameratrigger LIBRARY DESTINATION lib PUBLIC_HEADER DESTINATION include)
 
+add_library(fpgafocuser SHARED driver_focuser.cpp)
+set_target_properties(fpgafocuser  PROPERTIES PUBLIC_HEADER "fpgafocuser.hpp")
+install(TARGETS fpgafocuser LIBRARY DESTINATION lib PUBLIC_HEADER DESTINATION include)
+
+
 # create static library
 add_library(fpgaskytrackerStatic STATIC driver.cpp)
 set_target_properties(fpgaskytrackerStatic PROPERTIES OUTPUT_NAME fpgaskytracker)
@@ -49,5 +54,10 @@ add_library(fpgacameratriggerStatic STATIC driver_camera.cpp)
 set_target_properties(fpgacameratriggerStatic PROPERTIES OUTPUT_NAME fpgacameratrigger)
 set_target_properties(fpgacameratriggerStatic  PROPERTIES PUBLIC_HEADER "fpgacameratrigger.hpp")
 install(TARGETS fpgacameratriggerStatic ARCHIVE DESTINATION lib PUBLIC_HEADER DESTINATION include)
+#set_target_properties(kdriverStatic PROPERTIES COMPILE_OPTIONS "-m32" LINK_FLAGS "-m32")
+add_library(fpgafocuserStatic STATIC driver_focuser.cpp)
+set_target_properties(fpgafocuserStatic PROPERTIES OUTPUT_NAME fpgafocuser)
+set_target_properties(fpgafocuserStatic  PROPERTIES PUBLIC_HEADER "fpgafpgafocuser.hpp")
+install(TARGETS fpgafocuserStatic ARCHIVE DESTINATION lib PUBLIC_HEADER DESTINATION include)
 #set_target_properties(kdriverStatic PROPERTIES COMPILE_OPTIONS "-m32" LINK_FLAGS "-m32")
 
