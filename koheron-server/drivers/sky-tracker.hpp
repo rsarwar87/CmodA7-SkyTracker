@@ -10,8 +10,7 @@
 #include <params.hpp>
 #include <rpigpio_ledpwm.hpp>
 
-enum t_status { Idle = 0, Slew, GoTo, Parking, Undefined };
-  constexpr double fclk0_period_us =
+constexpr double fclk0_period_us =
       1000000.0 / ((double)(prm::fclk0));  // Number of descriptors
 
 using namespace std::chrono_literals;
