@@ -26,6 +26,8 @@ class indi_focuser_interface {
   uint32_t GetFocuserHomePosition();
   uint32_t GetTemp(uint32_t channel);
 
+  uint32_t get_maximum_period(); 
+  uint32_t get_minimum_period(); 
 
  private:
 };

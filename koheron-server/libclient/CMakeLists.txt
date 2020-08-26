@@ -57,7 +57,7 @@ install(TARGETS fpgacameratriggerStatic ARCHIVE DESTINATION lib PUBLIC_HEADER DE
 #set_target_properties(kdriverStatic PROPERTIES COMPILE_OPTIONS "-m32" LINK_FLAGS "-m32")
 add_library(fpgafocuserStatic STATIC driver_focuser.cpp)
 set_target_properties(fpgafocuserStatic PROPERTIES OUTPUT_NAME fpgafocuser)
-set_target_properties(fpgafocuserStatic  PROPERTIES PUBLIC_HEADER "fpgafpgafocuser.hpp")
+set_target_properties(fpgafocuserStatic  PROPERTIES PUBLIC_HEADER "fpgafocuser.hpp")
 install(TARGETS fpgafocuserStatic ARCHIVE DESTINATION lib PUBLIC_HEADER DESTINATION include)
 #set_target_properties(kdriverStatic PROPERTIES COMPILE_OPTIONS "-m32" LINK_FLAGS "-m32")
 

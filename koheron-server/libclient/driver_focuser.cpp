@@ -85,4 +85,14 @@ uint32_t indi_focuser_interface::GetTemp(uint32_t value) {
   auto buffer = client->recv<op::FocuserInterface::GetTemp, uint32_t>();
   return buffer;
 }
+uint32_t indi_focuser_interface::get_maximum_period() {
+  client->call<op::FocuserInterface::get_max_period_ticks>();
+  auto buffer = client->recv<op::FocuserInterface::get_max_period_ticks, uint32_t>();
+  return buffer;
+}
+uint32_t indi_focuser_interface::get_minimum_period() {
+  client->call<op::FocuserInterface::get_min_period_ticks>();
+  auto buffer = client->recv<op::FocuserInterface::get_min_period_ticks, uint32_t>();
+  return buffer;
+}
 

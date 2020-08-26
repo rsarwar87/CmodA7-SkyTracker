@@ -120,6 +120,18 @@ class FocuserInterface {
     return ret;
   }
 
+  bool set_min_period(double val_usec) {
+    return sti.set_min_period(prm::focuser_id, val_usec);
+  }
+  bool set_max_period(double val_usec) {
+    return sti.set_max_period(prm::focuser_id, val_usec);
+  }
+  uint32_t get_min_period_ticks() {
+    return sti.get_min_period_ticks(prm::focuser_id);
+  }
+  uint32_t get_max_period_ticks() {
+    return sti.get_max_period_ticks(prm::focuser_id);
+  }
  private:
   Context& ctx;
   SkyTrackerInterface& sti;
