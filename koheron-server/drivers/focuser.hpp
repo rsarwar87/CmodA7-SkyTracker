@@ -168,6 +168,14 @@ class FocuserInterface {
     if (enable) return sti.enable_backlash(prm::focuser_id);
     else return sti.disable_raw_backlash(prm::focuser_id);
   }
+  uint32_t get_backlash_period()
+  {
+    return sti.get_backlash_period_ticks(prm::focuser_id);
+  }
+  uint32_t get_backlash_cycles()
+  {
+    return sti.get_backlash_ncycles(prm::focuser_id);
+  }
   bool set_backlash_period(uint32_t ticks)
   {
     return sti.set_backlash_period(prm::focuser_id, ticks);

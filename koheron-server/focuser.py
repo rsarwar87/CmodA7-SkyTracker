@@ -33,7 +33,7 @@ class FocuserInterface(object):
         return self.client.recv_uint32()
     @command()
     def GetFocuserAxisStatus(self):
-        return self.client.recv_bool()
+        return self.client.recv_array(8, dtype='bool')
     @command()
     def FocuserIncrement(self, ncycles, period_ticks, direction):
         return self.client.recv_bool()
@@ -64,7 +64,34 @@ class FocuserInterface(object):
     @command()
     def get_max_period_ticks(self):
         return self.client.recv_uint32()
+    @command()
+    def get_backlash_period(self):
+        return self.client.recv_uint32()
+    @command()
+    def get_backlash_cycles(self):
+        return self.client.recv_uint32()
 
+    def print_status(self):
+        ret = driver.GetFocuserAxisStatus()
+        print('Initialized: {0}'.format(ret[0]))
+        print('IsRunning: {0}'.format(ret[1]))
+        print('Direction: {0}'.format(ret[2]))
+        print('SpeedMode: {0}'.format(ret[3]))
+        print('IsGoto: {0}'.format(ret[4]))
+        print('IsSlewTo: {0}'.format(ret[5]))
+        print('Backlash Active: {0}'.format(ret[6]))
+        print('HasFault: {0}'.format(ret[7]))
+
+    def PrintAll(self):
+        print('\n\BoardVersion: {0}'.format(self.BoardVersion()))
+        print('GetGridPerRevolution: {0}'.format(self.GetGridPerRevolution()))
+        print('GetTimerInterruptFreq: {0}'.format(self.GetTimerInterruptFreq()))
+        print('GetFocuserPosition: {0}'.format(self.GetFocuserPosition()))
+        print('GetFocuserHomePosition: {0}'.format(self.GetFocuserHomePosition()))
+        print('get_min_period_ticks: {0}'.format(self.get_min_period_ticks()))
+        print('get_max_period_ticks: {0}'.format(self.get_max_period_ticks()))
+        print('get_backlash_cycles: {0}'.format(self.get_backlash_cycles()))
+        print('get_backlash_period: {0}'.format(self.get_backlash_period()))
 
 
 if __name__ == '__main__':
@@ -72,6 +99,10 @@ if __name__ == '__main__':
     client = connect(host, name='mars_star_tracker')
     driver = FocuserInterface(client)
     print('get_temp: {0}'.format(driver.GetTemp_pi1w()))
+    print('Initialize: {0}'.format(driver.Initialize()))
+    driver.print_status()
+
+
 
 
 

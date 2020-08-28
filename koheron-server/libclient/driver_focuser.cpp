@@ -116,4 +116,14 @@ bool indi_focuser_interface::set_backlash_cycles(uint32_t cycles) {
   auto buffer = client->recv<op::FocuserInterface::set_backlash_cycles, bool>();
   return buffer;
 }
+uint32_t indi_focuser_interface::get_backlash_period() {
+  client->call<op::FocuserInterface::get_backlash_period>();
+  auto buffer = client->recv<op::FocuserInterface::get_backlash_period, uint32_t>();
+  return buffer;
+}
+uint32_t indi_focuser_interface::get_backlash_cycles() {
+  client->call<op::FocuserInterface::get_backlash_cycles>();
+  auto buffer = client->recv<op::FocuserInterface::get_backlash_cycles, uint32_t>();
+  return buffer;
+}
 
