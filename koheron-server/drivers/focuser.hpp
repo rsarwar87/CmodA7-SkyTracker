@@ -184,6 +184,7 @@ class FocuserInterface {
       if (dirent->d_type == DT_LNK && strstr(dirent->d_name, "28-") != NULL)
       {
         dev_path = path + dirent->d_name + "/w1_slave";
+        ctx.log<INFO>("FocuserInteface - Found temp pi sensor: %s\n", __func__, dev_path);
         ds_fd = open(dev_path.c_str(), O_RDONLY);
         break;
       }
