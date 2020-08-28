@@ -90,6 +90,7 @@ class Common
               // Write IP address in FPGA memory
               // The 8 Least Significant Bits should be connected to the FPGA
               // LEDs
+              ctx.log<INFO>("IP_found[%s]: %d\n", iplist.at(i), ip);
               spi.write_at<reg::led/4, mem::control_addr, 1> (&ip); 
               found = true;
               break;
@@ -114,6 +115,7 @@ class Common
         while ((pos = s.find(delimiter)) != std::string::npos) {
           token = s.substr(0, pos);
           if (token.size() > 2) {
+             ctx.log<INFO>("IP_LIST[%d]: %s\n", iplist.size(), token);
              iplist.push_back(token);
           }
           s.erase(0, pos + delimiter.length());

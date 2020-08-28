@@ -103,6 +103,7 @@ class SkyTrackerInterface {
     ctx.log<INFO>("%s(%u): %u ticks\n", __func__, axis,
                   m_params.stepPerRotation[axis]);
     if (axis == 0) stepper.set_max_step<0>(steps);
+    else if (axis == 2) stepper.set_max_step<2>(steps);
     else stepper.set_max_step<1>(steps);
     return true;
   }
@@ -325,6 +326,8 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
     if (axis == 0)
       return stepper.get_status<0>();
+    else if (axis == 2)
+      return stepper.get_status<2>();
     else
       return stepper.get_status<1>();
   }
@@ -332,6 +335,8 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
     if (axis == 0)
       return stepper.get_stepcount<0>();
+    else if (axis == 2)
+      return stepper.get_stepcount<2>();
     else
       return stepper.get_stepcount<1>();
   }
@@ -348,6 +353,8 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (axis == 0)
       stepper.set_backlash<0>(ticks, ncycles, mode);
+    else if (axis == 2)
+      stepper.set_backlash<2>(ticks, ncycles, mode);
     else
       stepper.set_backlash<1>(ticks, ncycles, mode);
     return true;
@@ -356,6 +363,8 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (axis == 0)
       stepper.disable_backlash<0>();
+    else if (axis == 2)
+      stepper.disable_backlash<2>();
     else
       stepper.disable_backlash<1>();
     return true;
@@ -364,6 +373,8 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (axis == 0)
       stepper.disable_tracking<0>(instant);
+    else if (axis == 2)
+      stepper.disable_tracking<2>(instant);
     else
       stepper.disable_tracking<1>(instant);
     return true;
@@ -379,6 +390,8 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (axis == 0)
       stepper.enable_tracking<0>(isForward, periodticks, mode, update);
+    else if (axis == 2)
+      stepper.enable_tracking<2>(isForward, periodticks, mode, update);
     else
       stepper.enable_tracking<1>(isForward, periodticks, mode, update);
     return true;
@@ -388,6 +401,8 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (axis == 0)
       stepper.set_park<0>(isForward, period_ticks, mode, use_accel);
+    else if (axis == 2)
+      stepper.set_park<2>(isForward, period_ticks, mode, use_accel);
     else
       stepper.set_park<1>(isForward, period_ticks, mode, use_accel);
     return true;
@@ -404,6 +419,8 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return true;
     if (axis == 0)
       stepper.set_command<0>(isForward, ncycles, period_ticks, mode, isGoTo, use_accel);
+    else if (axis == 2)
+      stepper.set_command<2>(isForward, ncycles, period_ticks, mode, isGoTo, use_accel);
     else
       stepper.set_command<1>(isForward, ncycles, period_ticks, mode, isGoTo, use_accel);
     return true;
@@ -412,6 +429,8 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (axis == 0)
       stepper.cancel_command<0>(instant);
+    else if (axis == 2)
+      stepper.cancel_command<2>(instant);
     else
       stepper.cancel_command<1>(instant);
     return true;
@@ -425,6 +444,7 @@ class SkyTrackerInterface {
     } else if (val == m_params.stepPerRotation[axis])
       val = 0;
     if (axis == 0) stepper.set_current_position<0>(val);
+    else if (axis == 2) stepper.set_current_position<2>(val);
     else stepper.set_current_position<1>(val);
     return true;
   }

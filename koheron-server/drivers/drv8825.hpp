@@ -78,16 +78,16 @@ class Drv8825
             std::this_thread::sleep_for(50ms);
             uint32_t tmp = period_ticks*i;
             cmd = 1 + (isCCW << 1) + (mode << 2) +((tmp) << 5);
-            ctx.log<INFO>("DRV8825-%s: %s: CCW=%u, period=0x%08x, mode=%u cmd=0x%08x\n", 
-                    offset == 0 ? "SA" : "DC", __func__,
+            ctx.log<INFO>("DRV8825-%d: %s: CCW=%u, period=0x%08x, mode=%u cmd=0x%08x\n", 
+                    offset, __func__,
                     isCCW, tmp, mode, cmd);
             spi.write_at<reg::trackctrl0/4 + offset, mem::control_addr, 1> (&cmd);
           }
         }
         cmd = 1 + (isCCW << 1) + (mode << 2) +((period_ticks) << 5);
         spi.write_at<reg::trackctrl0/4 + offset, mem::control_addr, 1> (&cmd);
-        ctx.log<INFO>("DRV8825-%s: %s: CCW=%u, period=0x%08x, mode=%u cmd=0x%08x\n", 
-            offset == 0 ? "SA" : "DC", __func__,
+        ctx.log<INFO>("DRV8825-%d: %s: CCW=%u, period=0x%08x, mode=%u cmd=0x%08x\n", 
+            offset, __func__,
             isCCW, (period_ticks), mode, cmd);
     }
     template<uint32_t offset>
