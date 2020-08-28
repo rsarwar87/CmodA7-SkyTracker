@@ -29,6 +29,9 @@ class indi_focuser_interface {
 
   uint32_t get_maximum_period(); 
   uint32_t get_minimum_period(); 
+  bool enable_backlash(bool enable); 
+  bool set_backlash_period(uint32_t ticks);
+  bool set_backlash_cycles(uint32_t cycles);
 
  private:
 };

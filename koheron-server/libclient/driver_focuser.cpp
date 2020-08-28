@@ -101,3 +101,19 @@ uint32_t indi_focuser_interface::get_minimum_period() {
   return buffer;
 }
 
+bool indi_focuser_interface::enable_backlash(bool enable) {
+  client->call<op::FocuserInterface::enable_backlash>(enable);
+  auto buffer = client->recv<op::FocuserInterface::enable_backlash, bool>();
+  return buffer;
+}
+bool indi_focuser_interface::set_backlash_period(uint32_t period_ticks){
+  client->call<op::FocuserInterface::set_backlash_period>(period_ticks);
+  auto buffer = client->recv<op::FocuserInterface::set_backlash_period, bool>();
+  return buffer;
+}
+bool indi_focuser_interface::set_backlash_cycles(uint32_t cycles) {
+  client->call<op::FocuserInterface::set_backlash_cycles>(cycles);
+  auto buffer = client->recv<op::FocuserInterface::set_backlash_cycles, bool>();
+  return buffer;
+}
+
