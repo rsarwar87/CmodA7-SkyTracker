@@ -20,7 +20,7 @@ class SkyTrackerInterface {
       : ctx(ctx_),
         spi(ctx.spi.get("spidev0.0")),
         stepper(ctx.get<Drv8825>()) {
-    for (size_t i = 0; i < 2; i++) {
+    for (size_t i = 0; i < 3; i++) {
       m_params.period_usec[0][i] = 1;     // time period in us
       m_params.period_ticks[0][i] = 100;  // time period in 20ns ticks
       m_params.speed_ratio[0][i] = 1;     // speed of motor
@@ -49,14 +49,9 @@ class SkyTrackerInterface {
       m_params.stepPerRotation[i] =
           200*32*144*5;  //_aVal: Steps per axis revolution
 
-      m_params.backlash_period_usec[i] =
-          10.;  //_sVal: Steps per worm gear revolution
-      m_params.backlash_ticks[i] = 0x300;    //_eVal: Version number
-      m_params.backlash_ncycle[i] = 0x3000;  //_aVal: Steps per axis revolution
-      m_params.backlash_mode[i] = 0x7;  //_aVal: Steps per axis revolution
       m_params.initialized[i] = false;  //_aVal: Steps per axis revolution
 
-      set_backlash(i, 15.1, 127, 7);
+      set_backlash(i, 45, 300, 7);
       set_steps_per_rotation(i, get_steps_per_rotation(i));
       set_current_position(i, get_steps_per_rotation(i)/2);
 

@@ -47,8 +47,11 @@ class FocuserInterface(object):
     def GetFocuserHomePosition(self):
         return self.client.recv_uint32()
     @command()
-    def GetTemp(self, channel):
-        return self.client.recv_uint32()
+    def GetTemp_pi1w(self):
+        return self.client.recv_float()
+    @command()
+    def GetTemp_fpga(self, channel):
+        return self.client.recv_float()
     @command()
     def set_min_period(self, val):
         return self.client.recv_bool()
@@ -68,7 +71,7 @@ if __name__ == '__main__':
     host = os.getenv('HOST','192.168.1.140')
     client = connect(host, name='mars_star_tracker')
     driver = FocuserInterface(client)
-    print('get_temp: {0}'.format(driver.GetTemp(20)/4096*3.3*1.5*100))
+    print('get_temp: {0}'.format(driver.GetTemp_pi1w()))
 
 
 

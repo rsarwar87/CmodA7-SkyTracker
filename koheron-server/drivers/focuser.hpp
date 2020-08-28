@@ -24,12 +24,13 @@ class FocuserInterface {
 
   bool Initialize() {
     bool ret = true;
-    {
-      ret &= sti.disable_raw_tracking(prm::focuser_id, false);
-      ret &= sti.disable_raw_backlash(prm::focuser_id);
-      ret &= sti.cancel_raw_command(prm::focuser_id, false);
-      ret &= sti.set_current_position(prm::focuser_id, sti.get_steps_per_rotation(prm::focuser_id)/2);
-    }
+    sti.set_steps_per_rotation(prm::focuser_id, 40000);
+    
+    ret &= sti.disable_raw_tracking(prm::focuser_id, false);
+    ret &= sti.disable_raw_backlash(prm::focuser_id);
+    ret &= sti.cancel_raw_command(prm::focuser_id, false);
+    ret &= sti.set_current_position(prm::focuser_id, sti.get_steps_per_rotation(prm::focuser_id)/2);
+    
     if (ret)
       ctx.log<INFO>("FocuserInteface: %s Successful\n", __func__);
     else
@@ -162,6 +163,18 @@ class FocuserInterface {
   }
   uint32_t get_max_period_ticks() {
     return sti.get_max_period_ticks(prm::focuser_id);
+  }
+  bool enable_backlash(bool enable) {
+    if (enable) return sti.enable_backlash(prm::focuser_id);
+    else return sti.disable_raw_backlash(prm::focuser_id);
+  }
+  bool set_backlash_period(uint32_t ticks)
+  {
+    return sti.set_backlash_period(prm::focuser_id, ticks);
+  }
+  bool set_backlash_cycles(uint32_t cycles)
+  {
+    return sti.set_backlash_cycles(prm::focuser_id, cycles);
   }
  private:
   Context& ctx;
