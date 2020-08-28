@@ -153,7 +153,7 @@ begin
     XADC_inst : XADC
    generic map (
       -- INIT_40 - INIT_42: XADC configuration registers
-      INIT_40 => X"0000",
+      INIT_40 => X"1000",
       INIT_41 => X"21AF",
       INIT_42 => X"0200",
       -- INIT_48 - INIT_4F: Sequence Registers
