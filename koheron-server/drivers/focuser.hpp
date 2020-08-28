@@ -17,7 +17,6 @@ class FocuserInterface {
       , spi(ctx.spi.get("spidev0.0"))
   {
     adc_ch = 0;
-    ds_fd = -1;
 
     ds_lookup();
 
@@ -118,6 +117,7 @@ class FocuserInterface {
 
   float GetTemp_pi1w()
   {
+    int ds_fd = open(dev_path.c_str(), O_RDONLY);
     if (ds_fd == -1)
     {
       ctx.log<PANIC>("DS Device not found");
@@ -128,6 +128,7 @@ class FocuserInterface {
     char temperatureData[6];
 
     while((numRead = read(ds_fd, buf, 256)) > 0);
+    close(ds_fd);
 
     strncpy(temperatureData, strstr(buf, "t=") + 2, 5);
 
@@ -170,7 +171,6 @@ class FocuserInterface {
 
   const std::string path = "/sys/bus/w1/devices/";
   std::string dev_path;
-  int ds_fd;
 
 
   void ds_lookup(){
@@ -185,7 +185,6 @@ class FocuserInterface {
       {
         dev_path = path + dirent->d_name + "/w1_slave";
         ctx.log<INFO>("FocuserInteface - Found temp pi sensor: %s\n", __func__, dev_path);
-        ds_fd = open(dev_path.c_str(), O_RDONLY);
         break;
       }
     }

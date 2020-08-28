@@ -24,7 +24,8 @@ class indi_focuser_interface {
   bool FocuserGotoTarget(uint32_t target, uint32_t period_ticks, bool direction);
   bool FocuserSlewTo(uint32_t period_ticks, bool direction);
   uint32_t GetFocuserHomePosition();
-  uint32_t GetTemp(uint32_t channel);
+  float GetTemp_fpga(uint32_t channel);
+  float GetTemp_pi1w();
 
   uint32_t get_maximum_period(); 
   uint32_t get_minimum_period(); 

@@ -80,9 +80,14 @@ uint32_t indi_focuser_interface::GetFocuserHomePosition() {
   auto buffer = client->recv<op::FocuserInterface::GetFocuserHomePosition, uint32_t>();
   return buffer;
 }
-uint32_t indi_focuser_interface::GetTemp(uint32_t value) {
-  client->call<op::FocuserInterface::GetTemp>(value);
-  auto buffer = client->recv<op::FocuserInterface::GetTemp, uint32_t>();
+float indi_focuser_interface::GetTemp_pi1w() {
+  client->call<op::FocuserInterface::GetTemp_pi1w>();
+  auto buffer = client->recv<op::FocuserInterface::GetTemp_pi1w, float>();
+  return buffer;
+}
+float indi_focuser_interface::GetTemp_fpga(uint32_t value) {
+  client->call<op::FocuserInterface::GetTemp_fpga>(value);
+  auto buffer = client->recv<op::FocuserInterface::GetTemp_fpga, float>();
   return buffer;
 }
 uint32_t indi_focuser_interface::get_maximum_period() {
