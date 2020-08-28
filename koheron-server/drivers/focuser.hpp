@@ -23,6 +23,7 @@ class FocuserInterface {
   }
 
   bool Initialize() {
+    if (sti.get_init(prm::focuser_id)) return false;
     bool ret = true;
     sti.set_steps_per_rotation(prm::focuser_id, 40000);
     

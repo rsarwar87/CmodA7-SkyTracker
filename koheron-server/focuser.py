@@ -73,7 +73,7 @@ class FocuserInterface(object):
 
     def print_status(self):
         ret = driver.GetFocuserAxisStatus()
-        print('Initialized: {0}'.format(ret[0]))
+        print('\nInitialized: {0}'.format(ret[0]))
         print('IsRunning: {0}'.format(ret[1]))
         print('Direction: {0}'.format(ret[2]))
         print('SpeedMode: {0}'.format(ret[3]))
@@ -83,7 +83,7 @@ class FocuserInterface(object):
         print('HasFault: {0}'.format(ret[7]))
 
     def PrintAll(self):
-        print('\n\BoardVersion: {0}'.format(self.BoardVersion()))
+        print('\nBoardVersion: {0}'.format(self.BoardVersion()))
         print('GetGridPerRevolution: {0}'.format(self.GetGridPerRevolution()))
         print('GetTimerInterruptFreq: {0}'.format(self.GetTimerInterruptFreq()))
         print('GetFocuserPosition: {0}'.format(self.GetFocuserPosition()))
@@ -101,8 +101,11 @@ if __name__ == '__main__':
     print('get_temp: {0}'.format(driver.GetTemp_pi1w()))
     print('Initialize: {0}'.format(driver.Initialize()))
     driver.print_status()
+    driver.PrintAll()
 
 
+    print('FocuserSlewTo: {0}'.format(driver.FocuserSlewTo(5000, True)))
+    print('StopFocuser: {0}'.format(driver.StopFocuser(True)))
 
 
 
