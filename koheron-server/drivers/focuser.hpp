@@ -16,6 +16,11 @@ class FocuserInterface {
       , sti(ctx.get<SkyTrackerInterface>())
       , spi(ctx.spi.get("spidev0.0"))
   {
+    adc_ch = 0;
+    ds_fd = -1;
+
+    ds_lookup();
+
   }
 
   bool Initialize() {
@@ -111,13 +116,38 @@ class FocuserInterface {
     return sti.get_steps_per_rotation(prm::focuser_id)/2;
   }
 
-  uint32_t GetTemp(uint32_t channel)
+  float GetTemp_pi1w()
   {
-    spi.write_at<reg::temp_channel/4, mem::control_addr, 1> (&channel);
+    if (ds_fd == -1)
+    {
+      ctx.log<PANIC>("DS Device not found");
+      return -6666.66;
+    }
+    size_t numRead;
+    char buf[256];
+    char temperatureData[6];
+
+    while((numRead = read(ds_fd, buf, 256)) > 0);
+
+    strncpy(temperatureData, strstr(buf, "t=") + 2, 5);
+
+    float ret = strtof(temperatureData, NULL) / 1000;
+
+    ctx.log<INFO>("FocuserInteface: %s: %0.0f\n", __func__, (double)ret);
+    return ret;
+  }
+  float GetTemp_fpga(uint32_t channel)
+  {
+    if (adc_ch != channel)
+    {
+      spi.write_at<reg::temp_channel/4, mem::control_addr, 1> (&channel);
+      adc_ch = channel;
+    }
     uint32_t ret;
     spi.read_at<reg::temp_sensor/4, mem::status_addr, 1> (&ret);
-    ctx.log<INFO>("FocuserInteface: %s: %u\n", __func__, ret);
-    return ret;
+    float temp = (ret / 4096.0 * 1.5) * 100.0;
+    ctx.log<INFO>("FocuserInteface: %s: %u %0.0f\n", __func__, ret, (double)temp);
+    return temp;
   }
 
   bool set_min_period(double val_usec) {
@@ -136,9 +166,30 @@ class FocuserInterface {
   Context& ctx;
   SkyTrackerInterface& sti;
   SpiDev& spi;
+  uint32_t adc_ch;
+
+  const std::string path = "/sys/bus/w1/devices/";
+  std::string dev_path;
+  int ds_fd;
 
 
+  void ds_lookup(){
+    DIR *dir;
+    struct dirent *dirent;
 
+    dir = opendir (path.c_str());
+    if (dir == NULL) return;
+    while ((dirent = readdir (dir)))
+    {
+      if (dirent->d_type == DT_LNK && strstr(dirent->d_name, "28-") != NULL)
+      {
+        dev_path = path + dirent->d_name + "/w1_slave";
+        ds_fd = open(dev_path.c_str(), O_RDONLY);
+        break;
+      }
+    }
+
+  }
 
 
     

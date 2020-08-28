@@ -52,6 +52,15 @@ class SkyTrackerInterface(object):
     @command()
     def set_goto_increment(self, axis, val):
         return self.client.recv_bool()
+    @command()
+    def set_backlash_period(self, axis, val):
+        return self.client.recv_bool()
+    @command()
+    def set_backlash_cycles(self, axis, val):
+        return self.client.recv_bool()
+    @command()
+    def start_tracking(self, axis):
+        return self.client.recv_bool()
     # getters
     @command()
     def get_version(self):
@@ -130,6 +139,9 @@ class SkyTrackerInterface(object):
     @command()
     def cancel_raw_command(self, axis, instant):
         return self.client.recv_bool()
+    @command()
+    def send_command(self, axis, use_acceration, isGoto):
+        return self.client.recv_bool()
 
 
     # skywathcer interface
@@ -183,6 +195,12 @@ class SkyTrackerInterface(object):
         return self.client.recv_bool()
     @command("ASCOMInterface")
     def SwpGetFeature(self, axis):
+        return self.client.recv_uint32()
+    @command("ASCOMInterface")
+    def SwpGetHomePosition(self, axis):
+        return self.client.recv_uint32()
+    @command("ASCOMInterface")
+    def SwpSetPolarScopeLED(self, axis, fpga):
         return self.client.recv_uint32()
 
     def Initialize(self):
