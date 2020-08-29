@@ -894,7 +894,7 @@ DRV_RA :  entity work.drv8825
 		ctrl_counter_max => fc_counter_max_sync,
 		ctrl_status => fc_status_sync,
 		ctrl_step_count(31 downto 0) => fc_step_count_sync(31 downto 0),
-		ctrl_trackctrl(31 downto 0) => de_trackctrl_sync(31 downto 0),
+		ctrl_trackctrl(31 downto 0) => fc_trackctrl_sync(31 downto 0),
 		drv8825_direction => fc_direction_b,
 		drv8825_enable_n => fc_enable_n,
 		drv8825_fault_n => fc_fault_n,
