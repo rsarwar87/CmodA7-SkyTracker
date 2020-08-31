@@ -29,6 +29,11 @@ uint32_t indi_focuser_interface::BoardVersion() {
   auto buffer = client->recv<op::FocuserInterface::BoardVersion, uint32_t>();
   return buffer;
 }
+bool indi_focuser_interface::SetGridPerRevolution(uint32_t val) {
+  client->call<op::FocuserInterface::SetGridPerRevolution>(val);
+  auto buffer = client->recv<op::FocuserInterface::SetGridPerRevolution, bool>();
+  return buffer;
+}
 uint32_t indi_focuser_interface::GetGridPerRevolution() {
   client->call<op::FocuserInterface::GetGridPerRevolution>();
   auto buffer = client->recv<op::FocuserInterface::GetGridPerRevolution, uint32_t>();

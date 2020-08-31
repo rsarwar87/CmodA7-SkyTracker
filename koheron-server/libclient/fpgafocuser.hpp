@@ -14,6 +14,7 @@ class indi_focuser_interface {
 
   bool Initialize();
   uint32_t BoardVersion();
+  bool SetGridPerRevolution(uint32_t val);
   uint32_t GetGridPerRevolution();
   uint32_t GetTimerInterruptFreq();
   bool StopFocuser(bool instant);

@@ -25,7 +25,7 @@ class FocuserInterface {
   bool Initialize() {
     if (sti.get_init(prm::focuser_id)) return false;
     bool ret = true;
-    sti.set_steps_per_rotation(prm::focuser_id, 40000);
+    sti.set_steps_per_rotation(prm::focuser_id, 200000);
     
     ret &= sti.disable_raw_tracking(prm::focuser_id, false);
     ret &= sti.disable_raw_backlash(prm::focuser_id);
@@ -45,6 +45,9 @@ class FocuserInterface {
     return sti.get_version();
   }
 
+  bool SetGridPerRevolution(uint32_t ticks) {
+    return sti.set_steps_per_rotation(prm::focuser_id, ticks);
+  }
   uint32_t GetGridPerRevolution() {
     return sti.get_steps_per_rotation(prm::focuser_id);
   }
