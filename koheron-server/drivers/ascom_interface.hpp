@@ -137,6 +137,7 @@ class ASCOMInterface {
   // SetGotoTarget             = 'S', // does nothing??
   bool SwpSetGotoTarget(uint8_t axis, uint32_t target) {
     if (!check_axis_id(axis, __func__)) return false;
+    if (target < 2) target = 2;
     return sti.set_goto_target(axis, target);
   }
   // SetStepPeriod             = 'I', //set slew speed
