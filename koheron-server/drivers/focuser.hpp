@@ -122,24 +122,32 @@ class FocuserInterface {
 
   float GetTemp_pi1w()
   {
-    int ds_fd = open(dev_path.c_str(), O_RDONLY);
-    if (ds_fd == -1)
+    float ret = -666.66;
+    ctx.log<INFO>("FocuserInteface: %s:", __func__);
+    try
     {
-      ctx.log<PANIC>("DS Device not found");
-      return -6666.66;
+      int ds_fd = open(dev_path.c_str(), O_RDONLY);
+      if (ds_fd == -1)
+      {
+        ctx.log<PANIC>("DS Device not found");
+        return ret;
+      }
+      size_t numRead;
+      char buf[256];
+      char temperatureData[6];
+      while((numRead = read(ds_fd, buf, 256)) > 0);
+      close(ds_fd);
+
+      strncpy(temperatureData, strstr(buf, "t=") + 2, 5);
+
+      ret = strtof(temperatureData, NULL) / 1000;
+
+      ctx.log<INFO>("FocuserInteface: %s: %0.0f\n", __func__, (double)ret);
     }
-    size_t numRead;
-    char buf[256];
-    char temperatureData[6];
-
-    while((numRead = read(ds_fd, buf, 256)) > 0);
-    close(ds_fd);
-
-    strncpy(temperatureData, strstr(buf, "t=") + 2, 5);
-
-    float ret = strtof(temperatureData, NULL) / 1000;
-
-    ctx.log<INFO>("FocuserInteface: %s: %0.0f\n", __func__, (double)ret);
+    catch (std::exception *e)
+    {
+      ctx.log<INFO>("FocuserInteface: %s: something failed. \n", __func__);
+    }
     return ret;
   }
   float GetTemp_fpga(uint32_t channel)
