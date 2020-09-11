@@ -68,6 +68,18 @@ class FocuserInterface(object):
     def get_backlash_period(self):
         return self.client.recv_uint32()
     @command()
+    def enable_backlash(self, val):
+        return self.client.recv_bool()
+    @command()
+    def set_backlash_cycles(self, val):
+        return self.client.recv_bool()
+    @command()
+    def set_backlash_period(self, val):
+        return self.client.recv_bool()
+    @command()
+    def get_backlash_period(self):
+        return self.client.recv_uint32()
+    @command()
     def get_backlash_cycles(self):
         return self.client.recv_uint32()
 
@@ -103,9 +115,11 @@ if __name__ == '__main__':
     driver.print_status()
     driver.PrintAll()
 
+    driver.set_backlash_cycles(150)
+    driver.set_backlash_period(1500)
+    driver.enable_backlash(False)
+    driver.print_status()
 
-    print('FocuserSlewTo: {0}'.format(driver.FocuserSlewTo(5000, True)))
-    print('StopFocuser: {0}'.format(driver.StopFocuser(True)))
 
 
 
