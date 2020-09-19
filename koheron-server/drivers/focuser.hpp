@@ -26,7 +26,7 @@ class FocuserInterface {
   bool Initialize() {
     if (sti.get_init(prm::focuser_id)) return false;
     bool ret = true;
-    sti.set_steps_per_rotation(prm::focuser_id, 40000);
+    sti.set_steps_per_rotation(prm::focuser_id, 200000);
     
     ret &= sti.disable_raw_tracking(prm::focuser_id, false);
     ret &= sti.disable_raw_backlash(prm::focuser_id);
@@ -46,6 +46,9 @@ class FocuserInterface {
     return sti.get_version();
   }
 
+  bool SetGridPerRevolution(uint32_t ticks) {
+    return sti.set_steps_per_rotation(prm::focuser_id, ticks);
+  }
   uint32_t GetGridPerRevolution() {
     return sti.get_steps_per_rotation(prm::focuser_id);
   }
@@ -135,11 +138,16 @@ class FocuserInterface {
     close(ds_fd);
     w1_mutex.unlock();
 
-    strncpy(temperatureData, strstr(buf, "t=") + 2, 5);
+      strncpy(temperatureData, strstr(buf, "t=") + 2, 5);
 
-    float ret = strtof(temperatureData, NULL) / 1000;
+      ret = strtof(temperatureData, NULL) / 1000;
 
-    ctx.log<INFO>("FocuserInteface: %s: %0.0f\n", __func__, (double)ret);
+      ctx.log<INFO>("FocuserInteface: %s: %0.0f\n", __func__, (double)ret);
+    }
+    catch (std::exception *e)
+    {
+      ctx.log<INFO>("FocuserInteface: %s: something failed. \n", __func__);
+    }
     return ret;
   }
   float GetTemp_fpga(uint32_t channel)

@@ -137,6 +137,7 @@ class ASCOMInterface {
   // SetGotoTarget             = 'S', // does nothing??
   bool SwpSetGotoTarget(uint8_t axis, uint32_t target) {
     if (!check_axis_id(axis, __func__)) return false;
+    if (target < 2) target = 2;
     return sti.set_goto_target(axis, target);
   }
   // SetStepPeriod             = 'I', //set slew speed
@@ -181,7 +182,7 @@ class ASCOMInterface {
     // return the gear change settings
     if (!check_axis_id(axis, __func__)) return 0x1000;
     ctx.log<INFO>("ASCOMInteface: %s- Command recieved:\n", __func__);
-    return 1;
+    return 0x00001001;
   }
   // SetPolarScopeLED          = 'V',
   bool SwpSetPolarScopeLED(uint8_t value, bool fpga) { return sti.set_led_pwm(value, fpga); }

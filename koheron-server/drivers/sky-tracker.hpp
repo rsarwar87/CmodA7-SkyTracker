@@ -345,8 +345,10 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (axis == 0)
       stepper.set_backlash<0>(m_params.backlash_ticks[axis], m_params.backlash_ncycle[axis], m_params.backlash_mode[axis]);
-    else
+    else if (axis ==1)
       stepper.set_backlash<1>(m_params.backlash_ticks[axis], m_params.backlash_ncycle[axis], m_params.backlash_mode[axis]);
+    else
+      stepper.set_backlash<2>(m_params.backlash_ticks[axis], m_params.backlash_ncycle[axis], m_params.backlash_mode[axis]);
     return true;
   }
   bool assign_raw_backlash(uint8_t axis, uint32_t ticks, uint32_t ncycles, uint8_t mode) {
@@ -355,8 +357,10 @@ class SkyTrackerInterface {
       stepper.set_backlash<0>(ticks, ncycles, mode);
     else if (axis == 2)
       stepper.set_backlash<2>(ticks, ncycles, mode);
-    else
+    else if (axis == 1)
       stepper.set_backlash<1>(ticks, ncycles, mode);
+    else
+      stepper.set_backlash<2>(ticks, ncycles, mode);
     return true;
   }
   bool disable_raw_backlash(uint8_t axis) {

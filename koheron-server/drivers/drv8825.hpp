@@ -95,10 +95,11 @@ class Drv8825
     {
         uint32_t cmd = (period_ticks << 3) + mode;
         spi.write_at<reg::backlash_tick0/4 + offset, mem::control_addr, 1> (&cmd);
-        spi.write_at<reg::backlash_duration0/4 + offset, mem::control_addr, 1> (&n_cycle);
+        uint32_t duration = n_cycle* period_ticks;
+        spi.write_at<reg::backlash_duration0/4 + offset, mem::control_addr, 1> (&duration);
         ctx.log<INFO>("DRV8825-%s: %s: period=0x%08x, cycle=%u, cmd=0x%08x, duration=0x%08x \n", 
             offset == 0 ? "SA" : "DC", __func__,
-            (period_ticks), n_cycle, cmd, n_cycle);
+            (period_ticks), n_cycle, cmd, duration);
     }
 
     template<uint32_t offset>

@@ -82,6 +82,15 @@ class FocuserInterface(object):
     @command()
     def get_backlash_cycles(self):
         return self.client.recv_uint32()
+    @command()
+    def enable_backlash(self, val):
+        return self.client.recv_bool()
+    @command()
+    def set_backlash_cycles(self, val):
+        return self.client.recv_bool()
+    @command()
+    def set_backlash_period(self, val):
+        return self.client.recv_bool()
 
     def print_status(self):
         ret = driver.GetFocuserAxisStatus()

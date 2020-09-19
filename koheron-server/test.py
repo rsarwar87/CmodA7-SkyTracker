@@ -208,18 +208,18 @@ class SkyTrackerInterface(object):
             print('\n\nset_min_period{0} : {1}'.format(i, self.set_min_period(i, 15)))
             print('set_led_pwm{0} : {1}'.format(i, self.set_led_pwm(100, False)))
             print('set_max_period{0} : {1}'.format(i, self.set_max_period(i, 268435.0)))
-            print('set_backlash{0} : {1}'.format(i, self.set_backlash(i, 15.1, 127, 7)))
+            print('set_backlash{0} : {1}'.format(i, self.set_backlash(i, 151, 1270, 7)))
             print('set_steps_per_rotation{0} : {1}'.format(i, self.set_steps_per_rotation(i, 200*32*144*5)))
             print('set_current_position{0} : {1}'.format(i, self.set_current_position(i, 0x0)))
             print('set_goto_target{0} : {1}'.format(i, self.set_goto_target(i, 200*32)))
-            print('set_goto_increment{0} : {1}'.format(i, self.set_goto_increment(i, 200*32)))
+            print('set_goto_increment{0} : {1}'.format(i, self.set_goto_increment(i, 32*200)))
             print('==========================================')
             for j in range (0, 2):
 #                print('set_motor_mode{0}-{1} : {2}'.format(i, j, self.set_motor_mode(i, j, 7)))
                 print('set_speed_ratio{0}-{1} : {2}'.format(i, j, self.set_speed_ratio(i, j, 1)))
                 print('set_motor_highspeedmode{0}-{1} : {2}'.format(i, j, self.set_motor_highspeedmode(i, j, True)))
                 print('set_motor_direction{0}-{1} : {2}'.format(i, j, self.set_motor_direction(i, j, 0)))
-                print('set_motor_period_usec{0}-{1} : {2}'.format(i, j, self.set_motor_period_usec(i, j, 15)))
+                print('set_motor_period_usec{0}-{1} : {2}'.format(i, j, self.set_motor_period_usec(i, j, 1005)))
 
     def PrintSpeed(self):
         for i in range (0, 2):
@@ -273,9 +273,15 @@ if __name__ == '__main__':
     time.sleep(1)
     driver.PrintAll()
     time.sleep(1)
-    print('Start Command0 {0}'.format(driver.SwpCmdStartMotion(0, True, True, True)))
-    print('Start Command1 {0}'.format(driver.SwpCmdStartMotion(1, True, True, True)))
-    time.sleep(3)
+    driver.set_motor_direction(0, False, True)
+    print('Start Command0 {0}'.format(driver.SwpCmdStartMotion(0, False, True, False)))
+    time.sleep(10)
+    print('Disable Cmd0 {0}'.format(driver.cancel_raw_command(0, True)))
+    time.sleep(1)
+    driver.set_motor_direction(0, False, False)
+    print('Start Command1 {0}'.format(driver.SwpCmdStartMotion(0, False, True, False)))
+    time.sleep(10)
+    print('Disable Cmd0 {0}'.format(driver.cancel_raw_command(0, True)))
     driver.PrintAll()
 
 
