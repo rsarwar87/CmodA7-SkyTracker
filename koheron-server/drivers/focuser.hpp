@@ -123,20 +123,23 @@ class FocuserInterface {
 
   float GetTemp_pi1w()
   {
-    w1_mutex.lock();
-    int ds_fd = open(dev_path.c_str(), O_RDONLY);
-    if (ds_fd == -1)
+    float ret = -6666.66;
+    try
     {
-      ctx.log<PANIC>("DS Device not found");
-      return -6666.66;
-    }
-    size_t numRead;
-    char buf[256];
-    char temperatureData[6];
+      w1_mutex.lock();
+      int ds_fd = open(dev_path.c_str(), O_RDONLY);
+      if (ds_fd == -1)
+      {
+        ctx.log<PANIC>("DS Device not found");
+        return -6666.66;
+      }
+      size_t numRead;
+      char buf[256];
+      char temperatureData[6];
 
-    while((numRead = read(ds_fd, buf, 256)) > 0);
-    close(ds_fd);
-    w1_mutex.unlock();
+      while((numRead = read(ds_fd, buf, 256)) > 0);
+      close(ds_fd);
+      w1_mutex.unlock();
 
       strncpy(temperatureData, strstr(buf, "t=") + 2, 5);
 
@@ -146,6 +149,7 @@ class FocuserInterface {
     }
     catch (std::exception *e)
     {
+      w1_mutex.unlock();
       ctx.log<INFO>("FocuserInteface: %s: something failed. \n", __func__);
     }
     return ret;
@@ -201,7 +205,7 @@ class FocuserInterface {
   SkyTrackerInterface& sti;
   SpiDev& spi;
   uint32_t adc_ch;
-  static std::mutex w1_mutex;
+  std::mutex w1_mutex;
 
   const std::string path = "/sys/bus/w1/devices/";
   std::string dev_path;
