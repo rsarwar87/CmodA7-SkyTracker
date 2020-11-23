@@ -7,6 +7,7 @@
 
 #include <context.hpp>
 #include <sky-tracker.hpp>
+#include <mutex>
 
 using namespace std::chrono_literals;
 class FocuserInterface {
@@ -122,6 +123,7 @@ class FocuserInterface {
 
   float GetTemp_pi1w()
   {
+    w1_mutex.lock();
     int ds_fd = open(dev_path.c_str(), O_RDONLY);
     if (ds_fd == -1)
     {
@@ -134,12 +136,18 @@ class FocuserInterface {
 
     while((numRead = read(ds_fd, buf, 256)) > 0);
     close(ds_fd);
+    w1_mutex.unlock();
 
-    strncpy(temperatureData, strstr(buf, "t=") + 2, 5);
+      strncpy(temperatureData, strstr(buf, "t=") + 2, 5);
 
-    float ret = strtof(temperatureData, NULL) / 1000;
+      ret = strtof(temperatureData, NULL) / 1000;
 
-    ctx.log<INFO>("FocuserInteface: %s: %0.0f\n", __func__, (double)ret);
+      ctx.log<INFO>("FocuserInteface: %s: %0.0f\n", __func__, (double)ret);
+    }
+    catch (std::exception *e)
+    {
+      ctx.log<INFO>("FocuserInteface: %s: something failed. \n", __func__);
+    }
     return ret;
   }
   float GetTemp_fpga(uint32_t channel)
@@ -193,6 +201,7 @@ class FocuserInterface {
   SkyTrackerInterface& sti;
   SpiDev& spi;
   uint32_t adc_ch;
+  static std::mutex w1_mutex;
 
   const std::string path = "/sys/bus/w1/devices/";
   std::string dev_path;
