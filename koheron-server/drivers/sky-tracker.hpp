@@ -28,6 +28,8 @@ class SkyTrackerInterface {
       m_params.period_ticks[1][i] = 100;  // time period in 20ns ticks
       m_params.speed_ratio[1][i] = 1;     // speed of motor
 
+      m_params.highSpeedMode_fpga[0][i] = false;
+      m_params.highSpeedMode_fpga[1][i] = false;
       m_params.highSpeedMode[0][i] = false;
       m_params.highSpeedMode[1][i] = false;
       m_params.GotoTarget[i] = 0;
@@ -180,7 +182,7 @@ class SkyTrackerInterface {
   }
   bool get_motor_highspeedmode(uint8_t axis, bool isSlew) {
     if (!check_axis_id(axis, __func__)) return false;
-    bool ret = m_params.highSpeedMode[isSlew][axis];
+    bool ret = m_params.highSpeedMode_fpga[isSlew][axis];
     ctx.log<INFO>("%s(%u): %s highspeed: %s\n", __func__, axis,
                   isSlew ? "Slew" : "GoTo", ret ? "True" : "False");
     return (ret);
@@ -392,6 +394,8 @@ class SkyTrackerInterface {
   bool start_raw_tracking(uint8_t axis, bool isForward, uint32_t periodticks,
                           uint8_t mode, bool update = false) {
     if (!check_axis_id(axis, __func__)) return false;
+    uint32_t isSlew = true;
+    m_params.highSpeedMode_fpga[isSlew][axis] = periodticks < 7000;
     if (axis == 0)
       stepper.enable_tracking<0>(isForward, periodticks, mode, update);
     else if (axis == 2)
@@ -413,6 +417,7 @@ class SkyTrackerInterface {
   }
   bool send_command(uint8_t axis, bool use_accel, bool isGoto) {
       uint32_t isSlew = false;
+      m_params.highSpeedMode_fpga[isSlew][axis] = m_params.period_ticks[isSlew][axis] < 7000;
       return send_raw_command(axis, m_params.motorDirection[isSlew][axis],
                              isGoto ? m_params.GotoTarget[axis] : m_params.GotoNCycles[axis],
                              m_params.period_ticks[isSlew][axis],
