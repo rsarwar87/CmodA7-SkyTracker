@@ -10,8 +10,7 @@
 #include <params.hpp>
 #include <rpigpio_ledpwm.hpp>
 
-enum t_status { Idle = 0, Slew, GoTo, Parking, Undefined };
-  constexpr double fclk0_period_us =
+constexpr double fclk0_period_us =
       1000000.0 / ((double)(prm::fclk0));  // Number of descriptors
 
 using namespace std::chrono_literals;
@@ -21,7 +20,7 @@ class SkyTrackerInterface {
       : ctx(ctx_),
         spi(ctx.spi.get("spidev0.0")),
         stepper(ctx.get<Drv8825>()) {
-    for (size_t i = 0; i < 2; i++) {
+    for (size_t i = 0; i < 3; i++) {
       m_params.period_usec[0][i] = 1;     // time period in us
       m_params.period_ticks[0][i] = 100;  // time period in 20ns ticks
       m_params.speed_ratio[0][i] = 1;     // speed of motor
@@ -50,14 +49,9 @@ class SkyTrackerInterface {
       m_params.stepPerRotation[i] =
           200*32*144*5;  //_aVal: Steps per axis revolution
 
-      m_params.backlash_period_usec[i] =
-          10.;  //_sVal: Steps per worm gear revolution
-      m_params.backlash_ticks[i] = 0x300;    //_eVal: Version number
-      m_params.backlash_ncycle[i] = 0x3000;  //_aVal: Steps per axis revolution
-      m_params.backlash_mode[i] = 0x7;  //_aVal: Steps per axis revolution
       m_params.initialized[i] = false;  //_aVal: Steps per axis revolution
 
-      set_backlash(i, 15.1, 127, 7);
+      set_backlash(i, 45, 300, 7);
       set_steps_per_rotation(i, get_steps_per_rotation(i));
       set_current_position(i, get_steps_per_rotation(i)/2);
 
@@ -109,6 +103,7 @@ class SkyTrackerInterface {
     ctx.log<INFO>("%s(%u): %u ticks\n", __func__, axis,
                   m_params.stepPerRotation[axis]);
     if (axis == 0) stepper.set_max_step<0>(steps);
+    else if (axis == 2) stepper.set_max_step<2>(steps);
     else stepper.set_max_step<1>(steps);
     return true;
   }
@@ -331,6 +326,8 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
     if (axis == 0)
       return stepper.get_status<0>();
+    else if (axis == 2)
+      return stepper.get_status<2>();
     else
       return stepper.get_status<1>();
   }
@@ -338,6 +335,8 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
     if (axis == 0)
       return stepper.get_stepcount<0>();
+    else if (axis == 2)
+      return stepper.get_stepcount<2>();
     else
       return stepper.get_stepcount<1>();
   }
@@ -346,22 +345,30 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (axis == 0)
       stepper.set_backlash<0>(m_params.backlash_ticks[axis], m_params.backlash_ncycle[axis], m_params.backlash_mode[axis]);
-    else
+    else if (axis ==1)
       stepper.set_backlash<1>(m_params.backlash_ticks[axis], m_params.backlash_ncycle[axis], m_params.backlash_mode[axis]);
+    else
+      stepper.set_backlash<2>(m_params.backlash_ticks[axis], m_params.backlash_ncycle[axis], m_params.backlash_mode[axis]);
     return true;
   }
   bool assign_raw_backlash(uint8_t axis, uint32_t ticks, uint32_t ncycles, uint8_t mode) {
     if (!check_axis_id(axis, __func__)) return false;
     if (axis == 0)
       stepper.set_backlash<0>(ticks, ncycles, mode);
-    else
+    else if (axis == 2)
+      stepper.set_backlash<2>(ticks, ncycles, mode);
+    else if (axis == 1)
       stepper.set_backlash<1>(ticks, ncycles, mode);
+    else
+      stepper.set_backlash<2>(ticks, ncycles, mode);
     return true;
   }
   bool disable_raw_backlash(uint8_t axis) {
     if (!check_axis_id(axis, __func__)) return false;
     if (axis == 0)
       stepper.disable_backlash<0>();
+    else if (axis == 2)
+      stepper.disable_backlash<2>();
     else
       stepper.disable_backlash<1>();
     return true;
@@ -370,11 +377,14 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (axis == 0)
       stepper.disable_tracking<0>(instant);
+    else if (axis == 2)
+      stepper.disable_tracking<2>(instant);
     else
       stepper.disable_tracking<1>(instant);
     return true;
   }
-  bool start_tracking(uint8_t axis, bool isSlew) {
+  bool start_tracking(uint8_t axis) {
+      uint32_t isSlew = true;
       return start_raw_tracking(axis, m_params.motorDirection[isSlew][axis],
                               m_params.period_ticks[isSlew][axis],
                               m_params.motorMode[isSlew][axis]);
@@ -384,6 +394,8 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (axis == 0)
       stepper.enable_tracking<0>(isForward, periodticks, mode, update);
+    else if (axis == 2)
+      stepper.enable_tracking<2>(isForward, periodticks, mode, update);
     else
       stepper.enable_tracking<1>(isForward, periodticks, mode, update);
     return true;
@@ -393,11 +405,14 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (axis == 0)
       stepper.set_park<0>(isForward, period_ticks, mode, use_accel);
+    else if (axis == 2)
+      stepper.set_park<2>(isForward, period_ticks, mode, use_accel);
     else
       stepper.set_park<1>(isForward, period_ticks, mode, use_accel);
     return true;
   }
-  bool send_command(uint8_t axis, bool isSlew, bool use_accel, bool isGoto) {
+  bool send_command(uint8_t axis, bool use_accel, bool isGoto) {
+      uint32_t isSlew = false;
       return send_raw_command(axis, m_params.motorDirection[isSlew][axis],
                              isGoto ? m_params.GotoTarget[axis] : m_params.GotoNCycles[axis],
                              m_params.period_ticks[isSlew][axis],
@@ -408,6 +423,8 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return true;
     if (axis == 0)
       stepper.set_command<0>(isForward, ncycles, period_ticks, mode, isGoTo, use_accel);
+    else if (axis == 2)
+      stepper.set_command<2>(isForward, ncycles, period_ticks, mode, isGoTo, use_accel);
     else
       stepper.set_command<1>(isForward, ncycles, period_ticks, mode, isGoTo, use_accel);
     return true;
@@ -416,6 +433,8 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (axis == 0)
       stepper.cancel_command<0>(instant);
+    else if (axis == 2)
+      stepper.cancel_command<2>(instant);
     else
       stepper.cancel_command<1>(instant);
     return true;
@@ -429,6 +448,7 @@ class SkyTrackerInterface {
     } else if (val == m_params.stepPerRotation[axis])
       val = 0;
     if (axis == 0) stepper.set_current_position<0>(val);
+    else if (axis == 2) stepper.set_current_position<2>(val);
     else stepper.set_current_position<1>(val);
     return true;
   }
@@ -470,7 +490,7 @@ class SkyTrackerInterface {
   parameters m_params;
 
   bool check_axis_id(uint8_t axis, std::string str) {
-    if (axis > 1) {
+    if (axis > 2) {
       ctx.log<ERROR>("ASCOMInteface: %s- Invalid axis: %u\n", str, axis);
       return false;
     }

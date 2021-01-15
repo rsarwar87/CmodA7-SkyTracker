@@ -22,20 +22,33 @@ entity sky_tracker is
            ra_direction : out STD_LOGIC;
            ra_fault_n : in STD_LOGIC;
 		   
-		   de_mode : out STD_LOGIC_VECTOR (2 downto 0);
+		       de_mode : out STD_LOGIC_VECTOR (2 downto 0);
            de_enable_n : out STD_LOGIC;
            de_sleep_n : out STD_LOGIC;
            de_rst_n : out STD_LOGIC;
            de_step : out STD_LOGIC;
            de_direction : out STD_LOGIC;
            de_fault_n : in STD_LOGIC;
-		   led_pwm : out STD_LOGIC;
-			  
-		   camera_trigger : out STD_LOGIC_VECTOR (1 downto 0);
-		   ip_addr : out STD_LOGIC_VECTOR (7 downto 0);
-		   led_status : out STD_LOGIC_VECTOR (7 downto 0);
-			  
-		   sts_acknowledge                           : out    std_logic                     := 'X';             -- acknowledge
+           
+           fc_mode : out STD_LOGIC_VECTOR (2 downto 0);
+           fc_enable_n : out STD_LOGIC;
+           fc_sleep_n : out STD_LOGIC;
+           fc_rst_n : out STD_LOGIC;
+           fc_step : out STD_LOGIC;
+           fc_direction : out STD_LOGIC;
+           fc_fault_n : in STD_LOGIC;
+           
+		       led_pwm : out STD_LOGIC;
+			      
+		       camera_trigger : out STD_LOGIC_VECTOR (1 downto 0);
+		       ip_addr : out STD_LOGIC_VECTOR (7 downto 0);
+		       led_status : out STD_LOGIC_VECTOR (7 downto 0);
+
+           adc_address : out std_logic_vector (6 downto 0);
+           adc_dbus : in std_logic_vector (15 downto 0);
+
+			      
+		       sts_acknowledge                           : out    std_logic                     := 'X';             -- acknowledge
            sts_irq                                   : out    std_logic                     := 'X';             -- irq
            sts_address                               : in   std_logic_vector(4 downto 0);                    -- address
            sts_bus_enable                            : in    std_logic;                                        -- bus_enable
@@ -44,7 +57,7 @@ entity sky_tracker is
            sts_write_data                            : in    std_logic_vector(31 downto 0);                    -- write_data
            sts_read_data                             : out   std_logic_vector(31 downto 0) := (others => 'X'); -- read_data
            
-		   ctrl_acknowledge                          : out    std_logic                     := 'X';             -- acknowledge
+		       ctrl_acknowledge                          : out    std_logic                     := 'X';             -- acknowledge
            ctrl_irq                                  : out    std_logic                     := 'X';             -- irq
            ctrl_address                              : in   std_logic_vector(4 downto 0);                    -- address
            ctrl_bus_enable                           : in   std_logic;                                        -- bus_enable
@@ -80,6 +93,18 @@ signal de_counter_load 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -
 signal de_counter_max 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
 signal de_trackctrl 			 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 
+
+signal fc_step_count 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+signal fc_status     		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+signal fc_cmdcontrol 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- steps, go, stop, direction
+signal fc_cmdtick           : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');    -- speed of command
+signal fc_cmdduration 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');    -- speed of command
+signal fc_backlash_tick 	 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');  -- speed of backlash
+signal fc_backlash_duration : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
+signal fc_counter_load 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
+signal fc_counter_max 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
+signal fc_trackctrl 			 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+
 signal ra_step_count_sync 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 signal ra_status_sync     		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 signal ra_cmdcontrol_sync 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- steps, go, stop, direction
@@ -102,6 +127,20 @@ signal de_counter_load_sync 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0
 signal de_counter_max_sync 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
 signal de_trackctrl_sync 			 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 
+signal fc_step_count_sync 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+signal fc_status_sync     		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+signal fc_cmdcontrol_sync 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- steps, go, stop, direction
+signal fc_cmdtick_sync           : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');    -- speed of command
+signal fc_cmdduration_sync 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');    -- speed of command
+signal fc_backlash_tick_sync 	 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');  -- speed of backlash
+signal fc_backlash_duration_sync : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
+signal fc_counter_load_sync 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
+signal fc_counter_max_sync 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
+signal fc_trackctrl_sync 			 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+
+signal adc_channel 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
+signal adc_data 			 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+
 signal ip_addr_buf, led_brightness, camera_trig : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 signal led_count : STD_LOGIC_VECTOR (7 downto 0) := (others => '0');
 signal led_out : STD_LOGIC := '0';
@@ -109,9 +148,14 @@ signal led_out : STD_LOGIC := '0';
 ATTRIBUTE MARK_DEBUG of ctrl_acknowledge, ctrl_address, ctrl_bus_enable, ctrl_read_data: SIGNAL IS "TRUE";
 ATTRIBUTE MARK_DEBUG of de_cmdduration_sync, de_counter_max_sync, de_counter_load_sync, de_trackctrl_sync: SIGNAL IS "TRUE";
 begin
+
   camera_trigger <= camera_trig(1 downto 0);
   ip_addr <= ip_addr_buf(7 downto 0);
   led_pwm <= led_out;
+
+  adc_address <= adc_channel(6 downto 0);
+  adc_data(15 downto 0) <= adc_dbus;
+
 bus_imp : block
 signal sts_ack, ctrl_ack : std_logic := '0';
 begin
@@ -146,53 +190,74 @@ begin
 			sts_acknowledge <= sts_ack;
 			sts_ack <= '0';
 			if (sts_bus_enable = '1' and ctrl_rw = '1') then
-			case sts_address(2 downto 0) is
-				when "000" =>
+			case sts_address(3 downto 0) is
+				when "0000" =>
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
 					      sts_read_data <= x"0110FFFF";
 					      sts_ack <= '1';
 							end if;
 						end loop;
-				when "001" => 
+				when "0001" => 
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
 					      sts_read_data <= x"FFFF1001";
 					      sts_ack <= '1';
 							end if;
 						end loop;
-				when "010" =>
+				when "0010" =>
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
 					      sts_read_data <= de_step_count;
 					      sts_ack <= '1';
 							end if;
 						end loop;
-				when "011" => 
+				when "0011" => 
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
 					      sts_read_data <= ra_step_count;
 					      sts_ack <= '1';
 							end if;
 						end loop;
-				when "100" =>
+				when "0100" =>
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+					      sts_read_data <= fc_step_count;
+					      sts_ack <= '1';
+							end if;
+						end loop;
+				when "0101" =>
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
 					      sts_read_data <= de_status;
 					      sts_ack <= '1';
 							end if;
 						end loop;
-				when "101" => 
+				when "0110" => 
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
 					      sts_read_data <= ra_status;
 					      sts_ack <= '1';
 							end if;
 						end loop;
-				when "110" => 
+				when "0111" => 
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+					      sts_read_data <= fc_status;
+					      sts_ack <= '1';
+							end if;
+						end loop;
+				when "1000" => 
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
 					      sts_read_data <= x"00000042";
+					      sts_ack <= '1';
+							end if;
+						end loop;
+				when "1001" => 
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+					      sts_read_data <= adc_data;
 					      sts_ack <= '1';
 							end if;
 						end loop;
@@ -254,6 +319,21 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
+						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= fc_counter_load(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					else
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+								fc_counter_load(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					end if;
+					ctrl_ack <= '1';
+				when "00011" =>
+					if ctrl_rw = '1' then
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
 						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_counter_max(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
@@ -265,7 +345,7 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "00011" => 
+				when "00100" => 
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -280,7 +360,22 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "00100" =>
+				when "00101" =>
+					if ctrl_rw = '1' then
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= fc_counter_max(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					else
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+								fc_counter_max(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					end if;
+					ctrl_ack <= '1';
+				when "00110" =>
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -295,7 +390,7 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "00101" => 
+				when "00111" => 
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -310,7 +405,22 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "00110" => 
+				when "01000" =>
+					if ctrl_rw = '1' then
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= fc_cmdcontrol(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					else
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+								fc_cmdcontrol(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					end if;
+					ctrl_ack <= '1';
+				when "01001" => 
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -325,7 +435,7 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "00111" => 
+				when "01010" => 
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -341,7 +451,22 @@ begin
 					end if;
 					
 					ctrl_ack <= '1';
-				when "01000" =>
+				when "01011" => 
+					if ctrl_rw = '1' then
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= fc_cmdduration(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					else
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+								fc_cmdduration(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					end if;
+					ctrl_ack <= '1';
+				when "01100" =>
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -356,7 +481,7 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "01001" => 
+				when "01101" => 
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -371,7 +496,22 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "01010" =>
+				when "01110" =>
+					if ctrl_rw = '1' then
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= fc_trackctrl(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					else
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+								fc_trackctrl(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					end if;
+					ctrl_ack <= '1';
+				when "01111" =>
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -386,7 +526,7 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "01011" => 
+				when "10000" => 
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -401,7 +541,22 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "01100" =>
+				when "10001" =>
+					if ctrl_rw = '1' then
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= fc_cmdtick(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					else
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+								fc_cmdtick(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					end if;
+					ctrl_ack <= '1';
+				when "10010" =>
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -416,7 +571,7 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "01101" => 
+				when "10011" => 
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -431,7 +586,22 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "01110" => 
+				when "10100" =>
+					if ctrl_rw = '1' then
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= fc_backlash_tick(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					else
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+								fc_backlash_tick(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					end if;
+					ctrl_ack <= '1';
+				when "10101" => 
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -446,7 +616,7 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "01111" => 
+				when "10110" => 
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -461,7 +631,22 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "10000" => 
+				when "10111" => 
+					if ctrl_rw = '1' then
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= fc_backlash_duration(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					else
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+								fc_backlash_duration(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					end if;
+					ctrl_ack <= '1';
+				when "11000" => 
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -476,7 +661,7 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "10001" => 
+				when "11001" => 
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -491,7 +676,7 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-				when "10010" => 
+				when "11010" => 
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
@@ -506,7 +691,21 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-					
+				when "11011" => 
+					if ctrl_rw = '1' then
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= adc_channel(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					else
+						for byte_index in 0 to (32/8-1) loop
+							if (ctrl_byte_enable(byte_index) = '1') then
+								adc_channel(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+							end if;
+						end loop;
+					end if;
+					ctrl_ack <= '1';
 					
 				when others =>
 					if ctrl_rw = '1' then
@@ -526,7 +725,7 @@ end block bus_imp;
 
 
 drv_ips : block
-	signal ra_direction_b, de_direction_b : std_logic := '0';
+	signal ra_direction_b, de_direction_b, fc_direction_b : std_logic := '0';
 begin
 	process (clk_50, rstn_50)
 	begin
@@ -534,9 +733,11 @@ begin
 			led_status <= (others => '0');
 			ra_direction <= ra_direction_b;
 			de_direction <= de_direction_b;
+			fc_direction <= fc_direction_b;
 		elsif (rising_edge(clk_50)) then
 			ra_direction <= ra_direction_b;
 			de_direction <= de_direction_b;
+			fc_direction <= fc_direction_b;
 			led_status(0) <= ra_status(0) or ra_status(1) or ra_status(2);
 			led_status(4) <= de_status(0) or de_status(1) or de_status(2);
 			if ((ra_status(0)  or ra_status(1) or ra_status(2)) = '0') then
@@ -596,6 +797,28 @@ begin
      ra_counter_max_sync 		=> ra_counter_max_sync,
      ra_trackctrl_sync 			=> ra_trackctrl_sync,
     
+     fc_step_count         => fc_step_count         ,   
+     fc_status             => fc_status             ,
+     fc_cmdcontrol         => fc_cmdcontrol         , 
+     fc_cmdtick            => fc_cmdtick            , 
+     fc_cmdduration        => fc_cmdduration        , 
+     fc_backlash_tick      => fc_backlash_tick      ,   
+     fc_backlash_duration  => fc_backlash_duration  ,       
+     fc_counter_load       => fc_counter_load       ,  
+     fc_counter_max        => fc_counter_max        , 
+     fc_trackctrl          => fc_trackctrl          ,        
+    
+     fc_step_count_sync  => fc_step_count_sync    ,
+     fc_status_sync      => fc_status_sync        ,
+     fc_cmdcontrol_sync  => fc_cmdcontrol_sync    ,
+     fc_cmdtick_sync     => fc_cmdtick_sync       ,
+     fc_cmdduration_sync => fc_cmdduration_sync   ,
+     fc_backlash_tick_sync 	   => fc_backlash_tick_sync,
+     fc_backlash_duration_sync => fc_backlash_duration_sync,
+     fc_counter_load_sync 		=> fc_counter_load_sync,
+     fc_counter_max_sync 		=> fc_counter_max_sync,
+     fc_trackctrl_sync 			=> fc_trackctrl_sync,
+    
      de_step_count_sync  => de_step_count_sync     ,
      de_status_sync      => de_status_sync         ,
      de_cmdcontrol_sync  => de_cmdcontrol_sync     ,
@@ -654,6 +877,31 @@ DRV_RA :  entity work.drv8825
 		drv8825_rst_n => de_rst_n,
 		drv8825_sleep_n => de_sleep_n,
 		drv8825_step => de_step,
+		rstn_50 => rstn_50
+
+	);
+	
+	DRV_FC :  entity work.drv8825	
+	generic map ( REVERSE_DIRECTION => false )
+	port map (
+		clk_50 => clk_50,
+		ctrl_backlash_duration => fc_backlash_duration_sync,
+		ctrl_backlash_tick => fc_backlash_tick_sync,
+		ctrl_cmdcontrol => fc_cmdcontrol_sync,
+		ctrl_cmdduration => fc_cmdduration_sync,
+		ctrl_cmdtick => fc_cmdtick_sync,
+		ctrl_counter_load => fc_counter_load_sync,
+		ctrl_counter_max => fc_counter_max_sync,
+		ctrl_status => fc_status_sync,
+		ctrl_step_count(31 downto 0) => fc_step_count_sync(31 downto 0),
+		ctrl_trackctrl(31 downto 0) => fc_trackctrl_sync(31 downto 0),
+		drv8825_direction => fc_direction_b,
+		drv8825_enable_n => fc_enable_n,
+		drv8825_fault_n => fc_fault_n,
+		drv8825_mode(2 downto 0) => fc_mode(2 downto 0),
+		drv8825_rst_n => fc_rst_n,
+		drv8825_sleep_n => fc_sleep_n,
+		drv8825_step => fc_step,
 		rstn_50 => rstn_50
 
 	);

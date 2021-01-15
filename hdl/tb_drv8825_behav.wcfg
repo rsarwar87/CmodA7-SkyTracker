@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="tb_drv8825_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="tb_drv8825" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="12460000000001fs"></ZoomEndTime>
+      <Cursor1Time time="9040000000000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="237"></NameColumnWidth>
+      <ValueColumnWidth column_width="107"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="64" />
+   <wvobject type="logic" fp_name="/tb_drv8825/clk_50">
+      <obj_property name="ElementShortName">clk_50</obj_property>
+      <obj_property name="ObjectShortName">clk_50</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/rstn_50">
+      <obj_property name="ElementShortName">rstn_50</obj_property>
+      <obj_property name="ObjectShortName">rstn_50</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/drv8825_mode">
+      <obj_property name="ElementShortName">drv8825_mode[2:0]</obj_property>
+      <obj_property name="ObjectShortName">drv8825_mode[2:0]</obj_property>
+      <obj_property name="CustomSignalColor">#FFA500</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/drv8825_enable_n">
+      <obj_property name="ElementShortName">drv8825_enable_n</obj_property>
+      <obj_property name="ObjectShortName">drv8825_enable_n</obj_property>
+      <obj_property name="CustomSignalColor">#FFA500</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/drv8825_sleep_n">
+      <obj_property name="ElementShortName">drv8825_sleep_n</obj_property>
+      <obj_property name="ObjectShortName">drv8825_sleep_n</obj_property>
+      <obj_property name="CustomSignalColor">#FFA500</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/drv8825_rst_n">
+      <obj_property name="ElementShortName">drv8825_rst_n</obj_property>
+      <obj_property name="ObjectShortName">drv8825_rst_n</obj_property>
+      <obj_property name="CustomSignalColor">#FFA500</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/drv8825_direction">
+      <obj_property name="ElementShortName">drv8825_direction</obj_property>
+      <obj_property name="ObjectShortName">drv8825_direction</obj_property>
+      <obj_property name="CustomSignalColor">#FFA500</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/drv8825_fault_n">
+      <obj_property name="ElementShortName">drv8825_fault_n</obj_property>
+      <obj_property name="ObjectShortName">drv8825_fault_n</obj_property>
+      <obj_property name="CustomSignalColor">#FFA500</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/drv8825_step">
+      <obj_property name="ElementShortName">drv8825_step</obj_property>
+      <obj_property name="ObjectShortName">drv8825_step</obj_property>
+      <obj_property name="CustomSignalColor">#FFA500</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/ctrl_status">
+      <obj_property name="ElementShortName">ctrl_status[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ctrl_status[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/ctrl_backlash_duration">
+      <obj_property name="ElementShortName">ctrl_backlash_duration[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ctrl_backlash_duration[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#FF0000</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/ctrl_backlash_tick">
+      <obj_property name="ElementShortName">ctrl_backlash_tick[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ctrl_backlash_tick[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#FF0000</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/ctrl_backlash_duration">
+      <obj_property name="ElementShortName">ctrl_backlash_duration[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ctrl_backlash_duration[31:0]</obj_property>
+      <obj_property name="CustomSignalColor">#FF0000</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/ctrl_backlash_tick">
+      <obj_property name="ElementShortName">ctrl_backlash_tick[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ctrl_backlash_tick[31:0]</obj_property>
+      <obj_property name="CustomSignalColor">#FF0000</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_drv8825/U0/state_backlash">
+      <obj_property name="ElementShortName">state_backlash</obj_property>
+      <obj_property name="ObjectShortName">state_backlash</obj_property>
+      <obj_property name="CustomSignalColor">#FF0000</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/clock_block/ctr_backlash_cnt">
+      <obj_property name="ElementShortName">ctr_backlash_cnt[29:0]</obj_property>
+      <obj_property name="ObjectShortName">ctr_backlash_cnt[29:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/ctrl_step_count">
+      <obj_property name="ElementShortName">ctrl_step_count[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ctrl_step_count[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_drv8825/U0/state_motor">
+      <obj_property name="ElementShortName">state_motor</obj_property>
+      <obj_property name="ObjectShortName">state_motor</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/drv8825_step">
+      <obj_property name="ElementShortName">drv8825_step</obj_property>
+      <obj_property name="ObjectShortName">drv8825_step</obj_property>
+      <obj_property name="CustomSignalColor">#FFA500</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/U0/cnt_enable">
+      <obj_property name="ElementShortName">cnt_enable</obj_property>
+      <obj_property name="ObjectShortName">cnt_enable</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/stepper_count/load_counter">
+      <obj_property name="ElementShortName">load_counter[29:0]</obj_property>
+      <obj_property name="ObjectShortName">load_counter[29:0]</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/stepper_count/load_counter_buf">
+      <obj_property name="ElementShortName">load_counter_buf[29:0]</obj_property>
+      <obj_property name="ObjectShortName">load_counter_buf[29:0]</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/max_counter">
+      <obj_property name="ElementShortName">max_counter[30:0]</obj_property>
+      <obj_property name="ObjectShortName">max_counter[30:0]</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/ctrl_counter_load">
+      <obj_property name="ElementShortName">ctrl_counter_load[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ctrl_counter_load[31:0]</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/U0/stepper_count/counter_clk">
+      <obj_property name="ElementShortName">counter_clk</obj_property>
+      <obj_property name="ObjectShortName">counter_clk</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/U0/stepper_count/load_count">
+      <obj_property name="ElementShortName">load_count</obj_property>
+      <obj_property name="ObjectShortName">load_count</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_drv8825/U0/stepper_count/state_counter">
+      <obj_property name="ElementShortName">state_counter</obj_property>
+      <obj_property name="ObjectShortName">state_counter</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/max_counter">
+      <obj_property name="ElementShortName">max_counter[30:0]</obj_property>
+      <obj_property name="ObjectShortName">max_counter[30:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/ctrl_counter_max">
+      <obj_property name="ElementShortName">ctrl_counter_max[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ctrl_counter_max[31:0]</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/ctrl_trackctrl">
+      <obj_property name="ElementShortName">ctrl_trackctrl[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ctrl_trackctrl[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/current_direction_buf">
+      <obj_property name="ElementShortName">current_direction_buf[3:0]</obj_property>
+      <obj_property name="ObjectShortName">current_direction_buf[3:0]</obj_property>
+      <obj_property name="CustomSignalColor">#F0E68C</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/current_speed_buf">
+      <obj_property name="ElementShortName">current_speed_buf[0:3]</obj_property>
+      <obj_property name="ObjectShortName">current_speed_buf[0:3]</obj_property>
+      <obj_property name="CustomSignalColor">#F0E68C</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_drv8825/U0/clock_block/counter_buf">
+      <obj_property name="ElementShortName">counter_buf</obj_property>
+      <obj_property name="ObjectShortName">counter_buf</obj_property>
+      <obj_property name="CustomSignalColor">#F0E68C</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_drv8825/U0/clock_block/count">
+      <obj_property name="ElementShortName">count</obj_property>
+      <obj_property name="ObjectShortName">count</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#F0E68C</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/current_stepper_counter">
+      <obj_property name="ElementShortName">current_stepper_counter[29:0]</obj_property>
+      <obj_property name="ObjectShortName">current_stepper_counter[29:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#FF00FF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/ctrl_cmdcontrol">
+      <obj_property name="ElementShortName">ctrl_cmdcontrol[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ctrl_cmdcontrol[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/ctrl_cmdduration">
+      <obj_property name="ElementShortName">ctrl_cmdduration[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ctrl_cmdduration[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/ctrl_cmdtick">
+      <obj_property name="ElementShortName">ctrl_cmdtick[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ctrl_cmdtick[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_drv8825/U0/command_block/ctr_cmdtick_in">
+      <obj_property name="ElementShortName">ctr_cmdtick_in</obj_property>
+      <obj_property name="ObjectShortName">ctr_cmdtick_in</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/command_block/ctr_cmdduration_in">
+      <obj_property name="ElementShortName">ctr_cmdduration_in[29:0]</obj_property>
+      <obj_property name="ObjectShortName">ctr_cmdduration_in[29:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/U0/command_block/ctr_cmd_direction_in">
+      <obj_property name="ElementShortName">ctr_cmd_direction_in</obj_property>
+      <obj_property name="ObjectShortName">ctr_cmd_direction_in</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/U0/command_block/ctr_cmd_in">
+      <obj_property name="ElementShortName">ctr_cmd_in</obj_property>
+      <obj_property name="ObjectShortName">ctr_cmd_in</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/U0/command_block/ctr_cmdcancel_in">
+      <obj_property name="ElementShortName">ctr_cmdcancel_in</obj_property>
+      <obj_property name="ObjectShortName">ctr_cmdcancel_in</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/U0/command_block/ctr_goto_in">
+      <obj_property name="ElementShortName">ctr_goto_in</obj_property>
+      <obj_property name="ObjectShortName">ctr_goto_in</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/U0/command_block/ctr_park_in">
+      <obj_property name="ElementShortName">ctr_park_in</obj_property>
+      <obj_property name="ObjectShortName">ctr_park_in</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/U0/command_block/use_acceleration">
+      <obj_property name="ElementShortName">use_acceleration</obj_property>
+      <obj_property name="ObjectShortName">use_acceleration</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_drv8825/U0/state_motor">
+      <obj_property name="ElementShortName">state_motor</obj_property>
+      <obj_property name="ObjectShortName">state_motor</obj_property>
+      <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/command_block/target_counter_int">
+      <obj_property name="ElementShortName">target_counter_int[29:0]</obj_property>
+      <obj_property name="ObjectShortName">target_counter_int[29:0]</obj_property>
+      <obj_property name="CustomSignalColor">#E0FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/U0/command_block/done_acceleration">
+      <obj_property name="ElementShortName">done_acceleration</obj_property>
+      <obj_property name="ObjectShortName">done_acceleration</obj_property>
+      <obj_property name="CustomSignalColor">#E0FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_drv8825/U0/command_block/divider">
+      <obj_property name="ElementShortName">divider</obj_property>
+      <obj_property name="ObjectShortName">divider</obj_property>
+      <obj_property name="CustomSignalColor">#E0FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/tb_drv8825/U0/command_block/issue_direction">
+      <obj_property name="ElementShortName">issue_direction</obj_property>
+      <obj_property name="ObjectShortName">issue_direction</obj_property>
+      <obj_property name="CustomSignalColor">#E0FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_drv8825/U0/command_block/issue_speed">
+      <obj_property name="ElementShortName">issue_speed</obj_property>
+      <obj_property name="ObjectShortName">issue_speed</obj_property>
+      <obj_property name="CustomSignalColor">#E0FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="other" fp_name="/tb_drv8825/U0/command_block/acceleration_counter">
+      <obj_property name="ElementShortName">acceleration_counter</obj_property>
+      <obj_property name="ObjectShortName">acceleration_counter</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/command_block/target_counter_int">
+      <obj_property name="ElementShortName">target_counter_int[29:0]</obj_property>
+      <obj_property name="ObjectShortName">target_counter_int[29:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/current_stepper_counter">
+      <obj_property name="ElementShortName">current_stepper_counter[29:0]</obj_property>
+      <obj_property name="ObjectShortName">current_stepper_counter[29:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/command_block/cutoff_count">
+      <obj_property name="ElementShortName">cutoff_count[29:0]</obj_property>
+      <obj_property name="ObjectShortName">cutoff_count[29:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/command_block/init_count">
+      <obj_property name="ElementShortName">init_count[29:0]</obj_property>
+      <obj_property name="ObjectShortName">init_count[29:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/command_block/decceleration_map">
+      <obj_property name="ElementShortName">decceleration_map[0:7][29:0]</obj_property>
+      <obj_property name="ObjectShortName">decceleration_map[0:7][29:0]</obj_property>
+      <obj_property name="CustomSignalColor">#E0FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/command_block/decceleration_map_buf">
+      <obj_property name="ElementShortName">decceleration_map_buf[0:7]</obj_property>
+      <obj_property name="ObjectShortName">decceleration_map_buf[0:7]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/command_block/acceleration_map">
+      <obj_property name="ElementShortName">acceleration_map[0:7][29:0]</obj_property>
+      <obj_property name="ObjectShortName">acceleration_map[0:7][29:0]</obj_property>
+      <obj_property name="CustomSignalColor">#E0FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/command_block/speedmap_map">
+      <obj_property name="ElementShortName">speedmap_map[0:7]</obj_property>
+      <obj_property name="ObjectShortName">speedmap_map[0:7]</obj_property>
+      <obj_property name="CustomSignalColor">#E0FFFF</obj_property>
+      <obj_property name="UseCustomSignalColor">true</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/drv8825_mode">
+      <obj_property name="ElementShortName">drv8825_mode[2:0]</obj_property>
+      <obj_property name="ObjectShortName">drv8825_mode[2:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/current_mode_out">
+      <obj_property name="ElementShortName">current_mode_out[2:0]</obj_property>
+      <obj_property name="ObjectShortName">current_mode_out[2:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/tb_drv8825/U0/delta_counter">
+      <obj_property name="ElementShortName">delta_counter[5:0]</obj_property>
+      <obj_property name="ObjectShortName">delta_counter[5:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+</wave_config>

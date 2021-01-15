@@ -256,35 +256,13 @@ class SkyTrackerInterface(object):
 
 
 if __name__ == '__main__':
-    host = os.getenv('HOST','192.168.1.140')
+    host = os.getenv('HOST','192.168.1.134')
     client = connect(host, name='mars_star_tracker')
     driver = SkyTrackerInterface(client)
-    driver.Initialize()
-    driver.PrintAll()
-    driver.cancel_raw_command(0, False)
-    driver.cancel_raw_command(1, False)
-    driver.enable_backlash(0)
-    driver.enable_backlash(1)
-
-    print('Disable tracking0 {0}'.format(driver.disable_raw_tracking(0, False)))
-    print('Disable tracking1 {0}'.format(driver.disable_raw_tracking(1, False)))
-    print('Disable Cmd0 {0}'.format(driver.cancel_raw_command(0, True)))
-    print('Disable Cmd1 {0}'.format(driver.cancel_raw_command(1, True)))
-    time.sleep(1)
-    driver.PrintAll()
-    time.sleep(1)
-    driver.set_motor_direction(0, False, True)
-    print('Start Command0 {0}'.format(driver.SwpCmdStartMotion(0, False, True, False)))
-    time.sleep(10)
-    print('Disable Cmd0 {0}'.format(driver.cancel_raw_command(0, True)))
-    time.sleep(1)
-    driver.set_motor_direction(0, False, False)
-    print('Start Command1 {0}'.format(driver.SwpCmdStartMotion(0, False, True, False)))
-    time.sleep(10)
-    print('Disable Cmd0 {0}'.format(driver.cancel_raw_command(0, True)))
-    driver.PrintAll()
-
-
+    print('set_current_position{0} : {1}'.format(0, driver.set_current_position(0, 2304000)))
+    print('set_current_position{0} : {1}'.format(1, driver.set_current_position(1, 3456000)))
+    print('get_raw_stepcount{0} : {1}'.format(0, driver.get_raw_stepcount(0)))
+    print('get_raw_stepcount{0} : {1}'.format(1, driver.get_raw_stepcount(1)))
 
 
 
