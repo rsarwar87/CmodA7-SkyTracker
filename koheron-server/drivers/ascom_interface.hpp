@@ -178,7 +178,7 @@ class ASCOMInterface {
   }
   // SetFeatureCmd             = 'W', // EQ8/AZEQ6/AZEQ5 only
   bool SwpSetFeature(uint8_t axis, uint8_t cmd) {  // not used
-    return true;
+    return !((axis + cmd) > 0);
   }
   // GetFeatureCmd             = 'q', // EQ8/AZEQ6/AZEQ5 only
   uint32_t SwpGetFeature(uint8_t axis) {
