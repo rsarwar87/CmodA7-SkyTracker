@@ -12,16 +12,21 @@ using namespace std::chrono_literals;
 class Drv8825
 {
   public:
+    m_debug;
     Drv8825(Context& ctx_)
     : ctx(ctx_),         
       spi(ctx.spi.get("spidev0.0"))
-    {}
+    {
+      ctx.log<INFO>("DRV8825-%s: Class initialized\n", __func__);
+      m_debug = false;
+    }
 
     template<uint32_t offset>
     uint32_t get_status()
     {
       uint32_t ret = 0xFFFFFFFF;
       spi.read_at<reg::status0/4 + offset, mem::status_addr, 1> (&ret);
+      if (m_debug)
       ctx.log<INFO>("DRV8825-%s: %s=0x%08x\n", offset == 0 ? "SA" : "DC", __func__, ret);
       return ret; 
     }
@@ -30,6 +35,7 @@ class Drv8825
     {
       uint32_t ret = 0xFFFFFFFF;
       spi.read_at<reg::step_count0/4 + offset, mem::status_addr, 1> (&ret);
+      if (m_debug)
       ctx.log<INFO>("DRV8825-%s: %s=0x%08x\n", offset == 0 ? "SA" : "DC", __func__, ret);
       return ret; 
     }
@@ -55,7 +61,8 @@ class Drv8825
             std::this_thread::sleep_for(50ms);
             uint32_t tmp = period_ticks*i;
             uint32_t cmd = 1 + (isCCW << 1) + (mode << 2) +((tmp) << 5);
-            ctx.log<INFO>("DRV8825-%s: %s: CCW=%u, period=0x%08x, mode=%u cmd=0x%08x\n", 
+            if (m_debug)
+              ctx.log<INFO>("DRV8825-%s: %s: CCW=%u, period=0x%08x, mode=%u cmd=0x%08x\n", 
                     offset == 0 ? "SA" : "DC", __func__,
                     isCCW, tmp, mode, cmd);
             spi.write_at<reg::trackctrl0/4 + offset, mem::control_addr, 1> (&cmd);
@@ -64,6 +71,7 @@ class Drv8825
       }
       uint32_t tmp= 0;
       spi.write_at<reg::trackctrl0/4 + offset, mem::control_addr, 1> (&tmp);
+      if (m_debug)
       ctx.log<INFO>("DRV8825-%s: %s\n", offset == 0 ? "SA" : "DC", __func__);
     }
     template<uint32_t offset>
@@ -78,7 +86,8 @@ class Drv8825
             std::this_thread::sleep_for(50ms);
             uint32_t tmp = period_ticks*i;
             cmd = 1 + (isCCW << 1) + (mode << 2) +((tmp) << 5);
-            ctx.log<INFO>("DRV8825-%d: %s: CCW=%u, period=0x%08x, mode=%u cmd=0x%08x\n", 
+            if (m_debug)
+              ctx.log<INFO>("DRV8825-%d: %s: CCW=%u, period=0x%08x, mode=%u cmd=0x%08x\n", 
                     offset, __func__,
                     isCCW, tmp, mode, cmd);
             spi.write_at<reg::trackctrl0/4 + offset, mem::control_addr, 1> (&cmd);
@@ -86,6 +95,7 @@ class Drv8825
         }
         cmd = 1 + (isCCW << 1) + (mode << 2) +((period_ticks) << 5);
         spi.write_at<reg::trackctrl0/4 + offset, mem::control_addr, 1> (&cmd);
+        if (m_debug)
         ctx.log<INFO>("DRV8825-%d: %s: CCW=%u, period=0x%08x, mode=%u cmd=0x%08x\n", 
             offset, __func__,
             isCCW, (period_ticks), mode, cmd);
@@ -97,6 +107,7 @@ class Drv8825
         spi.write_at<reg::backlash_tick0/4 + offset, mem::control_addr, 1> (&cmd);
         uint32_t duration = n_cycle* period_ticks;
         spi.write_at<reg::backlash_duration0/4 + offset, mem::control_addr, 1> (&duration);
+        if (m_debug)
         ctx.log<INFO>("DRV8825-%s: %s: period=0x%08x, cycle=%u, cmd=0x%08x, duration=0x%08x \n", 
             offset == 0 ? "SA" : "DC", __func__,
             (period_ticks), n_cycle, cmd, duration);
@@ -114,6 +125,7 @@ class Drv8825
         spi.write_at<reg::cmdduration0/4 + offset, mem::control_addr, 1> (&target);
         uint32_t cmd = 1 + (isGoto << 1) + (isCCW << 2) + (mode << 4) + (use_accel << 7);
         spi.write_at<reg::cmdcontrol0/4 + offset, mem::control_addr, 1> (&cmd);
+        if (m_debug)
         ctx.log<INFO>("DRV8825-%s: %s: CCW=%u, period=0x%08x, %s=%u mode=%u, cmd=0x%08x \n", 
             offset == 0 ? "SA" : "DC", __func__,
             isCCW, (period_ticks), isGoto ? "GotoTarget" : "n_cycles", 
@@ -132,6 +144,7 @@ class Drv8825
         spi.write_at<reg::cmdcontrol0/4 + offset, mem::control_addr, 1> (&cmd);
         //std::this_thread::sleep_for(1ms);
         //ctl.write<reg::cmdcontrol0 + offset*off_shift>(0);
+        if (m_debug)
         ctx.log<INFO>("DRV8825-%s: %s; cmd = 0x%08x\n", offset == 0 ? "SA" : "DC", 
             __func__, cmd);
     }
