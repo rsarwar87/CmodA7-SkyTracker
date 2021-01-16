@@ -2,20 +2,22 @@
 ///
 /// (c) Koheron
 
-#ifndef __DRIVERS_DRV8825_HPP__
-#define __DRIVERS_DRV8825_HPP__
+#ifndef __DRIVERS_MOTORDRIVER_HPP__
+#define __DRIVERS_MOTORDRIVER_HPP__
 
 #include <context.hpp>
 
 constexpr size_t off_shift = 1;
 using namespace std::chrono_literals;
-class Drv8825
+class MotorDriver
 {
   public:
-    Drv8825(Context& ctx_)
+    MotorDriver(Context& ctx_)
     : ctx(ctx_),         
       spi(ctx.spi.get("spidev0.0"))
-    {}
+    {
+      spi.write_at<reg::driver_type, mem::control_addr, 1>(0xFFFFFFFF);
+    }
 
     template<uint32_t offset>
     uint32_t get_status()
