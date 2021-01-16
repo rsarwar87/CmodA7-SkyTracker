@@ -140,6 +140,8 @@ architecture rtl of SKY_TOP is
     signal  alarm_out:  STD_LOGIC;
     signal  adc_address : std_logic_vector (6 downto 0);
     signal  adc_dbus : std_logic_vector (15 downto 0);
+    
+    signal  led_out_hw:  STD_LOGIC;
 begin
     rstn_50 <= rstn_12;
     rstn_100 <= rstn_12;
@@ -573,16 +575,19 @@ begin
     begin
         if (rstn_150 = '0') then
             S_LED <= (others => '1');
+            led_out_hw <= '1';
         elsif (rising_edge(clock_150)) then
           if ip_addr = "00000000" then
-            S_LED(7 downto 5) <= "111";
-            S_LED(4 downto 0) <= led_level_sync;
-          elsif (ip_addr = "11111111") then
             S_LED <= (others => led_level_sync(2));
+            led_out_hw <= '1';
+          elsif (ip_addr = "11111111") then
+            S_LED <= (others => '0');
+            led_out_hw <= '0';
           -- device status 
           -- elsif bla bla
 			 elsif (led_status_sync = "00000000") then
 				S_LED <= ip_addr;
+				led_out_hw <= '1';
           else 
             S_LED <= led_status_sync;
           end if;
@@ -878,11 +883,11 @@ begin
             end if;
         end if;
     end process;	
-    LED(0) <= led_level(1);
-    LED(1) <= led_level(4);
-    LED_RBG(0) <= led_level(3);
-    LED_RBG(1) <= led_level(2);
-    LED_RBG(2) <= led_level(0);
+    LED(0) <= led_level(1) when led_out_hw = '1' else '0';
+    LED(1) <= led_level(4) when led_out_hw = '1' else '0';
+    LED_RBG(0) <= led_level(3) when led_out_hw = '1' else '0';
+    LED_RBG(1) <= led_level(2) when led_out_hw = '1' else '0';
+    LED_RBG(2) <= led_level(0) when led_out_hw = '1' else '0';
 end block MMCM_block;
 	 
 end rtl;
