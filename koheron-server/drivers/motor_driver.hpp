@@ -19,7 +19,8 @@ class MotorDriver
     {
       ctx.log<INFO>("DRV8825-%s: Class initialized\n", __func__);
       m_debug = false;
-      spi.write_at<reg::driver_type, mem::control_addr, 1>(0xFFFFFFFF);
+      uint32_t val = 0xFFFFFFFF;
+      spi.write_at<reg::tmc_select, mem::control_addr, 1>(&val);
     }
 
     template<uint32_t offset>

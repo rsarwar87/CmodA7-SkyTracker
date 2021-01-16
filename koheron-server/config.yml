@@ -47,7 +47,7 @@ xdc:
 
 drivers:
   - ./drivers/common.hpp
-  - ./drivers/drv8825.hpp
+  - ./drivers/motor_driver.hpp
   - ./drivers/sky-tracker.hpp
   - ./drivers/ascom_interface.hpp
   - ./drivers/focuser.hpp
