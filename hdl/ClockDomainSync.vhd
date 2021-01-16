@@ -71,6 +71,9 @@ entity ClockDomainSync is
      fc_counter_max 		 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
      fc_trackctrl 			 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
     
+     is_tmc_buf              : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+     is_tmc_sync              : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+    
      fc_step_count_sync 		 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
      fc_status_sync     		 : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
      fc_cmdcontrol_sync 		 : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- steps, go, stop, direction
@@ -126,6 +129,19 @@ subtype T_MISC_SYNC_DEPTH    is integer range 2 to 16;
     end component;
 signal tmp :std_logic;
 begin
+    SyncBusToClock_istmc2226 : sync_Vector 
+      generic map (
+        MASTER_BITS => 32, SYNC_DEPTH => 3
+      )
+      port map(
+        Clock1        => clk_150 ,                                                  -- <Clock>  input clock
+		Clock2        => clk_50,                                                 -- <Clock>  output clock
+		Input         => is_tmc_buf,   -- @Clock1:  input vector
+		Output        => is_tmc_sync ,  -- @Clock2:  output vector
+		Busy          => open,                                                -- @Clock1:  busy bit
+		Changed       => open                                                -- @Clock2:  changed bit
+      );
+
     SyncBusToClock_de_step_count : sync_Vector 
       generic map (
         MASTER_BITS => 32, SYNC_DEPTH => 3
