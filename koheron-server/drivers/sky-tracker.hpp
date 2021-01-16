@@ -6,7 +6,7 @@
 #define __DRIVERS_SKY_INTERFACE_HPP__
 
 #include <context.hpp>
-#include <drv8825.hpp>
+#include <motor_driver.hpp>
 #include <params.hpp>
 #include <rpigpio_ledpwm.hpp>
 
@@ -19,7 +19,7 @@ class SkyTrackerInterface {
   SkyTrackerInterface(Context& ctx_)
       : ctx(ctx_),
         spi(ctx.spi.get("spidev0.0")),
-        stepper(ctx.get<Drv8825>()) {
+        stepper(ctx.get<MotorDriver>()) {
     ctx.log<INFO>("SkyTrackerInterface: %s Started\n", __func__);
     m_debug = false;
     for (size_t i = 0; i < 3; i++) {
@@ -530,8 +530,8 @@ class SkyTrackerInterface {
  private:
   Context& ctx;
   SpiDev& spi;
-  Drv8825& stepper;
   bool m_debug;
+  MotorDriver& stepper;
   std::unique_ptr<PiPolarLed> pi;
 
   parameters m_params;

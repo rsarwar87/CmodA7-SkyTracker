@@ -29,6 +29,7 @@ control_registers:
   - led_pwm
   - camera_trigger
   - temp_channel
+  - tmc_select
 
 status_registers:
   - step_count[3]
