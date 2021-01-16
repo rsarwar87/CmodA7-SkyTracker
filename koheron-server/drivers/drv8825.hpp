@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 class Drv8825
 {
   public:
-    m_debug;
+    bool m_debug;
     Drv8825(Context& ctx_)
     : ctx(ctx_),         
       spi(ctx.spi.get("spidev0.0"))
