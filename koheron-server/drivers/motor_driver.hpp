@@ -16,7 +16,8 @@ class MotorDriver
     : ctx(ctx_),         
       spi(ctx.spi.get("spidev0.0"))
     {
-      spi.write_at<reg::driver_type, mem::control_addr, 1>(0xFFFFFFFF);
+      uint32_t val = 0xFFFFFFFF;
+      spi.write_at<reg::tmc_select, mem::control_addr, 1>(&val);
     }
 
     template<uint32_t offset>
