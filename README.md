@@ -1,7 +1,7 @@
 
-# StarTracker for CMod A7.
+# StarTracker and telescope autofocuser for CMod A7.
 
-One device to control and track a equatorial mount. I use it with Skywatcher EQ5 with two NEMA 17 2A 200 step motors, two DRV8825, two 12--teeth timing pully, two 60-teeth timing pully and two 152mm timing belts. It was controlled from the Ekos telescope ecosystem with indi_eqmod_telescope and indi_nikon_ccd running on the ARM core. 
+One device to control and track a equatorial mount. I use it with Skywatcher EQ5 with two NEMA 17 2A 200 step motors and one NEMA17 1 AM stepper motor for autofocus, three DRV8825, two 12--teeth timing pully, two 60-teeth timing pully, one 15-teeth timming pully, one 158mm timing belt and two 152mm timing belts. It was controlled from the Ekos telescope ecosystem with indi_eqmod_telescope, indi_fpga_focuser and indi_nikon_ccd running on the ARM core. 
 
 The FPGA is connected to an Raspberry Pi over SPI. I connected the raspbery pi to the nikon camera and a wifi dongle and is controlled over indiserver.
 
@@ -87,11 +87,11 @@ The following 4 8-bit words are written to the register pointed by the address. 
 #### Camera Triggers
 To facilitate the use of older cameras which cannot be triggered in bulb mode over the usb, there are two gpios which are used to send triggers. they can be passed to an optoisolator to connect to the camera remote trigger ports.
 
-       GPIO_0(35) <= camera_trigger(0); -- pin 40
-       GPIO_0(34) <= camera_trigger(1); -- pin 39
+       GPIO_0(1) <= camera_trigger(0); -- pin 40
+       GPIO_0(2) <= camera_trigger(1); -- pin 39
 
 #### Polar LED
-A 8 bit std_logic_vector can be set to a value which is used to generate a PWM signal in order to connect to an LED to be used as a polar illuminator
+A 8 bit std_logic_vector can be set to a value which is used to generate a PWM signal in order to connect to an LED to be used as a polar illuminator; pin 0.
 
 #### LED Status
 The custom board has 8 leds which are used to show the status of the device. There are four state of operation
@@ -122,9 +122,12 @@ The following are the status registers in the
 | dna            | 0x0 | 64-bit word | Returns fixed value, design ID
 | step_count[0]   | 0x2 | 32-bit word | Current RA step count
 | step_count[1]   | 0x3 | 32-bit word | Current DE step count
-| status[0]  | 0x4 | 32-bit word | Current RA status
-| status[1]      | 0x5 | 32-bit word | Current DE status
-| forty_two      | 0x6 | 32-bit word | always returns 42, to check if device is working properly
+| step_count[2]   | 0x4 | 32-bit word | Current Focuser step count
+| status[0]  | 0x5 | 32-bit word | Current RA status
+| status[1]      | 0x6 | 32-bit word | Current DE status
+| status[12]      | 0x7 | 32-bit word | Current Focuser status
+| forty_two      | 0x8 | 32-bit word | always returns 42, to check if device is working properly
+| forty_two      | 0x9 | 32-bit word | analogue temp sensor connected to analog pin 1, used by the focuser library. if the focuser is directed to use the temp sensor connecte to the RPi, this is ignored.
 
 #### Control
 
@@ -133,23 +136,32 @@ The following are the status registers in the
 |----------------|--------|--------|--------------
 | counter_load[0] | 0x0 | 32-bit word | RA load counter
 | counter_load[1] | 0x1 | 32-bit word | DE load counter
-| counter_max[0]   | 0x2 | 32-bit word | RA max count
-| counter_max[1]   | 0x3 | 32-bit word | DE max count
-| cmdcontrol[0]  | 0x4 | 32-bit word | RA Command control
-| cmdcontrol[1]      | 0x5 | 32-bit word | DE  Command control
-| cmdduration[0]  | 0x6 | 32-bit word | RA Command duration
-| cmdduration[1]      | 0x7 | 32-bit word | DE Command duration
-| trackctrl[0]  | 0x8 | 32-bit word | RA tracking control
-| trackctrl[1]      | 0x9 | 32-bit word | DE tracking control
-| cmdtick[0]  | 0xa | 32-bit word | RA Command period
-| cmdtick[1]      | 0xb | 32-bit word | DE Command period
-| backlash_tick[0]  | 0xc | 32-bit word | RA Backlash period
-| backlash_tick[1]      | 0xd | 32-bit word | DE Backlash period
-| backlash_duration[0]  | 0xe | 32-bit word | RA Backlash duration
-| backlash_duration[1]      | 0xf | 32-bit word | DE Backlash duration
-| led  | 0x10 | 32-bit word | IP address of the device
-| led_pwm      | 0x11 | 32-bit word | Polar LED
-| camera_trigger      | 0x12 | 32-bit word | Current RA status
+| counter_load[2] | 0x2 | 32-bit word | Focuser load counter
+| counter_max[0]   | 0x3 | 32-bit word | RA max count
+| counter_max[1]   | 0x4 | 32-bit word | DE max count
+| counter_max[2]   | 0x5 | 32-bit word | Focuser max count
+| cmdcontrol[0]  | 0x6 | 32-bit word | RA Command control
+| cmdcontrol[1]      | 0x7 | 32-bit word | DE  Command control
+| cmdcontrol[2]      | 0x8 | 32-bit word | Focuser  Command control
+| cmdduration[0]  | 0x9 | 32-bit word | RA Command duration
+| cmdduration[1]      | 0xa | 32-bit word | DE Command duration
+| cmdduration[2]      | 0xb | 32-bit word | Focuser Command duration
+| trackctrl[0]  | 0xc | 32-bit word | RA tracking control
+| trackctrl[1]      | 0xd | 32-bit word | DE tracking control
+| trackctrl[2]      | 0xe | 32-bit word | Focuser tracking control
+| cmdtick[0]  | 0xf | 32-bit word | RA Command period
+| cmdtick[1]      | 0x10 | 32-bit word | DE Command period
+| cmdtick[2]      | 0x11 | 32-bit word | Focuser Command period
+| backlash_tick[0]  | 0x12 | 32-bit word | RA Backlash period
+| backlash_tick[1]      | 0x13 | 32-bit word | DE Backlash period
+| backlash_tick[2]      | 0x14 | 32-bit word | Focuser Backlash period
+| backlash_duration[0]  | 0x15 | 32-bit word | RA Backlash duration
+| backlash_duration[1]      | 0x16 | 32-bit word | DE Backlash duration
+| backlash_duration[2]      | 0x17 | 32-bit word | Focuser Backlash duration
+| led  | 0x18 | 32-bit word | IP address of the device
+| led_pwm      | 0x19 | 32-bit word | Polar LED
+| camera_trigger      | 0x1a | 32-bit word | Camera trigger
+| temp_adc      | 0x1b | 32-bit word |analogue adc
 
 
 
@@ -198,21 +210,6 @@ systemctl start koheron-server.service
 The device needs some modified indi-3rd party drivers as well to enable controlling the mount and the camera triggers on the FPGA.
 
 ```
-cd 
-git clone https://github.com/rsarwar87/CmodA7-SkyTracker --depth=1
-cd CmodA7-SkyTracker/koheron-server/
-make server
-cd libclient
-mkdir build
-cd build
-cmake ../ -DCMAKE_INSTALL_PREFIX=/usr ../
-make
-sudo make install
-```
-
-On the device:
-
-```
 sudo apt-get install libnova-dev libcfitsio-dev libusb-1.0-0-dev zlib1g-dev libgsl-dev build-essential cmake git libjpeg-dev libcurl4-gnutls-dev libtiff-dev libftdi-dev libgps-dev libraw-dev libdc1394-22-dev libgphoto2-dev libboost-dev libboost-regex-dev librtlsdr-dev liblimesuite-dev libftdi1-dev
 cd
 git clone https://github.com/rsarwar87/indi-3rdparty --depth=1
@@ -224,6 +221,13 @@ make
 sudo make install
 cd 
 cd indi-3rdparty/indi-gphoto
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr ../
+make
+sudo make install
+cd 
+cd indi-3rdparty/indi-fpga-focuser
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_PREFIX=/usr ../
@@ -232,40 +236,11 @@ sudo make install
 ```
 To run the device, connect everything and then from the terminal:
 
-### Installing/configuring EKOS linux binaries on laptop.
-
-Installation:
 ```
-sudo apt-add-repository ppa:mutlaqja/ppa
-sudo apt-get update
-sudo apt-get install indi-full kstars-bleeding
-```
-Custom driver if indiserver is to run locally on the laptop/PC.
-```
-sudo apt-get install libnova-dev libcfitsio-dev libusb-1.0-0-dev zlib1g-dev libgsl-dev build-essential cmake git libjpeg-dev libcurl4-gnutls-dev libtiff-dev libftdi-dev libgps-dev libraw-dev libdc1394-22-dev libgphoto2-dev libboost-dev libboost-regex-dev librtlsdr-dev liblimesuite-dev libftdi1-dev
-cd
-git clone https://github.com/rsarwar87/indi-3rdparty --depth=1
-cd indi-3rdparty/indi-eqmod
-mkdir build
-cd  build
-make
-sudo make install
-cd 
-## Do this if you wish to use the camera triggers only, otherwise not needed
-cd indi-3rdparty/indi-gphoto
-mkdir build
-cd build
-cmake ../
-sudo make install
-```
-
-Running
-```
-export SKY_IP="127.0.0.1"
-indiserver indi_nikon_ccd indi_eqmod_telescope
+indiserver indi_nikon_ccd indi_eqmod_telescope indi_fpga_focuser
 ```
 after first connect make the following changes:
 1. EQ mod - change device port from /dev/ttyUSB0 to /dev/ttyS0. -- this is irralevent to out system, but it is just to stop indiserver from complaining
-2. If you wish to use the FPGA to trigger the camera, in the nikon camera setting, set port to "KFPGA"
+2. If you wish to use the FPGA to trigger the camera, in the nikon camera setting, set port to "RPI@21", where 21 is the pin connected to the trigger
 
 

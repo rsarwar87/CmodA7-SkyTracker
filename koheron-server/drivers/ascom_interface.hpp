@@ -14,9 +14,14 @@ class ASCOMInterface {
   ASCOMInterface(Context& ctx_)
       : ctx(ctx_),
         sti(ctx.get<SkyTrackerInterface>()) {
+          debug = false;
 
   }
 
+  void set_debug(bool val)
+  {
+    debug = val;
+  }
   // Initialize                = 'F',
   bool SwpCmdInitialize(uint8_t axis) {
     bool ret = true;
@@ -38,7 +43,6 @@ class ASCOMInterface {
   }
   // InquireMotorBoardVersion  = 'e',
   uint32_t SwpGetBoardVersion() {
-    ctx.log<INFO>("ASCOMInteface: %s\n", __func__);
     return sti.get_version();
   }
   // InquireGridPerRevolution  = 'a', // steps per axis revolution
@@ -174,14 +178,12 @@ class ASCOMInterface {
   }
   // SetFeatureCmd             = 'W', // EQ8/AZEQ6/AZEQ5 only
   bool SwpSetFeature(uint8_t axis, uint8_t cmd) {  // not used
-    ctx.log<INFO>("ASCOMInteface: %s-%u Command recieved: %u\n", __func__, axis, cmd);
     return true;
   }
   // GetFeatureCmd             = 'q', // EQ8/AZEQ6/AZEQ5 only
   uint32_t SwpGetFeature(uint8_t axis) {
     // return the gear change settings
     if (!check_axis_id(axis, __func__)) return 0x1000;
-    ctx.log<INFO>("ASCOMInteface: %s- Command recieved:\n", __func__);
     return 0x00001001;
   }
   // SetPolarScopeLED          = 'V',
@@ -221,12 +223,14 @@ class ASCOMInterface {
  private:
   Context& ctx;
   SkyTrackerInterface& sti;
+  bool debug;
 
   bool check_axis_id(int8_t axis, std::string str) {
     if (axis > 1) {
       ctx.log<ERROR>("ASCOMInteface: %s- Invalid axis: %u\n", str, axis);
       return false;
     }
+    if (debug)
     ctx.log<INFO>("ASCOMInteface: %s\n", str);
     return true;
   }
