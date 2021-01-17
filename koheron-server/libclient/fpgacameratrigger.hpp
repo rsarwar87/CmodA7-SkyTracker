@@ -18,6 +18,7 @@ class indi_cameratrigger_interface {
   bool close_shutter(bool fpga = false);
   float GetTemp_fpga(uint32_t channel);
   float GetTemp_pi1w();
+  void set_debug(bool val);
 
  private:
 };

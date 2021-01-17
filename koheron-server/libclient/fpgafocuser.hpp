@@ -35,6 +35,7 @@ class indi_focuser_interface {
   bool set_backlash_cycles(uint32_t cycles);
   uint32_t get_backlash_period();
   uint32_t get_backlash_cycles();
+  void set_debug(bool val);
 
  private:
 };

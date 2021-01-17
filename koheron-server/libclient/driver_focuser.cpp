@@ -18,6 +18,9 @@ indi_focuser_interface::~indi_focuser_interface(){
   klog << __func__ << std::endl;
   client.reset();
 }
+void indi_focuser_interface::set_debug(bool val) {
+  client->call<op::ASCOMInterface::set_debug>(val);
+}
 bool indi_focuser_interface::Initialize() {
   client->call<op::FocuserInterface::Initialize>();
   auto buffer = client->recv<op::FocuserInterface::Initialize, bool>();

@@ -18,6 +18,9 @@ indi_cameratrigger_interface::~indi_cameratrigger_interface(){
   klog << __func__ << std::endl;
   client.reset();
 }
+void indi_cameratrigger_interface::set_debug(bool val) {
+  client->call<op::ASCOMInterface::set_debug>(val);
+}
 bool indi_cameratrigger_interface::set_cameratrigger_reg(uint8_t value, bool fpga) {
   client->call<op::CameraInterface::set_cameratrigger_reg>(value, fpga);
   auto buffer = client->recv<op::CameraInterface::set_cameratrigger_reg, bool>();
