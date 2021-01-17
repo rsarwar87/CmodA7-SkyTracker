@@ -6,6 +6,7 @@ typedef struct {
     uint32_t period_ticks[2][3];  // time period in 20ns ticks
     double speed_ratio[2][3];      // speed of motor
     bool highSpeedMode[2][3];
+    bool highSpeedMode_fpga[2][3];
 
     uint8_t motorMode[2][3];  // microsteps
     bool motorDirection[2][3];
