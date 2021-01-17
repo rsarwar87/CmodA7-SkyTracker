@@ -1,7 +1,7 @@
 /// (c) Koheron
 
 #ifndef __DRIVER_CAMERA_HPP__
-#define __DRIVER__CAMERA_HPP__
+#define __DRIVER_CAMERA_HPP__
 #include <stdint.h>
 #include <stdio.h>
 #include <array>

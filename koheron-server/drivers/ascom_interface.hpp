@@ -65,6 +65,7 @@ class ASCOMInterface {
   // InstantAxisStop (L) + NotInstantAxisStop (K)
   bool SwpCmdStopAxis(uint8_t axis, bool instant) {
     if (!check_axis_id(axis, __func__)) return false;
+    if (debug)
     ctx.log<INFO>("ASCOMInteface: %s(%u)- isInstant: %u\n", __func__, axis, instant);
     uint32_t status = sti.get_raw_status(axis);
     bool ret = true;
@@ -105,6 +106,7 @@ class ASCOMInterface {
                                    bool isHighSpeed) {
     //[1] direction and mode, i.e. high/low speed in eqmod?
     if (!check_axis_id(axis, __func__)) return false;
+    if (debug)
     ctx.log<INFO>(
         "ASCOMInteface: %s(%u)- isSlew: %u; isForward: %u; isHighSpeed: %u\n",
         __func__, axis, isSlew,isForward,  isHighSpeed);
