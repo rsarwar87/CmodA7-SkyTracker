@@ -20,6 +20,7 @@ class SkyTrackerInterface {
       : ctx(ctx_),
         spi(ctx.spi.get("spidev0.0")),
         stepper(ctx.get<Drv8825>()) {
+    ctx.log<INFO>("SkyTrackerInterface: %s Started\n", __func__);
     for (size_t i = 0; i < 3; i++) {
       m_params.period_usec[0][i] = 1;     // time period in us
       m_params.period_ticks[0][i] = 100;  // time period in 20ns ticks
@@ -56,6 +57,7 @@ class SkyTrackerInterface {
       set_current_position(i, get_steps_per_rotation(i)/2);
 
     }
+    ctx.log<INFO>("SkyTrackerInterface: %s Finished\n", __func__);
     pi = make_unique<PiPolarLed>("RPI@0", 256);
   }
 
@@ -63,7 +65,7 @@ class SkyTrackerInterface {
     uint32_t value = val;
     if (fpga)
       spi.write_at<reg::led_pwm/4, mem::control_addr, 1> (&value); 
-    else
+    else if (pi)
       pi->set_duty(val);
 
     ctx.log<INFO>("%s(): %d\n", __func__, val);
@@ -267,7 +269,7 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (val_ticks > m_params.maxPeriod[axis] ||
         val_ticks < m_params.minPeriod[axis]) {
-      ctx.log<ERROR>("%s(%u): out of range %u\n", __func__, axis, val_ticks);
+      ctx.log<ERROR>("%s(%u): out of range %u (min-%u, max-%u)\n", __func__, axis, val_ticks, m_params.minPeriod[axis], m_params.maxPeriod[axis]);
       return false;
     }
     m_params.period_usec[isSlew][axis] = val_ticks * fclk0_period_us;
