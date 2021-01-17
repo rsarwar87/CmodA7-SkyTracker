@@ -12,6 +12,7 @@ class ASCOM_sky_interface {
   ASCOM_sky_interface(const char* host, int port);
   ~ASCOM_sky_interface();
 
+  void set_debug(bool val);
   // SetPolarScopeLED          = 'V',
   bool SwpSetPolarScopeLED(uint8_t val, bool fpga = false);
   uint32_t SwpGetFeature(uint8_t axis);

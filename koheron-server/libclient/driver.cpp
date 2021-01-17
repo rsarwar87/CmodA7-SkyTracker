@@ -217,6 +217,9 @@ uint64_t ASCOM_sky_interface::get_dna() {
   auto buffer = client->recv<op::Common::get_dna, uint64_t>();
   return buffer;
 }
+void ASCOM_sky_interface::set_debug(bool val) {
+  client->call<op::ASCOMInterface::set_debug>(val);
+}
 void ASCOM_sky_interface::print_status(std::string fname, std::string str) {
   klog << "STATUS " << fname << "(): " << str << std::endl;
 }

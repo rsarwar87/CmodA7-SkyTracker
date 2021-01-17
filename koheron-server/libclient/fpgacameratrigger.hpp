@@ -1,7 +1,7 @@
 /// (c) Koheron
 
 #ifndef __DRIVER_CAMERA_HPP__
-#define __DRIVER__CAMERA_HPP__
+#define __DRIVER_CAMERA_HPP__
 #include <stdint.h>
 #include <stdio.h>
 #include <array>
@@ -18,6 +18,7 @@ class indi_cameratrigger_interface {
   bool close_shutter(bool fpga = false);
   float GetTemp_fpga(uint32_t channel);
   float GetTemp_pi1w();
+  void set_debug(bool val);
 
  private:
 };
