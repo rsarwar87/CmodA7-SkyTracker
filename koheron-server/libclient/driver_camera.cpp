@@ -39,3 +39,15 @@ bool indi_cameratrigger_interface::close_shutter(bool fpga) {
   auto buffer = client->recv<op::CameraInterface::close_shutter, bool>();
   return buffer;
 }
+
+float indi_cameratrigger_interface::GetTemp_pi1w() {
+  client->call<op::FocuserInterface::GetTemp_pi1w>();
+  auto buffer = client->recv<op::FocuserInterface::GetTemp_pi1w, float>();
+  return buffer;
+}
+float indi_cameratrigger_interface::GetTemp_fpga(uint32_t value) {
+  client->call<op::FocuserInterface::GetTemp_fpga>(value);
+  auto buffer = client->recv<op::FocuserInterface::GetTemp_fpga, float>();
+  return buffer;
+}
+

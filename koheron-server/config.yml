@@ -17,25 +17,28 @@ memory:
     range: 32K
 
 control_registers:
-  - counter_load[2]
-  - counter_max[2]
-  - cmdcontrol[2]
-  - cmdduration[2]
-  - trackctrl[2]
-  - cmdtick[2]
-  - backlash_tick[2]
-  - backlash_duration[2]
+  - counter_load[3]
+  - counter_max[3]
+  - cmdcontrol[3]
+  - cmdduration[3]
+  - trackctrl[3]
+  - cmdtick[3]
+  - backlash_tick[3]
+  - backlash_duration[3]
   - led
   - led_pwm
   - camera_trigger
+  - temp_channel
 
 status_registers:
-  - step_count[2]
-  - status[2]
+  - step_count[3]
+  - status[3]
   - forty_two
+  - temp_sensor
 
 parameters:
   fclk0: 50000000 # FPGA clock speed in Hz
+  focuser_id: 2 # FPGA clock speed in Hz
 
 xdc:
   - ./../../../boards/mars_zx3/config/ports.xdc 
@@ -46,6 +49,7 @@ drivers:
   - ./drivers/drv8825.hpp
   - ./drivers/sky-tracker.hpp
   - ./drivers/ascom_interface.hpp
+  - ./drivers/focuser.hpp
   - ./drivers/camera.hpp
 
 web:
