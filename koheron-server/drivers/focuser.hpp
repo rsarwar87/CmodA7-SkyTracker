@@ -70,6 +70,13 @@ class FocuserInterface {
     return sti.set_current_position(prm::focuser_id, value);
   }
 
+  bool SetFocuserMotorType(bool is_tmc) {
+    sti.set_motor_type(prm::focuser_id, is_tmc);
+    return true;
+  }
+  bool GetFocuserMotorType() {
+    return sti.get_motor_type(prm::focuser_id);
+  }
   uint32_t GetFocuserPosition() {
     return sti.get_raw_stepcount(prm::focuser_id);
   }

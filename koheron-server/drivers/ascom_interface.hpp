@@ -21,6 +21,7 @@ class ASCOMInterface {
   void set_debug(bool val)
   {
     debug = val;
+    sti.set_debug(val);
   }
   // Initialize                = 'F',
   bool SwpCmdInitialize(uint8_t axis) {
@@ -195,6 +196,15 @@ class ASCOMInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (enable) return sti.enable_backlash(axis);
     else return sti.disable_raw_backlash(axis);
+  }
+  bool SwpGetMotorType(uint8_t axis) {
+    if (!check_axis_id(axis, __func__)) return false;
+    return sti.get_motor_type(axis);
+  }
+  bool SwpSetMotorType(uint8_t axis, bool is_tmc) {
+    if (!check_axis_id(axis, __func__)) return false;
+    sti.set_motor_type(axis, is_tmc);
+    return true;
   }
   bool set_backlash_period(uint8_t axis, uint32_t ticks)
   {
