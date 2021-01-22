@@ -20,7 +20,6 @@ class SkyTrackerInterface {
       : ctx(ctx_),
         spi(ctx.spi.get("spidev0.0")),
         stepper(ctx.get<MotorDriver>()) {
-        stepper(ctx.get<Drv8825>()) {
     ctx.log<INFO>("SkyTrackerInterface: %s Started\n", __func__);
     m_debug = false;
 
@@ -268,6 +267,18 @@ class SkyTrackerInterface {
     ctx.log<INFO>("%s(%u-%u): %u\n", __func__, axis, isSlew,
                   m_params.period_ticks[isSlew][axis]);
     return (m_params.period_ticks[isSlew][axis]);
+  }
+  void set_motor_type(uint8_t axis, bool is_tmc) {
+    if (!check_axis_id(axis, __func__)) return;
+    if (axis == 0) stepper.set_motor_type<0>(is_tmc);
+    else if (axis == 1) stepper.set_motor_type<1>(is_tmc);
+    else stepper.set_motor_type<2>(is_tmc);
+  }
+  bool get_motor_type(uint8_t axis) {
+    if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
+    if (axis == 0) return stepper.get_motor_type<0>();
+    else if (axis == 1) return stepper.get_motor_type<1>();
+    else return stepper.get_motor_type<2>();
   }
   double get_motor_period_usec(uint8_t axis, bool isSlew) {
     if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;

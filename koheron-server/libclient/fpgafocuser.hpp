@@ -27,6 +27,8 @@ class indi_focuser_interface {
   uint32_t GetFocuserHomePosition();
   float GetTemp_fpga(uint32_t channel);
   float GetTemp_pi1w();
+  bool SetFocuserMotorType(bool is_tmc);
+  bool GetFocuserMotorType();
 
   uint32_t get_maximum_period(); 
   uint32_t get_minimum_period(); 

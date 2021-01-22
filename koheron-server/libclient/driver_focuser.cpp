@@ -57,6 +57,16 @@ bool indi_focuser_interface::SetFocuserPosition(uint32_t value) {
   auto buffer = client->recv<op::FocuserInterface::SetFocuserPosition, bool>();
   return buffer;
 }
+bool indi_focuser_interface::GetFocuserMotorType() {
+  client->call<op::FocuserInterface::GetFocuserMotorType>();
+  auto buffer = client->recv<op::FocuserInterface::GetFocuserMotorType, bool>();
+  return buffer;
+}
+bool indi_focuser_interface::SetFocuserMotorType(bool is_tmc) {
+  client->call<op::FocuserInterface::SetFocuserMotorType>(is_tmc);
+  auto buffer = client->recv<op::FocuserInterface::SetFocuserMotorType, bool>();
+  return buffer;
+}
 uint32_t indi_focuser_interface::GetFocuserPosition() {
   client->call<op::FocuserInterface::GetFocuserPosition>();
   auto buffer = client->recv<op::FocuserInterface::GetFocuserPosition, uint32_t>();

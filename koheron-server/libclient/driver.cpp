@@ -226,4 +226,16 @@ void ASCOM_sky_interface::print_status(std::string fname, std::string str) {
 void ASCOM_sky_interface::print_error(std::string fname, std::string str) {
   klog << "ERROR " << fname << "(): " << str << std::endl;
 }
+bool ASCOM_sky_interface::SwpGetMotorType(uint8_t axis) {
+  client->call<op::ASCOMInterface::SwpGetMotorType>(axis);
+  auto buffer = client->recv<op::ASCOMInterface::SwpGetMotorType, bool>();
+  klog << __func__ << std::endl;
+  return buffer;
+}
+bool ASCOM_sky_interface::SwpSetMotorType(uint8_t axis, bool enable) {
+  client->call<op::ASCOMInterface::SwpSetMotorType>(axis, enable);
+  auto buffer = client->recv<op::ASCOMInterface::SwpSetMotorType, bool>();
+  klog  << __func__ << " enabled: " << enable << std::endl;
+  return buffer;
+}
 
