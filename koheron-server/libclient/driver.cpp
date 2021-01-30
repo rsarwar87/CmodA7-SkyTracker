@@ -239,3 +239,36 @@ bool ASCOM_sky_interface::SwpSetMotorType(uint8_t axis, bool enable) {
   return buffer;
 }
 
+double ASCOM_sky_interface::get_maximum_period_usec(uint8_t axis) {
+  client->call<op::ASCOMInterface::get_min_period>(axis);
+  auto buffer = client->recv<op::ASCOMInterface::get_min_period, double>();
+  klog  << __func__ << ": " << buffer << std::endl;
+  return buffer;
+}
+double ASCOM_sky_interface::get_minimum_period_usec(uint8_t axis) {
+  client->call<op::ASCOMInterface::get_max_period>(axis);
+  auto buffer = client->recv<op::ASCOMInterface::get_max_period, double>();
+  klog  << __func__ << ": " << buffer << std::endl;
+  return buffer;
+}
+
+bool ASCOM_sky_interface::set_maximum_period_usec(uint8_t axis, double value) {
+  client->call<op::ASCOMInterface::set_min_period>(axis, value);
+  auto buffer = client->recv<op::ASCOMInterface::set_min_period, bool>();
+  klog  << __func__ << ": " << value << std::endl;
+  return buffer;
+}
+bool ASCOM_sky_interface::set_minimum_period_usec(uint8_t axis, double value) {
+  client->call<op::ASCOMInterface::set_max_period>(axis, value);
+  auto buffer = client->recv<op::ASCOMInterface::set_max_period, bool>();
+  klog  << __func__ << ": " << value << std::endl;
+  return buffer;
+}
+
+bool ASCOM_sky_interface::set_steps_per_rotation(uint8_t axis, uint32_t value) {
+  client->call<op::ASCOMInterface::SwpSetGridPerRevolution>(axis, value);
+  auto buffer = client->recv<op::ASCOMInterface::SwpSetGridPerRevolution, bool>();
+  klog  << __func__ << ": " << value << std::endl;
+  return buffer;
+}
+
