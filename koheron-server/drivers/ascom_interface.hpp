@@ -224,6 +224,14 @@ class ASCOMInterface {
     if (!check_axis_id(axis, __func__)) return false;
     return sti.set_max_period(axis, val_usec);
   }
+  double get_max_period(uint8_t axis) {
+    if (!check_axis_id(axis, __func__)) return false;
+    return sti.get_max_period(axis);
+  }
+  double get_min_period(uint8_t axis) {
+    if (!check_axis_id(axis, __func__)) return false;
+    return sti.get_min_period(axis);
+  }
   uint32_t get_min_period_ticks(uint8_t axis) {
     if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
     return sti.get_min_period_ticks(axis);
@@ -231,6 +239,10 @@ class ASCOMInterface {
   uint32_t get_max_period_ticks(uint8_t axis) {
     if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
     return sti.get_max_period_ticks(axis);
+  }
+  bool SwpSetGridPerRevolution(uint8_t axis, uint32_t val) {
+    if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
+    return sti.set_steps_per_rotation(axis, val);
   }
  private:
   Context& ctx;

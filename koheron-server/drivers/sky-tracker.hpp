@@ -255,6 +255,14 @@ class SkyTrackerInterface {
     ctx.log<INFO>("%s(%u): %u ticks\n", __func__, axis, m_params.minPeriod[axis]);
     return (m_params.minPeriod[axis]);
   }
+  double get_min_period(uint8_t axis) {
+    if (!check_axis_id(axis, __func__)) return -1;
+    return (m_params.minPeriod[axis] * fclk0_period_us);
+  }
+  double get_max_period(uint8_t axis) {
+    if (!check_axis_id(axis, __func__)) return -1;
+    return (m_params.maxPeriod[axis] * fclk0_period_us);
+  }
   uint32_t get_max_period_ticks(uint8_t axis) {
     if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
     if (m_debug)

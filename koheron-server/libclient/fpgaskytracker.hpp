@@ -74,9 +74,10 @@ class ASCOM_sky_interface {
 
   bool SwpGetMotorType(uint8_t axis);
   bool SwpSetMotorType(uint8_t axis, bool enable);
-  bool set_minimum_period(uint8_t axis, uint32_t val);
-  bool set_maximum_period(uint8_t axis, uint32_t val);
-  bool set_mode(uint8_t axis, uint8_t val);
+  double get_minimum_period_usec(uint8_t axis);
+  double get_maximum_period_usec(uint8_t axis);
+  bool set_minimum_period_usec(uint8_t axis, double val);
+  bool set_maximum_period_usec(uint8_t axis, double val);
   bool set_steps_per_rotation(uint8_t axis, uint32_t val);
  private:
 };
