@@ -239,26 +239,26 @@ bool ASCOM_sky_interface::SwpSetMotorType(uint8_t axis, bool enable) {
   return buffer;
 }
 
-double ASCOM_sky_interface::get_maximum_period_usec(uint8_t axis) {
+double ASCOM_sky_interface::get_minimum_period_usec(uint8_t axis) {
   client->call<op::ASCOMInterface::get_min_period>(axis);
   auto buffer = client->recv<op::ASCOMInterface::get_min_period, double>();
   klog  << __func__ << ": " << buffer << std::endl;
   return buffer;
 }
-double ASCOM_sky_interface::get_minimum_period_usec(uint8_t axis) {
+double ASCOM_sky_interface::get_maximum_period_usec(uint8_t axis) {
   client->call<op::ASCOMInterface::get_max_period>(axis);
   auto buffer = client->recv<op::ASCOMInterface::get_max_period, double>();
   klog  << __func__ << ": " << buffer << std::endl;
   return buffer;
 }
 
-bool ASCOM_sky_interface::set_maximum_period_usec(uint8_t axis, double value) {
+bool ASCOM_sky_interface::set_minimum_period_usec(uint8_t axis, double value) {
   client->call<op::ASCOMInterface::set_min_period>(axis, value);
   auto buffer = client->recv<op::ASCOMInterface::set_min_period, bool>();
   klog  << __func__ << ": " << value << std::endl;
   return buffer;
 }
-bool ASCOM_sky_interface::set_minimum_period_usec(uint8_t axis, double value) {
+bool ASCOM_sky_interface::set_maximum_period_usec(uint8_t axis, double value) {
   client->call<op::ASCOMInterface::set_max_period>(axis, value);
   auto buffer = client->recv<op::ASCOMInterface::set_max_period, bool>();
   klog  << __func__ << ": " << value << std::endl;
@@ -269,6 +269,34 @@ bool ASCOM_sky_interface::set_steps_per_rotation(uint8_t axis, uint32_t value) {
   client->call<op::ASCOMInterface::SwpSetGridPerRevolution>(axis, value);
   auto buffer = client->recv<op::ASCOMInterface::SwpSetGridPerRevolution, bool>();
   klog  << __func__ << ": " << value << std::endl;
+  return buffer;
+}
+bool ASCOM_sky_interface::set_steps_per_rotation_params(uint8_t axis, uint8_t rev, uint8_t usteps, 
+          uint8_t mount_gear, uint8_t high_gear, uint32_t low_gear) {
+  client->call<op::SkyTrackerInterface::set_steps_per_rotation_params>(axis, rev, usteps, 
+          mount_gear, high_gear, low_gear);
+  auto buffer = client->recv<op::SkyTrackerInterface::set_steps_per_rotation_params, bool>();
+  return buffer;
+}
+std::array<uint32_t, 5> ASCOM_sky_interface::get_steps_per_rotation_params(uint8_t axis) {
+  client->call<op::SkyTrackerInterface::get_steps_per_rotation_params>(axis);
+  auto buffer = client->recv<op::SkyTrackerInterface::get_steps_per_rotation_params, std::array<uint32_t, 5>>();
+  return buffer;
+}
+uint32_t ASCOM_sky_interface::get_motor_mode(uint8_t axis, bool isSlew) {
+  client->call<op::SkyTrackerInterface::get_motor_mode>(axis, isSlew);
+  auto buffer = client->recv<op::SkyTrackerInterface::get_motor_mode, uint32_t>();
+  return buffer;
+}
+bool ASCOM_sky_interface::set_motor_mode(uint8_t axis, bool isSlew, uint8_t val) {
+  client->call<op::SkyTrackerInterface::set_motor_mode>(axis, isSlew, val);
+  auto buffer = client->recv<op::SkyTrackerInterface::set_motor_mode, bool>();
+  return buffer;
+}
+
+bool ASCOM_sky_interface::save_config() {
+  client->call<op::SkyTrackerInterface::SaveConfig>();
+  auto buffer = client->recv<op::SkyTrackerInterface::SaveConfig, bool>();
   return buffer;
 }
 

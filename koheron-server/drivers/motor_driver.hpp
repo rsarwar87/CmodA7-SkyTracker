@@ -23,7 +23,7 @@ class MotorDriver
     }
 
     template<uint32_t offset>
-    void set_motor_type(bool is_tmc)
+    bool set_motor_type(bool is_tmc)
     {
       uint32_t ret = 0x0;
       spi.read_at<reg::tmc_select, mem::control_addr, 1> (&ret);
@@ -34,6 +34,7 @@ class MotorDriver
         rets &= ~(1UL << offset);
       spi.write_at<reg::tmc_select, mem::control_addr, 1>(&rets);
       print_debug<offset>(__func__, ret, rets);
+      return true;
     }
     template<uint32_t offset>
     bool get_motor_type()
