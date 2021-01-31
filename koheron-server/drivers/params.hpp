@@ -19,6 +19,8 @@ typedef struct {
     uint32_t stepPerRotation[3];  //_aVal: Steps per axis revolution
     uint32_t stepsPerWorm[3];     //_sVal: Steps per worm gear revolution
 
+    double minPeriod_usec[3];  // slowest speed allowed
+    double maxPeriod_usec[3];  // Speed at which mount should stop. May be lower
     uint32_t minPeriod[3];  // slowest speed allowed
     uint32_t maxPeriod[3];  // Speed at which mount should stop. May be lower
                             // than minSpeed if doing a very slow IVal.
@@ -34,6 +36,13 @@ typedef struct {
     uint32_t
         backlash_ncycle[3];  // Speed at which mount should stop. May be lower
                              // than minSpeed if doing a very slow IVal.
+    uint8_t  motor_ustepping[3];
+    uint8_t  motor_revticks[3];
+    uint8_t  mount_gearticks[3];
+    uint8_t  high_gear_ticks[3];
+    uint8_t  low_gear_ticks[3];
+    bool  is_TMC[3]; 
+
     bool  initialized[3]; 
   } parameters;
 

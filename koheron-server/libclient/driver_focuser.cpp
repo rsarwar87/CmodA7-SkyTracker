@@ -144,4 +144,36 @@ uint32_t indi_focuser_interface::get_backlash_cycles() {
   auto buffer = client->recv<op::FocuserInterface::get_backlash_cycles, uint32_t>();
   return buffer;
 }
+bool indi_focuser_interface::set_steps_per_rotation_params(uint8_t rev, uint8_t usteps, 
+          uint8_t mount_gear, uint8_t high_gear, uint32_t low_gear) {
+  uint8_t a = 0;
+  client->call<op::SkyTrackerInterface::set_steps_per_rotation_params>(a, rev, usteps, 
+          mount_gear, high_gear, low_gear);
+  auto buffer = client->recv<op::SkyTrackerInterface::set_steps_per_rotation_params, bool>();
+  return buffer;
+}
+std::array<uint32_t, 5> indi_focuser_interface::get_steps_per_rotation_params() {
+  uint8_t a = 0;
+  client->call<op::SkyTrackerInterface::get_steps_per_rotation_params>(a);
+  auto buffer = client->recv<op::SkyTrackerInterface::get_steps_per_rotation_params, std::array<uint32_t, 5>>();
+  return buffer;
+}
+
+bool indi_focuser_interface::save_config() {
+  client->call<op::SkyTrackerInterface::SaveConfig>();
+  auto buffer = client->recv<op::SkyTrackerInterface::SaveConfig, bool>();
+  return buffer;
+}
+uint32_t indi_focuser_interface::get_motor_mode() {
+  uint8_t a = 0;
+  client->call<op::SkyTrackerInterface::get_motor_mode>(a, true);
+  auto buffer = client->recv<op::SkyTrackerInterface::get_motor_mode, uint32_t>();
+  return buffer;
+}
+bool indi_focuser_interface::set_motor_mode(uint8_t val) {
+  uint8_t a = 0;
+  client->call<op::SkyTrackerInterface::set_motor_mode>(a, true, val);
+  auto buffer = client->recv<op::SkyTrackerInterface::set_motor_mode, bool>();
+  return buffer;
+}
 

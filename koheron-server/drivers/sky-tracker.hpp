@@ -9,6 +9,7 @@
 #include <motor_driver.hpp>
 #include <params.hpp>
 #include <rpigpio_ledpwm.hpp>
+#include <cfg_config.hpp>
 
 constexpr double fclk0_period_us =
       1000000.0 / ((double)(prm::fclk0));  // Number of descriptors
@@ -22,6 +23,11 @@ class SkyTrackerInterface {
         stepper(ctx.get<MotorDriver>()) {
     ctx.log<INFO>("SkyTrackerInterface: %s Started\n", __func__);
     m_debug = false;
+
+    cfg = make_unique<CfgConfig>("/usr/share/koheron-startracker.json", &m_params, ctx_);
+    cfg->PrintData();
+    cfg->PullData();
+
 
     for (size_t i = 0; i < 3; i++) {
       m_params.period_usec[0][i] = 1;     // time period in us
@@ -38,32 +44,51 @@ class SkyTrackerInterface {
       m_params.GotoTarget[i] = 0;
       m_params.GotoNCycles[i] = 0;
 
-      m_params.minPeriod[i] = (uint32_t)((15 / fclk0_period_us) + .5);  // slowest speed allowed
+      m_params.minPeriod[i] = (uint32_t)((m_params.minPeriod_usec[i] / fclk0_period_us) + .5);  // slowest speed allowed
       m_params.maxPeriod[i] =
-          (uint32_t)((268435.0 / fclk0_period_us) + .5);  // Speed at which mount should stop. May be lower than
+          (uint32_t)((m_params.maxPeriod_usec[i] / fclk0_period_us) + .5);  // Speed at which mount should stop. May be lower than
                     // minSpeed if doing a very slow IVal.
 
       m_params.motorDirection[0][i] = true;
       m_params.motorDirection[1][i] = true;
 
-      m_params.motorMode[0][i] = 0x07;  // microsteps 16 => //4
-      m_params.motorMode[1][i] = 0x07;  // microsteps
+     // m_params.motorMode[0][i] = 0x07;  // microsteps 16 => //4
+     // m_params.motorMode[1][i] = 0x07;  // microsteps
 
       m_params.versionNumber[i] = 0xd4444;  //_eVal: Version number
 
-      m_params.stepPerRotation[i] =
-          200*32*144*5;  //_aVal: Steps per axis revolution
+      set_steps_per_rotation_params(i, m_params.motor_revticks[i],
+          m_params.motor_ustepping[i],
+          m_params.mount_gearticks[i],
+          m_params.high_gear_ticks[i],
+          m_params.low_gear_ticks[i]);  //_aVal: Steps per axis revolution
 
       m_params.initialized[i] = false;  //_aVal: Steps per axis revolution
 
+      set_motor_type(i, m_params.is_TMC[i]);
       set_backlash(i, 45, 300, 7);
-      set_steps_per_rotation(i, get_steps_per_rotation(i));
+     // set_steps_per_rotation(i, get_steps_per_rotation(i));
       set_current_position(i, get_steps_per_rotation(i)/2);
 
     }
     ctx.log<INFO>("SkyTrackerInterface: %s Finished\n", __func__);
     pi = make_unique<PiPolarLed>("RPI@0", 256);
     ctx.log<INFO>("%s(): Class initialized\n", __func__);
+  }
+
+  bool SaveConfig()
+  {
+    if (!cfg->PushData())
+    {
+      ctx.log<INFO>("SkyTrackerInterface: %s Failed to push\n", __func__);
+      cfg->PrintData();
+      return false;
+    }
+    cfg->PrintData();
+    cfg->SaveFileContent();
+    cfg.reset();
+    cfg = make_unique<CfgConfig>("/usr/share/koheron-startracker.json", &m_params, ctx);
+    return true;
   }
 
   bool set_led_pwm(uint8_t val, bool fpga) {
@@ -103,6 +128,17 @@ class SkyTrackerInterface {
                   m_params.stepPerRotation[axis]);
     return m_params.stepPerRotation[axis];
   }
+  std::array<uint32_t, 5> get_steps_per_rotation_params(uint8_t axis) {
+    if (!check_axis_id(axis, __func__)) return std::array<uint32_t, 5> {0xfff, 0xfff, 0xfff, 0xfff, 0xfff};
+    std::array<uint32_t, 5> ret = {
+     m_params.motor_ustepping[axis] ,
+     m_params.motor_revticks [axis]  ,
+     m_params.mount_gearticks[axis] ,
+     m_params.high_gear_ticks[axis] ,
+     m_params.low_gear_ticks [axis] 
+    };
+    return ret;
+  }
   bool set_steps_per_rotation(uint8_t axis, uint32_t steps) {
     if (!check_axis_id(axis, __func__)) return false;
     if (steps > 0x3FFFFFFF) {
@@ -117,6 +153,39 @@ class SkyTrackerInterface {
     if (axis == 0) stepper.set_max_step<0>(steps);
     else if (axis == 2) stepper.set_max_step<2>(steps);
     else stepper.set_max_step<1>(steps);
+    return true;
+  }
+  bool set_steps_per_rotation_params(uint8_t axis, uint8_t rev, uint8_t usteps, 
+          uint8_t mount_gear, uint8_t high_gear, uint32_t low_gear) {
+    if (!check_axis_id(axis, __func__)) return false;
+    if (usteps < 1 || rev < 1 || mount_gear < 1 || high_gear < 1 || low_gear < 1) {
+      ctx.log<ERROR>("%s(%u): Failed to set. %u ticks/rev, %u ustepping, %u mount gear teeth," 
+        "%u high gear teeth, %u low gear teeth\n", __func__, axis,
+        rev, usteps, mount_gear, high_gear, low_gear);
+      return false;
+    }
+
+    m_params.motor_revticks [axis] = rev;
+    m_params.motor_ustepping[axis] = usteps;
+    m_params.mount_gearticks[axis] = mount_gear;
+    m_params.high_gear_ticks[axis] = high_gear;
+    m_params.low_gear_ticks [axis] = low_gear; 
+    ctx.log<INFO>("%s(%u): %u total ticks, %u ticks/rev, %u ustepping, %u mount gear teeth," 
+        "%u high gear teeth, %u low gear teeth\n", __func__, axis,
+        m_params.stepPerRotation[axis], m_params.motor_revticks [axis],
+        m_params.motor_ustepping[axis], m_params.mount_gearticks[axis],
+        m_params.high_gear_ticks[axis], m_params.low_gear_ticks [axis]);
+
+    m_params.stepPerRotation      [axis] =
+          m_params.motor_revticks [axis]*
+          m_params.motor_ustepping[axis]*
+          m_params.mount_gearticks[axis]*
+          m_params.high_gear_ticks[axis]/
+          m_params.low_gear_ticks [axis];  //_aVal: Steps per axis revolution
+    //if (m_debug)
+    if (axis == 0) stepper.set_max_step<0>(m_params.stepPerRotation[0]);
+    else if (axis == 2) stepper.set_max_step<2>(m_params.stepPerRotation[2]);
+    else stepper.set_max_step<1>(m_params.stepPerRotation[1]);
     return true;
   }
 
@@ -173,11 +242,11 @@ class SkyTrackerInterface {
                      isSlew ? "Slew" : "GoTo", val);
       return false;
     }
-
-    m_params.motorMode[isSlew][axis] = val;
-    if (m_debug)
+    //if (m_debug)
     ctx.log<INFO>("%s(%u): %s mode set to %s\n", __func__, axis,
                   isSlew ? "Slew" : "GoTo", val);
+
+    m_params.motorMode[isSlew][axis] = val;
     return true;
   }
   uint32_t get_motor_mode(uint8_t axis, bool isSlew) {
@@ -230,8 +299,9 @@ class SkyTrackerInterface {
           __func__, axis, val_usec, _ticks);
       return false;
     }
+    m_params.minPeriod_usec[axis] = val_usec;
     m_params.minPeriod[axis] = _ticks;
-    if (m_debug)
+    //if (m_debug)
     ctx.log<INFO>("%s(%u): %u ticks (%9.5f usec)\n", __func__, axis,
                   m_params.minPeriod[axis], val_usec);
     return true;
@@ -244,9 +314,10 @@ class SkyTrackerInterface {
       return false;
     }
     uint32_t _ticks = (uint32_t)((val_usec / fclk0_period_us) + .5);
+    m_params.maxPeriod_usec[axis] = val_usec;
     m_params.maxPeriod[axis] = _ticks;
-    if (m_debug)
-    ctx.log<INFO>("%s(%u): %u ticks\n", __func__, axis, m_params.maxPeriod[axis]);
+    //if (m_debug)
+    ctx.log<INFO>("%s(%u): %u ticks; %9.5f usec\n", __func__, axis, m_params.maxPeriod[axis], _ticks);
     return true;
   }
   uint32_t get_min_period_ticks(uint8_t axis) {
@@ -257,11 +328,11 @@ class SkyTrackerInterface {
   }
   double get_min_period(uint8_t axis) {
     if (!check_axis_id(axis, __func__)) return -1;
-    return (m_params.minPeriod[axis] * fclk0_period_us);
+    return m_params.minPeriod_usec[axis];
   }
   double get_max_period(uint8_t axis) {
     if (!check_axis_id(axis, __func__)) return -1;
-    return (m_params.maxPeriod[axis] * fclk0_period_us);
+    return m_params.maxPeriod_usec[axis];
   }
   uint32_t get_max_period_ticks(uint8_t axis) {
     if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
@@ -276,17 +347,25 @@ class SkyTrackerInterface {
                   m_params.period_ticks[isSlew][axis]);
     return (m_params.period_ticks[isSlew][axis]);
   }
-  void set_motor_type(uint8_t axis, bool is_tmc) {
-    if (!check_axis_id(axis, __func__)) return;
-    if (axis == 0) stepper.set_motor_type<0>(is_tmc);
-    else if (axis == 1) stepper.set_motor_type<1>(is_tmc);
-    else stepper.set_motor_type<2>(is_tmc);
+  bool set_motor_type(uint8_t axis, bool is_tmc) {
+    if (!check_axis_id(axis, __func__)) return false;
+    m_params.is_TMC[axis] = is_tmc;
+    ctx.log<INFO>("%s(%u): %s-%s\n", __func__, axis, is_tmc ? "True" : "False",
+        m_params.is_TMC[axis] ? "True" : "False");
+    //return true;
+    if (axis == 0) return stepper.set_motor_type<0>(is_tmc);
+    else if (axis == 1) return stepper.set_motor_type<1>(is_tmc);
+    else return stepper.set_motor_type<2>(is_tmc);
   }
   bool get_motor_type(uint8_t axis) {
     if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
-    if (axis == 0) return stepper.get_motor_type<0>();
-    else if (axis == 1) return stepper.get_motor_type<1>();
-    else return stepper.get_motor_type<2>();
+    //return true;
+    bool is_tmc;
+    if (axis == 0) is_tmc =  stepper.get_motor_type<0>();
+    else if (axis == 1) is_tmc = stepper.get_motor_type<1>();
+    else is_tmc = stepper.get_motor_type<2>();
+    m_params.is_TMC[axis] = is_tmc; 
+    return is_tmc;
   }
   double get_motor_period_usec(uint8_t axis, bool isSlew) {
     if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
@@ -556,6 +635,7 @@ class SkyTrackerInterface {
   std::unique_ptr<PiPolarLed> pi;
 
   parameters m_params;
+  std::unique_ptr<CfgConfig> cfg;
 
   bool check_axis_id(uint8_t axis, std::string str) {
     if (axis > 2) {

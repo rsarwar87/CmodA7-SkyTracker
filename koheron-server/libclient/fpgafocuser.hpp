@@ -38,7 +38,13 @@ class indi_focuser_interface {
   uint32_t get_backlash_period();
   uint32_t get_backlash_cycles();
   void set_debug(bool val);
+  bool save_config();
+  bool set_steps_per_rotation_params(uint8_t rev, uint8_t usteps, 
+          uint8_t mount_gear, uint8_t high_gear, uint32_t low_gear);
+  std::array<uint32_t, 5> get_steps_per_rotation_params();
 
+  uint32_t get_motor_mode();
+  bool set_motor_mode(uint8_t val);
  private:
 };
 

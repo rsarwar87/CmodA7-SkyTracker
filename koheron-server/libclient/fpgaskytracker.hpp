@@ -79,6 +79,12 @@ class ASCOM_sky_interface {
   bool set_minimum_period_usec(uint8_t axis, double val);
   bool set_maximum_period_usec(uint8_t axis, double val);
   bool set_steps_per_rotation(uint8_t axis, uint32_t val);
+  bool save_config();
+  bool set_steps_per_rotation_params(uint8_t axis, uint8_t rev, uint8_t usteps, 
+          uint8_t mount_gear, uint8_t high_gear, uint32_t low_gear);
+  std::array<uint32_t, 5> get_steps_per_rotation_params(uint8_t axis);
+  uint32_t get_motor_mode(uint8_t axis, bool isSlew);
+  bool set_motor_mode(uint8_t axis, bool isSlew, uint8_t val);
  private:
 };
 
