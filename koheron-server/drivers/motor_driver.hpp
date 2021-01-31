@@ -17,8 +17,8 @@ class MotorDriver
     : ctx(ctx_),         
       spi(ctx.spi.get("spidev0.0"))
     {
-      uint32_t val = 0xFFFFFFFF;
-      spi.write_at<reg::tmc_select, mem::control_addr, 1>(&val);
+      //uint32_t val = 0xFFFFFFFF;
+      //spi.write_at<reg::tmc_select, mem::control_addr, 1>(&val);
       ctx.log<INFO>("MotorDriver-%s: Class initialized\n", __func__);
     }
 
