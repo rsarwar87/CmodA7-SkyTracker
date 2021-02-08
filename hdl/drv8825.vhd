@@ -62,6 +62,7 @@ architecture Behavioral of drv8825 is
     signal current_mode_buf : std_logic_vector(2 downto 0) := "000";
     signal current_mode_out : std_logic_vector(2 downto 0) := "000";
     signal current_mode_back : std_logic_vector(2 downto 0) := "000";
+    signal drv8825_direction_buf : STD_LOGIC := '0';                   -- tmc2226 and drv8825 has same function                
     
     signal max_counter2: std_logic_vector (29 downto 0) := (others => '0');
     
@@ -180,7 +181,8 @@ begin
         end if;
     end process; 
         
-	 drv8825_direction <= not drv8825_direction_out when REVERSE_DIRECTION = true else drv8825_direction_out;
+	 drv8825_direction_buf <= not drv8825_direction_out when REVERSE_DIRECTION = true else drv8825_direction_out;
+	 drv8825_direction <= not drv8825_direction_buf when is_tmc2226 = '1' else drv8825_direction_buf;
     registered_output : process(clk_50, rstn_50) begin
         if (rstn_50 = '0') then
             drv8825_enable_n<='1';
@@ -216,7 +218,8 @@ begin
             drv8825_step <= '0';
             drv8825_mode <= "000";
             ctrl_status <= (others => '0');
-				ctrl_status(11 downto 5) <= std_logic_vector(delta_counter);
+            ctrl_status(16) <= is_tmc2226;
+			      ctrl_status(11 downto 5) <= std_logic_vector(delta_counter);
             ctrl_status(3) <= drv8825_fault_n;          
             ctrl_status(2 downto 0) <= "000";
             if  state_backlash = disabled then 
