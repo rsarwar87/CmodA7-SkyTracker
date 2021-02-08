@@ -18,31 +18,36 @@ class MotorDriver
       spi(ctx.spi.get("spidev0.0"))
     {
       //uint32_t val = 0xFFFFFFFF;
-      //spi.write_at<reg::tmc_select, mem::control_addr, 1>(&val);
+      //spi.write_at<reg::tmc_select/4, mem::control_addr, 1>(&val);
       ctx.log<INFO>("MotorDriver-%s: Class initialized\n", __func__);
     }
 
     template<uint32_t offset>
     bool set_motor_type(bool is_tmc)
     {
+      //if (is_tmc == get_motor_type<offset>()) return true;
       uint32_t ret = 0x0;
-      spi.read_at<reg::tmc_select, mem::control_addr, 1> (&ret);
+      spi.read_at<reg::tmc_select/4, mem::control_addr, 1> (&ret);
+      ctx.log<INFO>("MotorDriver-%s: Current value: 0x%08x\n", __func__, ret);
       uint32_t rets = ret;
       if (is_tmc)
          rets |= (1UL << offset);
       else
         rets &= ~(1UL << offset);
-      spi.write_at<reg::tmc_select, mem::control_addr, 1>(&rets);
+      ctx.log<INFO>("MotorDriver-%s: New value: 0x%08x\n", __func__, rets);
+      spi.write_at<reg::tmc_select/4, mem::control_addr, 1>(&rets);
       print_debug<offset>(__func__, ret, rets);
       return true;
     }
     template<uint32_t offset>
     bool get_motor_type()
     {
-      uint32_t ret = 0x0;
-      spi.read_at<reg::tmc_select, mem::control_addr, 1> (&ret);
-      bool retb = (ret >> offset) & 0x1;
-      print_debug<offset>(__func__, ret, retb);
+      uint32_t status = 0x0;
+      // status = get_status<offset>();
+      //bool retb = (status >> 16) & 0x1;
+      spi.read_at<reg::tmc_select/4, mem::control_addr, 1> (&status);
+      bool retb = (status >> offset) & 0x1;
+      ctx.log<INFO>("MotorDriver-%s: status: 0x%08x, Parsed: %s %s\n", __func__, status, retb ? "True" : "False");
       return retb; 
     }
     template<uint32_t offset>

@@ -250,7 +250,7 @@ class ASCOMInterface {
   bool debug;
 
   bool check_axis_id(int8_t axis, std::string str) {
-    if (axis > 1) {
+    if (axis > 2) {
       ctx.log<ERROR>("ASCOMInteface: %s- Invalid axis: %u\n", str, axis);
       return false;
     }
