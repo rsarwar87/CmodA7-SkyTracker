@@ -31,13 +31,14 @@ entity drv8825 is
 	 generic ( REVERSE_DIRECTION : boolean := true; ALWAYS_ENABLE : boolean := true );
     Port ( clk_50 : in STD_LOGIC;
            rstn_50 : in STD_LOGIC;
-           drv8825_mode : out STD_LOGIC_VECTOR (2 downto 0);
-           drv8825_enable_n : out STD_LOGIC;
-           drv8825_sleep_n : out STD_LOGIC;
-           drv8825_rst_n : out STD_LOGIC;
-           drv8825_step : out STD_LOGIC;
-           drv8825_direction : out STD_LOGIC;
-           drv8825_fault_n : in STD_LOGIC;
+           drv8825_mode : out STD_LOGIC_VECTOR (2 downto 0);    -- tmc2226: bit 0 is low power pin (always high)        
+           drv8825_enable_n : out STD_LOGIC;                    -- tmc2226 and drv8825 has same function                
+           drv8825_sleep_n : out STD_LOGIC;                     -- tmc2226 pin is external CLK (always low)             
+           drv8825_rst_n : out STD_LOGIC;                       -- tmc2226 pin is standby pin (always low)              
+           drv8825_step : out STD_LOGIC;                        -- tmc2226 and drv8825 has same function                
+           drv8825_direction : out STD_LOGIC;                   -- tmc2226 and drv8825 has same function                
+           drv8825_fault_n : in STD_LOGIC;                      -- NOT CONNECTED                                        
+           is_tmc2226   : in std_logic;
            ctrl_step_count : out STD_LOGIC_VECTOR (31 downto 0);
            ctrl_status : out STD_LOGIC_VECTOR (31 downto 0);
            ctrl_cmdcontrol : in STD_LOGIC_VECTOR (31 downto 0); -- steps, go, stop, direction
@@ -61,6 +62,7 @@ architecture Behavioral of drv8825 is
     signal current_mode_buf : std_logic_vector(2 downto 0) := "000";
     signal current_mode_out : std_logic_vector(2 downto 0) := "000";
     signal current_mode_back : std_logic_vector(2 downto 0) := "000";
+    signal drv8825_direction_buf : STD_LOGIC := '0';                   -- tmc2226 and drv8825 has same function                
     
     signal max_counter2: std_logic_vector (29 downto 0) := (others => '0');
     
@@ -82,7 +84,8 @@ architecture Behavioral of drv8825 is
     ATTRIBUTE MARK_DEBUG of state_backlash, ctr_backlash_tick_buf, ctr_backlash_duration_buf: SIGNAL IS "TRUE";
     
     signal max_counter : std_logic_vector (30 downto 0) := (others => '1');
-	 signal delta_counter : unsigned (5 downto 0) := "000001";
+	signal delta_counter : unsigned (6 downto 0) := "0000001";
+	signal tmc_mode_buf : std_logic_vector(1 downto 0) := "00";
 begin
     
     
@@ -93,22 +96,73 @@ begin
 	 delta_counter_proc : process (clk_50, rstn_50)
     begin
         if (rstn_50 = '0') then
-            delta_counter <= "000001";
+            delta_counter <= "0000001";
+            tmc_mode_buf <= "00";
         elsif(rising_edge(clk_50)) then
             case current_mode_out is
-					when "000" =>
-						delta_counter <= "100000";
-					when "001" =>
-						delta_counter <= "010000";
-					when "010" =>
-						delta_counter <= "001000";
-					when "011" =>
-						delta_counter <= "000100";
-					when "100" =>
-						delta_counter <= "000010";
-					when others =>
-						delta_counter <= "000001";
-				end case;
+                when "000" =>
+					if is_tmc2226 = '1' then
+						--delta_counter <= "1000000"; --64; 1/1 full sptep
+						-- not selectable through cfg pins
+						delta_counter <= "0000001"; -- 1; 1/64
+						tmc_mode_buf(0) <= '0';
+						tmc_mode_buf(1) <= '1'; --MS2
+					else
+						delta_counter <= "0100000";
+					end if;
+				when "001" =>
+					if is_tmc2226 = '1' then
+						--delta_counter <= "0100000"; -- 32; 1/2
+						-- not selectable through cfg pins
+						delta_counter <= "0000001"; -- 1; 1/64
+						tmc_mode_buf(0) <= '0';
+						tmc_mode_buf(1) <= '1'; --MS2
+					else
+						delta_counter <= "0010000";
+					end if;
+				when "010" =>
+					if is_tmc2226 = '1' then
+						--delta_counter <= "0010000"; -- 16; 1/4
+						-- not selectable through cfg pins
+						delta_counter <= "0000001"; -- 1; 1/64
+						tmc_mode_buf(0) <= '0';
+						tmc_mode_buf(1) <= '1'; --MS2
+					else
+						delta_counter <= "0001000";
+					end if;
+				when "011" =>
+					if is_tmc2226 = '1' then
+						delta_counter <= "0001000"; -- 8; 1/8
+						tmc_mode_buf(0) <= '0';
+						tmc_mode_buf(1) <= '0'; --MS2
+					else
+						delta_counter <= "0000100";
+					end if;
+				when "100" =>
+					if is_tmc2226 = '1' then
+						delta_counter <= "0000100"; -- 4 ; 1/16
+						tmc_mode_buf(0) <= '1';
+						tmc_mode_buf(1) <= '1'; --MS2
+					else
+						delta_counter <= "0000010";
+					end if;
+				when "101" =>
+					if is_tmc2226 = '1' then
+						delta_counter <= "0000010"; -- 2; 1/32
+						tmc_mode_buf(0) <= '1';
+						tmc_mode_buf(1) <= '0'; --MS2
+					else
+						delta_counter <= "0000001";
+					end if;
+				when others =>
+					if is_tmc2226 = '1' then
+						delta_counter <= "0000001"; -- 1; 1/64
+						tmc_mode_buf(0) <= '0';
+						tmc_mode_buf(1) <= '1'; --MS2
+					else
+						delta_counter <= "0000001";
+					end if;
+		      end case;
         end if;
     end process; 
     trigger_changes : process (clk_50, rstn_50)
@@ -127,7 +181,8 @@ begin
         end if;
     end process; 
         
-	 drv8825_direction <= not drv8825_direction_out when REVERSE_DIRECTION = true else drv8825_direction_out;
+	 drv8825_direction_buf <= not drv8825_direction_out when REVERSE_DIRECTION = true else drv8825_direction_out;
+	 drv8825_direction <= not drv8825_direction_buf when is_tmc2226 = '1' else drv8825_direction_buf;
     registered_output : process(clk_50, rstn_50) begin
         if (rstn_50 = '0') then
             drv8825_enable_n<='1';
@@ -139,19 +194,32 @@ begin
             ctrl_status <= (others => '0');
         elsif (rising_edge(clk_50)) then
             if (ALWAYS_ENABLE = false) then
-            drv8825_enable_n<='1';
-            drv8825_sleep_n<= '0';
-            drv8825_rst_n  <= '0';
+                drv8825_enable_n<='1';
+                drv8825_sleep_n<= '0';
+                drv8825_rst_n  <= '0';
+                if (is_tmc2226 = '1') then
+                    drv8825_sleep_n<= '0';  -- TMC2226 CLK
+                    drv8825_rst_n  <= '1';  -- TMC2226 standby
+                else
+                    drv8825_sleep_n<= '0';
+                    drv8825_rst_n  <= '0';
+                end if;
             else
-            drv8825_enable_n<='0';
-            drv8825_sleep_n<= '1';
-            drv8825_rst_n  <= '1';
+                drv8825_enable_n<='0';
+                if (is_tmc2226 = '1') then
+                    drv8825_sleep_n<= '0';  -- TMC2226 CLK
+                    drv8825_rst_n  <= '0';  -- TMC2226 standby
+                else
+                    drv8825_sleep_n<= '1';
+                    drv8825_rst_n  <= '1';
+                end if;
             end if;
             drv8825_direction_out <= '0';
             drv8825_step <= '0';
             drv8825_mode <= "000";
             ctrl_status <= (others => '0');
-				ctrl_status(10 downto 5) <= std_logic_vector(delta_counter);
+            ctrl_status(16) <= is_tmc2226;
+			      ctrl_status(11 downto 5) <= std_logic_vector(delta_counter);
             ctrl_status(3) <= drv8825_fault_n;          
             ctrl_status(2 downto 0) <= "000";
             if  state_backlash = disabled then 
@@ -159,41 +227,57 @@ begin
             else 
                 ctrl_status(4) <= '1';
             end if;
+            
+            if is_tmc2226 = '1' then
+			  drv8825_mode(1 downto 0) <= tmc_mode_buf;
+			  drv8825_mode(2) <= '1';
+			else
+			  drv8825_mode <= current_mode_out;
+			end if;
+            
             case state_motor is
                 when tracking =>
                     drv8825_direction_out <= current_direction_buf(0);
                     drv8825_step <= stepping_clk;
-                    drv8825_mode <= current_mode_out;
                     drv8825_enable_n<='0';
-                    drv8825_sleep_n<= '1';
-                    drv8825_rst_n  <= '1';
+                    if is_tmc2226 = '1' then
+					  drv8825_rst_n <= '0';
+					else
+					  drv8825_sleep_n<= '1';
+					  drv8825_rst_n  <= '1';  
+					end if;
                     ctrl_status(1) <= '0';
                     ctrl_status(0) <= '1';
                     ctrl_status(2) <= '0';
                 when command => 
                     drv8825_direction_out <= current_direction_buf(0);
                     drv8825_step <= stepping_clk;
-                    drv8825_mode <= current_mode_out;
                     drv8825_enable_n<='0';
-                    drv8825_sleep_n<= '1';
-                    drv8825_rst_n  <= '1';
+                    if is_tmc2226 = '1' then
+					  drv8825_rst_n <= '0';
+					else
+					  drv8825_sleep_n<= '1';
+					  drv8825_rst_n  <= '1';  
+					end if;
                     ctrl_status(2) <= '0';
                     ctrl_status(1) <= '1';
                     --ctrl_status(0) <= '0';
                 when park =>
                     drv8825_direction_out <= current_direction_buf(0);
                     drv8825_step <= stepping_clk;
-                    drv8825_mode <= current_mode_out;
                     drv8825_enable_n<='0';
-                    drv8825_sleep_n<= '1';
-                    drv8825_rst_n  <= '1';
+                    if is_tmc2226 = '1' then
+					  drv8825_rst_n <= '0';
+					else
+					  drv8825_sleep_n<= '1';
+					  drv8825_rst_n  <= '1';  
+					end if;
                     ctrl_status(2) <= '1';
                     ctrl_status(1) <= '1';
                     --ctrl_status(0) <= '0';
                 when others => 
                     drv8825_direction_out <= '0';
                     drv8825_step <= '0';
-                    drv8825_mode <= current_mode_out;
                     ctrl_status(0) <= '0';
                     ctrl_status(2) <= '0';
                     ctrl_status(1) <= '0';

@@ -630,8 +630,8 @@ class SkyTrackerInterface {
  private:
   Context& ctx;
   SpiDev& spi;
-  bool m_debug;
   MotorDriver& stepper;
+  bool m_debug;
   std::unique_ptr<PiPolarLed> pi;
 
   parameters m_params;

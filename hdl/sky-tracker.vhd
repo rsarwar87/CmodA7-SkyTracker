@@ -14,29 +14,29 @@ entity sky_tracker is
            clk_150 : in STD_LOGIC := '0';
            rstn_150 : in STD_LOGIC := '1';
 			  
-           ra_mode : out STD_LOGIC_VECTOR (2 downto 0);
-           ra_enable_n : out STD_LOGIC;
-           ra_sleep_n : out STD_LOGIC;
-           ra_rst_n : out STD_LOGIC;
-           ra_step : out STD_LOGIC;
-           ra_direction : out STD_LOGIC;
-           ra_fault_n : in STD_LOGIC;
+           ra_mode : out STD_LOGIC_VECTOR (2 downto 0); -- tmc2226: bit 0 is low power pin (always high)
+           ra_enable_n : out STD_LOGIC;                 -- tmc2226 and drv8825 has same function  
+           ra_sleep_n : out STD_LOGIC;                  -- tmc2226 pin is external CLK (always low)
+           ra_rst_n : out STD_LOGIC;                    -- tmc2226 pin is standby pin (always low)
+           ra_step : out STD_LOGIC;                     -- tmc2226 and drv8825 has same function 
+           ra_direction : out STD_LOGIC;                -- tmc2226 and drv8825 has same function
+           ra_fault_n : in STD_LOGIC;                   -- NOT CONNECTED
 		   
-		       de_mode : out STD_LOGIC_VECTOR (2 downto 0);
-           de_enable_n : out STD_LOGIC;
-           de_sleep_n : out STD_LOGIC;
-           de_rst_n : out STD_LOGIC;
-           de_step : out STD_LOGIC;
-           de_direction : out STD_LOGIC;
-           de_fault_n : in STD_LOGIC;
+		   de_mode : out STD_LOGIC_VECTOR (2 downto 0); -- tmc2226: bit 0 is low power pin (always high)    
+           de_enable_n : out STD_LOGIC;                 -- tmc2226 and drv8825 has same function            
+           de_sleep_n : out STD_LOGIC;                  -- tmc2226 pin is external CLK (always low)         
+           de_rst_n : out STD_LOGIC;                    -- tmc2226 pin is standby pin (always low)          
+           de_step : out STD_LOGIC;                     -- tmc2226 and drv8825 has same function            
+           de_direction : out STD_LOGIC;                -- tmc2226 and drv8825 has same function            
+           de_fault_n : in STD_LOGIC;                   -- NOT CONNECTED                                    
            
-           fc_mode : out STD_LOGIC_VECTOR (2 downto 0);
-           fc_enable_n : out STD_LOGIC;
-           fc_sleep_n : out STD_LOGIC;
-           fc_rst_n : out STD_LOGIC;
-           fc_step : out STD_LOGIC;
-           fc_direction : out STD_LOGIC;
-           fc_fault_n : in STD_LOGIC;
+           fc_mode : out STD_LOGIC_VECTOR (2 downto 0); -- tmc2226: bit 0 is low power pin (always high)    
+           fc_enable_n : out STD_LOGIC;                 -- tmc2226 and drv8825 has same function            
+           fc_sleep_n : out STD_LOGIC;                  -- tmc2226 pin is external CLK (always low)         
+           fc_rst_n : out STD_LOGIC;                    -- tmc2226 pin is standby pin (always low)          
+           fc_step : out STD_LOGIC;                     -- tmc2226 and drv8825 has same function            
+           fc_direction : out STD_LOGIC;                -- tmc2226 and drv8825 has same function            
+           fc_fault_n : in STD_LOGIC;                   -- NOT CONNECTED                                    
            
 		       led_pwm : out STD_LOGIC;
 			      
@@ -141,7 +141,7 @@ signal fc_trackctrl_sync 			 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0')
 signal adc_channel 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
 signal adc_data 			 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 
-signal ip_addr_buf, led_brightness, camera_trig : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+signal is_tmc_buf, is_tmc_sync, ip_addr_buf, led_brightness, camera_trig : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 signal led_count : STD_LOGIC_VECTOR (7 downto 0) := (others => '0');
 signal led_out : STD_LOGIC := '0';
 
@@ -706,7 +706,22 @@ begin
 						end loop;
 					end if;
 					ctrl_ack <= '1';
-					
+				 when "11100" => 
+                    if ctrl_rw = '1' then
+                            for byte_index in 0 to (32/8-1) loop
+                                    if (ctrl_byte_enable(byte_index) = '1') then
+                                ctrl_read_data(byte_index*8+7 downto byte_index*8) <= is_tmc_buf(byte_index*8+7 downto byte_index*8);
+                                    end if;
+                            end loop;
+                    else
+                            for byte_index in 0 to (32/8-1) loop
+                                    if (ctrl_byte_enable(byte_index) = '1') then
+                                            is_tmc_buf(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+                                    end if;
+                            end loop;
+                    end if;
+                    ctrl_ack <= '1';
+
 				when others =>
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
@@ -806,7 +821,10 @@ begin
      fc_backlash_duration  => fc_backlash_duration  ,       
      fc_counter_load       => fc_counter_load       ,  
      fc_counter_max        => fc_counter_max        , 
-     fc_trackctrl          => fc_trackctrl          ,        
+     fc_trackctrl          => fc_trackctrl          ,   
+    
+     is_tmc_buf           => is_tmc_buf,
+     is_tmc_sync           => is_tmc_sync,     
     
      fc_step_count_sync  => fc_step_count_sync    ,
      fc_status_sync      => fc_status_sync        ,
@@ -845,6 +863,7 @@ DRV_RA :  entity work.drv8825
 		ctrl_status => ra_status_sync,
 		ctrl_step_count(31 downto 0) => ra_step_count_sync(31 downto 0),
 		ctrl_trackctrl(31 downto 0) => ra_trackctrl_sync(31 downto 0),
+		is_tmc2226 => is_tmc_sync(1),
 		drv8825_direction => ra_direction_b,
 		drv8825_enable_n => ra_enable_n,
 		drv8825_fault_n => ra_fault_n,
@@ -870,6 +889,7 @@ DRV_RA :  entity work.drv8825
 		ctrl_status => de_status_sync,
 		ctrl_step_count(31 downto 0) => de_step_count_sync(31 downto 0),
 		ctrl_trackctrl(31 downto 0) => de_trackctrl_sync(31 downto 0),
+		is_tmc2226 => is_tmc_sync(0),
 		drv8825_direction => de_direction_b,
 		drv8825_enable_n => de_enable_n,
 		drv8825_fault_n => de_fault_n,
@@ -895,6 +915,7 @@ DRV_RA :  entity work.drv8825
 		ctrl_status => fc_status_sync,
 		ctrl_step_count(31 downto 0) => fc_step_count_sync(31 downto 0),
 		ctrl_trackctrl(31 downto 0) => fc_trackctrl_sync(31 downto 0),
+		is_tmc2226 => is_tmc_sync(2),
 		drv8825_direction => fc_direction_b,
 		drv8825_enable_n => fc_enable_n,
 		drv8825_fault_n => fc_fault_n,

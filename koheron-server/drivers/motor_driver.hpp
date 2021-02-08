@@ -20,6 +20,7 @@ class MotorDriver
       //uint32_t val = 0xFFFFFFFF;
       //spi.write_at<reg::tmc_select/4, mem::control_addr, 1>(&val);
       ctx.log<INFO>("MotorDriver-%s: Class initialized\n", __func__);
+      m_debug = false;
     }
 
     template<uint32_t offset>
