@@ -411,7 +411,7 @@ class SkyTrackerInterface {
         ctx.log<INFO>("%s(%u): updating speed\n", __func__, axis);
         start_raw_tracking(axis, m_params.motorDirection[isSlew][axis],
                               m_params.period_ticks[isSlew][axis],
-                              m_params.motorMode[isSlew][axis], true);
+                              m_params.motorMode[isSlew][axis]);//, true);
       }
     return true;
   }
@@ -523,27 +523,16 @@ class SkyTrackerInterface {
                               m_params.motorMode[isSlew][axis]);
   }
   bool start_raw_tracking(uint8_t axis, bool isForward, uint32_t periodticks,
-                          uint8_t mode, bool update = false) {
+                          uint8_t mode/*, bool update = false*/) {
     if (!check_axis_id(axis, __func__)) return false;
     uint32_t isSlew = true;
     m_params.highSpeedMode_fpga[isSlew][axis] = periodticks < 7000;
     if (axis == 0)
-      stepper.enable_tracking<0>(isForward, periodticks, mode, update);
+      stepper.enable_tracking<0>(isForward, periodticks, mode);//, update);
     else if (axis == 2)
-      stepper.enable_tracking<2>(isForward, periodticks, mode, update);
+      stepper.enable_tracking<2>(isForward, periodticks, mode);//, update);
     else
-      stepper.enable_tracking<1>(isForward, periodticks, mode, update);
-    return true;
-  }
-  bool park_raw_telescope(uint8_t axis, bool isForward, uint32_t period_ticks,
-                          uint8_t mode, bool use_accel) {
-    if (!check_axis_id(axis, __func__)) return false;
-    if (axis == 0)
-      stepper.set_park<0>(isForward, period_ticks, mode, use_accel);
-    else if (axis == 2)
-      stepper.set_park<2>(isForward, period_ticks, mode, use_accel);
-    else
-      stepper.set_park<1>(isForward, period_ticks, mode, use_accel);
+      stepper.enable_tracking<1>(isForward, periodticks, mode);//, update);
     return true;
   }
   bool send_command(uint8_t axis, bool use_accel, bool isGoto) {
