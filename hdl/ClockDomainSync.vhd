@@ -28,8 +28,6 @@ use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
-library UNISIM;
-use UNISIM.VComponents.all;
 
 entity ClockDomainSync is
   Port ( 

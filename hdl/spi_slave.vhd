@@ -45,8 +45,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-library UNISIM;
-use UNISIM.VComponents.all;
 
 entity spislave is
 	 Generic (
@@ -124,7 +122,9 @@ begin
 			spi_clk_buf <= spi_clk;
 		end if;
 	end process;
-	bufg_spi_clk : BUFG port map (I => spi_clk_buf ,  O => spi_clk_delayed);
+	--bufg_spi_clk : BUFG port map (I => spi_clk_buf ,  O => spi_clk_delayed);
+	spi_clk_delayed <= spi_clk_buf;
+	spi_clk_buf <= spi_clk_delayed;
 	spi_delayed_clk <= spi_clk_delayed;
 	
 	-- Clocking in address and data

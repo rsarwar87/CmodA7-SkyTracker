@@ -133,7 +133,7 @@ end entity;
 architecture rtl of sync_Bits is
   constant INIT_I    : std_logic_vector    := resize(descend(INIT), BITS);
     attribute ASYNC_REG              : string;
-    attribute SHREG_EXTRACT          : string;
+    attribute shreg_extract          : string;
 
   begin
     gen : for i in 0 to BITS - 1 generate
@@ -142,11 +142,11 @@ architecture rtl of sync_Bits is
       signal Data_sync              : std_logic_vector(SYNC_DEPTH - 1 downto 1)    := (others => INIT_I(i));
 
       -- Mark register DataSync_async's input as asynchronous and ignore timings (TIG)
-      attribute ASYNC_REG      of Data_meta  : signal is "TRUE";
+      attribute async_reg      of Data_meta  : signal is "TRUE";
 
       -- Prevent XST from translating two FFs into SRL plus FF
-      attribute SHREG_EXTRACT of Data_meta  : signal is "NO";
-      attribute SHREG_EXTRACT of Data_sync  : signal is "NO";
+      attribute shreg_extract of Data_meta  : signal is "NO";
+      attribute shreg_extract of Data_sync  : signal is "NO";
 
     begin
       Data_async      <= Input(i);
@@ -214,11 +214,11 @@ architecture rtl of sync_Vector is
 	signal Busy_i                  : std_logic;
 
 	-- Prevent XST from translating two FFs into SRL plus FF
-	attribute SHREG_EXTRACT of D0  : signal is "NO";
-	attribute SHREG_EXTRACT of T1  : signal is "NO";
-	attribute SHREG_EXTRACT of D2  : signal is "NO";
-	attribute SHREG_EXTRACT of D3  : signal is "NO";
-	attribute SHREG_EXTRACT of D4  : signal is "NO";
+	attribute shreg_extract of D0  : signal is "NO";
+	attribute shreg_extract of T1  : signal is "NO";
+	attribute shreg_extract of D2  : signal is "NO";
+	attribute shreg_extract of D3  : signal is "NO";
+	attribute shreg_extract of D4  : signal is "NO";
 
 	signal syncClk1_In    : std_logic;
 	signal syncClk1_Out   : std_logic;
