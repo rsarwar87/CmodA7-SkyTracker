@@ -39,14 +39,13 @@ architecture Behavioral of tb_drv8825 is
 component drv8825 is
     Port ( clk_50 : in STD_LOGIC;
            rstn_50 : in STD_LOGIC;
-           drv8825_mode : out STD_LOGIC_VECTOR (2 downto 0);    -- tmc2226: bit 0 is low power pin (always high)        
-           drv8825_enable_n : out STD_LOGIC;                    -- tmc2226 and drv8825 has same function                
-           drv8825_sleep_n : out STD_LOGIC;                     -- tmc2226 pin is external CLK (always low)             
-           drv8825_rst_n : out STD_LOGIC;                       -- tmc2226 pin is standby pin (always low)              
-           drv8825_step : out STD_LOGIC;                        -- tmc2226 and drv8825 has same function                
-           drv8825_direction : out STD_LOGIC;                   -- tmc2226 and drv8825 has same function                
-           drv8825_fault_n : in STD_LOGIC;                      -- NOT CONNECTED                                        
-           is_tmc2226   : in std_logic;
+           drv8825_mode : out STD_LOGIC_VECTOR (2 downto 0);
+           drv8825_enable_n : out STD_LOGIC;
+           drv8825_sleep_n : out STD_LOGIC;
+           drv8825_rst_n : out STD_LOGIC;
+           drv8825_step : out STD_LOGIC;
+           drv8825_direction : out STD_LOGIC;
+           drv8825_fault_n : in STD_LOGIC;
            ctrl_step_count : out STD_LOGIC_VECTOR (31 downto 0);
            ctrl_status : out STD_LOGIC_VECTOR (31 downto 0);
            ctrl_cmdcontrol : in STD_LOGIC_VECTOR (31 downto 0); -- steps, go, stop, direction
@@ -113,33 +112,7 @@ begin
           ctrl_trackctrl       <= x"0000FFF1"; 
           ctrl_counter_load    <= x"8000FFFF";
           ctrl_cmdduration     <= x"00000000";
-          wait for CLK_PERIOD*100000;
-              ctrl_trackctrl       <= x"00000000"; 
-              ctrl_counter_load    <= x"8000FFFF";
-              ctrl_cmdduration     <= x"00000000";
-          
-          wait for CLK_PERIOD*150000;
-              ctrl_trackctrl       <= x"00FFFFF1"; 
-              ctrl_counter_load    <= x"8000FFFF";
-              ctrl_cmdduration     <= x"00000000";
-          wait for CLK_PERIOD*100000;
-          ctrl_trackctrl       <= x"0000FFF1"; 
-          ctrl_counter_load    <= x"8000FFFF";
-          ctrl_cmdduration     <= x"00000000";
-          wait for CLK_PERIOD*150000;
-          ctrl_trackctrl       <= x"00000FF1"; 
-          ctrl_counter_load    <= x"8000FFFF";
-          ctrl_cmdduration     <= x"00000000";
-          wait for CLK_PERIOD*150000;
-          ctrl_trackctrl       <= x"0000FFF1"; 
-          ctrl_counter_load    <= x"8000FFFF";
-          ctrl_cmdduration     <= x"00000000";
-          
-          
-          
-          
-          
-          wait for CLK_PERIOD*100000000;
+          wait for CLK_PERIOD*10000;
           ctrl_counter_load    <= x"0000FFFF";
           ctrl_cmdtick <= x"000000FF";
           ctrl_cmdcontrol(0)       <= '1'; -- ctr_cmd_in
@@ -190,9 +163,6 @@ begin
           wait for CLK_PERIOD*400000;
           ctrl_cmdcontrol(31)      <= '1';
           ctrl_cmdcontrol(30)      <= '0';
-          
-          
-          
           wait for CLK_PERIOD*500000000;
     end process;
 
@@ -217,7 +187,6 @@ begin
       drv8825_step => drv8825_step,
       drv8825_direction => drv8825_direction,
       drv8825_fault_n => drv8825_fault_n,
-      is_tmc2226 => '1',
       ctrl_step_count => ctrl_step_count,
       ctrl_status => ctrl_status,
       ctrl_cmdcontrol => ctrl_cmdcontrol,

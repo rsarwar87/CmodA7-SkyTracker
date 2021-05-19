@@ -10,9 +10,8 @@ entity SKY_TOP is
     port 
     (
         -------- CLOCKS --------------------
-        FPGA_CLK0_12		: in 	std_logic;
-        VP_IN, VN_IN		: in 	std_logic;
-        VA_P, VA_N  		: in 	std_logic_vector(1 downto 0);
+        FPGA_CLK0_50		: in 	std_logic;
+        CLOCKS      		: out 	std_logic_vector(5 downto 0);
         
         pi_camera_trigger_in  : in std_logic;
         pi_camera_trigger_out : out std_logic;
@@ -20,10 +19,9 @@ entity SKY_TOP is
         pi_pwm_led_out        : out std_logic;
        
         ------- INPUT/OUTPUT --------------------
-        KEY			: in	std_logic_vector(1 downto 0);
+        KEY			: in	std_logic_vector(0 downto 0);
         S_LED		: out	std_logic_vector(7 downto 0);
-        LED_RBG 	: out	std_logic_vector(2 downto 0);
-        LED     	: out	std_logic_vector(1 downto 0);
+        LED     	: out	std_logic_vector(0 downto 0);
         
         led_polar   : out STD_LOGIC;
         camera_triggers : out STD_LOGIC_VECTOR (1 downto 0);
@@ -106,7 +104,7 @@ architecture rtl of SKY_TOP is
     signal spi_ctrl_read_data                            : std_logic_vector(31 downto 0) := (others => 'X');  -- read_data
     signal spi_sts_read_data                             : std_logic_vector(31 downto 0) := (others => 'X'); -- read_data
     
-    signal spi_delayed_clk, clock_12, clock_50, rstn_50, rstn_12 : std_logic := '0';  
+    signal spi_delayed_clk, clock_50, rstn_50, rstn_12 : std_logic := '0';  
     signal clock_100, rstn_100 : std_logic := '0';
     signal clock_125, rstn_125 : std_logic := '0';
     signal clock_150, rstn_150 : std_logic := '0';
@@ -131,15 +129,6 @@ architecture rtl of SKY_TOP is
     signal di_in : STD_LOGIC_VECTOR(15 downto 0):= (others => '0');
     signal dwe_in:  STD_LOGIC := '0';
      
-    signal  busy_out:  STD_LOGIC;
-    signal  channel_out : STD_LOGIC_VECTOR(4 downto 0);
-    signal  do_out : STD_LOGIC_VECTOR(15 downto 0);
-    signal  aux_channel_n, aux_channel_p : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-    signal  drdy_out:  STD_LOGIC;
-    signal  eos_out:  STD_LOGIC;
-    signal  alarm_out:  STD_LOGIC;
-    signal  adc_address : std_logic_vector (6 downto 0);
-    signal  adc_dbus : std_logic_vector (15 downto 0);
     
     signal  led_out_hw:  STD_LOGIC;
 begin
@@ -148,107 +137,7 @@ begin
     rstn_125 <= rstn_12;
     rstn_150 <= rstn_12;
 
-    aux_channel_n (4) <= VA_N(0);
-    aux_channel_P (4) <= VA_P(0);
-    aux_channel_n (12) <= VA_N(1);
-    aux_channel_P (12) <= VA_P(1);
-    XADC_inst : XADC
-   generic map (
-      -- INIT_40 - INIT_42: XADC configuration registers
-      INIT_40 => X"1000",
-      INIT_41 => X"21AF",
-      INIT_42 => X"0200",
-      -- INIT_48 - INIT_4F: Sequence Registers
-      INIT_48 => X"0800",
-      INIT_49 => X"1010",
-      INIT_4A => X"0000",
-      INIT_4B => X"0000",
-      INIT_4C => X"0000",
-      INIT_4D => X"0000",
-      INIT_4F => X"0000",
-      INIT_4E => X"0000",                 -- Sequence register 6
-      -- INIT_50 - INIT_58, INIT5C: Alarm Limit Registers
-      INIT_50 => X"B5ED",
-      INIT_51 => X"57E4",
-      INIT_52 => X"A147",
-      INIT_53 => X"CA33",
-      INIT_54 => X"A93A",
-      INIT_55 => X"52C6",
-      INIT_56 => X"9555",
-      INIT_57 => X"AE4E",
-      INIT_58 => X"9999",
-      INIT_5C => X"1111",
-      -- Simulation attributes: Set for proper simulation behavior
-      SIM_DEVICE => "7SERIES",            -- Select target device (values)
-      SIM_MONITOR_FILE => "design.txt"  -- Analog simulation data file name
-   )
-   port map (
-      -- ALARMS: 8-bit (each) output: ALM, OT
-      ALM => alm_int,                   -- 8-bit output: Output alarm for temp, Vccint, Vccaux and Vccbram
-      OT => open,                     -- 1-bit output: Over-Temperature alarm
-      -- Dynamic Reconfiguration Port (DRP): 16-bit (each) output: Dynamic Reconfiguration Ports
-      DO => do_out,                     -- 16-bit output: DRP output data bus
-      DRDY => drdy_out,                 -- 1-bit output: DRP data ready
-      -- STATUS: 1-bit (each) output: XADC status ports
-      BUSY => busy_out,                 -- 1-bit output: ADC busy output
-      CHANNEL => channel_out,           -- 5-bit output: Channel selection outputs
-      EOC => enable,                   -- 1-bit output: End of Conversion
-      EOS => eos_out,                   -- 1-bit output: End of Sequence
-      JTAGBUSY => open,         -- 1-bit output: JTAG DRP transaction in progress output
-      JTAGLOCKED => open,     -- 1-bit output: JTAG requested DRP port lock
-      JTAGMODIFIED => open, -- 1-bit output: JTAG Write to the DRP has occurred
-      MUXADDR => open,           -- 5-bit output: External MUX channel decode
-      -- Auxiliary Analog-Input Pairs: 16-bit (each) input: VAUXP[15:0], VAUXN[15:0]
-      VAUXN => aux_channel_n,               -- 16-bit input: N-side auxiliary analog input
-      VAUXP => aux_channel_p,               -- 16-bit input: P-side auxiliary analog input
-      -- CONTROL and CLOCK: 1-bit (each) input: Reset, conversion start and clock inputs
-      CONVST => '0',             -- 1-bit input: Convert start input
-      CONVSTCLK => '0',       -- 1-bit input: Convert start input
-      RESET => '0',               -- 1-bit input: Active-high reset
-      -- Dedicated Analog Input Pair: 1-bit (each) input: VP/VN
-      VN => VN_IN,                     -- 1-bit input: N-side analog input
-      VP => VP_IN,                     -- 1-bit input: P-side analog input
-      -- Dynamic Reconfiguration Port (DRP): 7-bit (each) input: Dynamic Reconfiguration Ports
-      DADDR => daddr_in(6 downto 0),               -- 7-bit input: DRP address bus
-      DCLK => clock_100,                 -- 1-bit input: DRP clock
-      DEN => enable,                   -- 1-bit input: DRP enable signal
-      DI => di_in,                     -- 16-bit input: DRP input data bus
-      DWE => dwe_in                    -- 1-bit input: DRP write enable
-   );
-   process (clock_100)
-   begin
-      if (rising_edge(clock_100)) then
-        if (drdy_out = '1') then
-          daddr_in <= daddr_buf;
-        end if;
-      end if;
-   end process;
    
-   SyncBusToClock_adcaddr_strobe  : sync_Vector 
-   generic map (
-     MASTER_BITS => 7, SYNC_DEPTH => 2
-   )
-   port map(
-     Clock1        => clock_150 ,                                                  -- <Clock>  input clock
-	   Clock2        => clock_100 ,                                                 -- <Clock>  output clock
-	   Input         => adc_address,   -- @Clock1:  input vector
-	   Output        => daddr_buf(6 downto 0),  -- @Clock2:  output vector
-	   Busy          => open,                                                -- @Clock1:  busy bit
-	   Changed       => open                                                -- @Clock2:  changed bit
-   );
-
-   SyncBusToClock_adcdata_strobe : sync_Vector 
-   generic map (
-     MASTER_BITS => 16, SYNC_DEPTH => 2
-   )
-   port map(
-     Clock1        => clock_100,                                                  -- <Clock>  input clock
-	   Clock2        => clock_150 ,                                                 -- <Clock>  output clock
-	   Input         => do_out,   -- @Clock1:  input vector
-	   Output        => adc_dbus,  -- @Clock2:  output vector
-	   Busy          => open,                                                -- @Clock1:  busy bit
-	   Changed       => open                                                -- @Clock2:  changed bit
-   );
 
 SKYTRACKER : block
     component sky_tracker is
@@ -287,8 +176,6 @@ SKYTRACKER : block
 		       ip_addr : out STD_LOGIC_VECTOR (7 downto 0);
 		       led_status : out STD_LOGIC_VECTOR (7 downto 0);
 			  
-           adc_address : out std_logic_vector (6 downto 0);
-           adc_dbus : in std_logic_vector (15 downto 0);
 
 		       sts_acknowledge                           : out    std_logic                     := 'X';             -- acknowledge
            sts_irq                                   : out    std_logic                     := 'X';             -- irq
@@ -361,8 +248,6 @@ begin
 		       ip_addr => ip_addr,
 		       led_status => led_status,
 		   
-           adc_address => adc_address,
-           adc_dbus => adc_dbus,
 
    		     sts_acknowledge                           => sts_acknowledge,                           --                            sts.acknowledge
            
@@ -499,18 +384,6 @@ begin
       
 
 
-	  SyncBusToClock_level_0 : sync_Vector 
-      generic map (
-        MASTER_BITS => 1, SYNC_DEPTH => 3
-      )
-      port map(
-        Clock1        => clock_12,                                                  -- <Clock>  input clock
-		Clock2        => clock_150,                                                 -- <Clock>  output clock
-		Input         => led_level0_b,   -- @Clock1:  input vector
-		Output        => led_level0_sync ,  -- @Clock2:  output vector
-		Busy          => open,                                                -- @Clock1:  busy bit
-		Changed       => open                                                -- @Clock2:  changed bit
-      );
 	  SyncBusToClock_level_1 : sync_Vector 
       generic map (
         MASTER_BITS => 1, SYNC_DEPTH => 3
@@ -576,20 +449,22 @@ begin
         if (rstn_150 = '0') then
             S_LED <= (others => '1');
             led_out_hw <= '1';
+            LED(0) <= led_level(4);
         elsif (rising_edge(clock_150)) then
           if ip_addr = "00000000" then
             S_LED <= (others => led_level_sync(2));
-            led_out_hw <= '1';
+            LED(0) <= '0';
           elsif (ip_addr = "11111111") then
             S_LED <= (others => '0');
-            led_out_hw <= '0';
+            LED(0) <= '1';
           -- device status 
           -- elsif bla bla
-			 elsif (led_status_sync = "00000000") then
+		  elsif (led_status_sync = "00000000") then
 				S_LED <= ip_addr;
-				led_out_hw <= '1';
+				LED(0) <= led_level(1);
           else 
             S_LED <= led_status_sync;
+            LED(0) <= led_level(4);
           end if;
         end if;
     end process;
@@ -682,23 +557,22 @@ MMCM_block : block
      end component clk_wiz_0;
 begin
 
-
    MMCME2_ADV_inst : MMCME2_ADV
    generic map (
       BANDWIDTH => "OPTIMIZED",      -- Jitter programming (OPTIMIZED, HIGH, LOW)
-      CLKFBOUT_MULT_F => 50.0,        -- Multiply value for all CLKOUT (2.000-64.000).
+      CLKFBOUT_MULT_F => 15.0,        -- Multiply value for all CLKOUT (2.000-64.000).
       CLKFBOUT_PHASE => 0.0,         -- Phase offset in degrees of CLKFB (-360.000-360.000).
       -- CLKIN_PERIOD: Input clock period in ns to ps resolution (i.e. 33.333 is 30 MHz).
-      CLKIN1_PERIOD => 0.0,
+      CLKIN1_PERIOD => 20.0,
       CLKIN2_PERIOD => 0.0,
       -- CLKOUT0_DIVIDE - CLKOUT6_DIVIDE: Divide amount for CLKOUT (1-128)
       CLKOUT1_DIVIDE => 6,
       CLKOUT2_DIVIDE => 5,
-      CLKOUT3_DIVIDE => 4,
+      CLKOUT3_DIVIDE => 1,
       CLKOUT4_DIVIDE => 1,
       CLKOUT5_DIVIDE => 1,
       CLKOUT6_DIVIDE => 1,
-      CLKOUT0_DIVIDE_F => 12.0,       -- Divide amount for CLKOUT0 (1.000-128.000).
+      CLKOUT0_DIVIDE_F => 7.5,       -- Divide amount for CLKOUT0 (1.000-128.000).
       -- CLKOUT0_DUTY_CYCLE - CLKOUT6_DUTY_CYCLE: Duty cycle for CLKOUT outputs (0.01-0.99).
       CLKOUT0_DUTY_CYCLE => 0.5,
       CLKOUT1_DUTY_CYCLE => 0.5,
@@ -738,13 +612,13 @@ begin
    )
    port map (
       -- Clock Outputs: 1-bit (each) output: User configurable clock outputs
-      CLKOUT0 => clock_50_buf,           -- 1-bit output: CLKOUT0
+      CLKOUT0 => clock_100_buf,           -- 1-bit output: CLKOUT0
       CLKOUT0B => open,         -- 1-bit output: Inverted CLKOUT0
-      CLKOUT1 => clock_100_buf,           -- 1-bit output: CLKOUT1
+      CLKOUT1 => clock_125_buf,           -- 1-bit output: CLKOUT1
       CLKOUT1B => open,         -- 1-bit output: Inverted CLKOUT1
-      CLKOUT2 => clock_125_buf,           -- 1-bit output: CLKOUT2
+      CLKOUT2 => clock_150_buf,           -- 1-bit output: CLKOUT2
       CLKOUT2B => open,         -- 1-bit output: Inverted CLKOUT2
-      CLKOUT3 => clock_150_buf,           -- 1-bit output: CLKOUT3
+      CLKOUT3 => open,           -- 1-bit output: CLKOUT3
       CLKOUT3B => open,         -- 1-bit output: Inverted CLKOUT3
       CLKOUT4 => open,           -- 1-bit output: CLKOUT4
       CLKOUT5 => open,           -- 1-bit output: CLKOUT5
@@ -762,7 +636,7 @@ begin
       CLKINSTOPPED => open, -- 1-bit output: Input clock stopped
       LOCKED => mmcm_lock,             -- 1-bit output: LOCK
       -- Clock Inputs: 1-bit (each) input: Clock inputs
-      CLKIN1 => clock_12,             -- 1-bit input: Primary clock
+      CLKIN1 => clock_50,             -- 1-bit input: Primary clock
       CLKIN2 => '0',             -- 1-bit input: Secondary clock
       -- Control Ports: 1-bit (each) input: MMCM control ports
       CLKINSEL => '1',         -- 1-bit input: Clock select, High=CLKIN1 Low=CLKIN2
@@ -784,17 +658,22 @@ begin
 
 
     mmcm_bufg_feedback : BUFG port map (I => fd_clock_buf ,  O => fd_clock);
-    mmcm_bufg_50 : BUFG port map (I => clock_50_buf ,  O => clock_50);
     mmcm_bufg_100 : BUFG port map (I => clock_100_buf ,  O => clock_100);
     mmcm_bufg_125 : BUFG port map (I => clock_125_buf ,  O => clock_125);
     mmcm_bufg_150 : BUFG port map (I => clock_150_buf ,  O => clock_150); 
    -- End of MMCME2_BASE_inst instantiation
+   CLOCKS(0) <= mmcm_lock;
+   CLOCKS(1) <= clock_50;
+   CLOCKS(2) <= clock_100;
+   CLOCKS(3) <= clock_150;
+   CLOCKS(4) <= fd_clock;
    
    
    mmcm_rst <= '0';
-   t_rst <= not KEY(0);
+   t_rst <= KEY(0);
    trst : BUFG port map (I => t_rst ,  O => rstn_12); 
-   clock12 : BUFG port map (I => FPGA_CLK0_12 ,  O => clock_12); 
+   clock12 : BUFG port map (I => FPGA_CLK0_50 ,  O => clock_50); 
+   
 --   u_clk_wiz_0 : component clk_wiz_0 
 --    port map (
 --      -- Clock out ports
@@ -823,21 +702,8 @@ begin
             end if;
         end if;
     end process;	
-    process(clock_12, rstn_12)
-		
-    begin
-        if (rstn_12 = '0') then
-            led_level(0) <= '1';
-            counter_12 <= 0;
-        elsif (rising_edge(clock_12)) then
-            if(counter_12 = 29999999) then
-                led_level(0) <= not led_level(0);
-                counter_12 <= 0;
-	    else
-	        counter_12 <= counter_12 + 1;
-            end if;
-        end if;
-    end process;	
+
+	
     process(clock_100, rstn_100)
 		
     begin
@@ -883,11 +749,8 @@ begin
             end if;
         end if;
     end process;	
-    LED(0) <= led_level(1) when led_out_hw = '1' else '0';
-    LED(1) <= led_level(4) when led_out_hw = '1' else '0';
-    LED_RBG(0) <= led_level(3) when led_out_hw = '1' else '0';
-    LED_RBG(1) <= led_level(2) when led_out_hw = '1' else '0';
-    LED_RBG(2) <= led_level(0) when led_out_hw = '1' else '0';
+    
+    
 end block MMCM_block;
 	 
 end rtl;
