@@ -91,14 +91,15 @@ begin
     
     
     
-    ctrl_step_count(31 downto 30) <= "00";
-    ctrl_step_count(29 downto 0) <= current_stepper_counter;
 	 delta_counter_proc : process (clk_50, rstn_50)
     begin
         if (rstn_50 = '0') then
             delta_counter <= "0000001";
             tmc_mode_buf <= "00";
         elsif(rising_edge(clk_50)) then
+				
+			 ctrl_step_count(31 downto 30) <= "00";
+			 ctrl_step_count(29 downto 0) <= current_stepper_counter;
             case current_mode_out is
                 when "000" =>
 					if is_tmc2226 = '1' then
@@ -400,9 +401,9 @@ command_block: block
     signal cutoff_signed : integer := 0;
     
     
-    ATTRIBUTE MARK_DEBUG of divider, use_acceleration_track, use_acceleration, done_acceleration_track, done_acceleration, acceleration_counter, acceleration_map, decceleration_map: SIGNAL IS "TRUE";
+    ATTRIBUTE MARK_DEBUG of divider, current_track_speed, use_acceleration_track, use_acceleration, done_acceleration_track, done_acceleration, acceleration_counter, acceleration_map, decceleration_map: SIGNAL IS "TRUE";
     ATTRIBUTE MARK_DEBUG of ctr_cmd_in, ctr_cmdcancel_in, ctr_goto_in, cuttoff_special, ctr_cmdtick_in, ctr_cmdduration_in: SIGNAL IS "TRUE";
-    ATTRIBUTE MARK_DEBUG of ctr_track_enabled_in, ctr_track_direction_in, ctr_tracktick_in, target_counter_int: SIGNAL IS "TRUE";
+    ATTRIBUTE MARK_DEBUG of issue_tack, issue_speed, ctr_track_enabled_in, ctr_track_direction_in, ctr_tracktick_in, target_counter_int: SIGNAL IS "TRUE";
     
 begin
     current_speed_buffer <= std_logic_vector(to_unsigned(issue_speed, current_speed_buffer'length));
@@ -743,7 +744,7 @@ begin
                     else
                         if (state_motor_buf /= tracking ) then
                             state_motor_buf <= idle;
-                        elsif (done_acceleration_track = '1' and current_track_speed = 1073741823 ) then
+                        elsif (current_track_speed = 1073741823 ) then
                             state_motor_buf <= idle;
                         end if;
                         
