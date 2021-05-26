@@ -75,7 +75,7 @@ class MotorDriver
     template<uint32_t offset>
     void disable_tracking(bool instant)
     {
-      /*
+      
       if (!instant)
       {
         uint32_t current_settings;
@@ -95,7 +95,7 @@ class MotorDriver
           }
         }
       }
-      */
+      
       uint32_t tmp= 0;
       spi.write_at<reg::trackctrl0/4 + offset, mem::control_addr, 1> (&tmp);
     }
@@ -103,7 +103,7 @@ class MotorDriver
     void enable_tracking(bool isCCW, uint32_t period_ticks, uint8_t mode, bool update = false)
     {
         uint32_t cmd = 0;
-        /*if (!update)
+        if (!update)
         if (period_ticks < 500*1000/20)
         {
           for (size_t i = (500*1000/20)/period_ticks; i > 0; i--)
@@ -115,7 +115,7 @@ class MotorDriver
             spi.write_at<reg::trackctrl0/4 + offset, mem::control_addr, 1> (&cmd);
           }
         }
-        */
+        
         cmd = 1 + (isCCW << 1) + (mode << 2) +((period_ticks) << 5);
         spi.write_at<reg::trackctrl0/4 + offset, mem::control_addr, 1> (&cmd);
         print_debug<offset>(__func__, isCCW, (period_ticks), mode, cmd);
