@@ -74,7 +74,7 @@ architecture Behavioral of drv8825 is
     signal drv8825_direction_out, stepping_clk, cnt_enable : std_logic := '0';
     signal current_stepper_counter : std_logic_vector(29 downto 0) := (others => '0');
     
-    TYPE state_machine_motor IS (idle, tracking, command);  -- Define the states
+    TYPE state_machine_motor IS (idle, tracking, command, park);  -- Define the states
     signal state_motor : state_machine_motor := idle;
     TYPE state_change_trigger_machine IS (normal, direction, direction_speed, speed);  -- Define the states
     signal state_change_trigger : state_change_trigger_machine := normal;
@@ -97,9 +97,8 @@ begin
             delta_counter <= "0000001";
             tmc_mode_buf <= "00";
         elsif(rising_edge(clk_50)) then
-				
-			 ctrl_step_count(31 downto 30) <= "00";
-			 ctrl_step_count(29 downto 0) <= current_stepper_counter;
+            ctrl_step_count(31 downto 30) <= "00";
+            ctrl_step_count(29 downto 0) <= current_stepper_counter;
             case current_mode_out is
                 when "000" =>
 					if is_tmc2226 = '1' then
@@ -263,6 +262,19 @@ begin
                     ctrl_status(2) <= '0';
                     ctrl_status(1) <= '1';
                     --ctrl_status(0) <= '0';
+                when park =>
+                    drv8825_direction_out <= current_direction_buf(0);
+                    drv8825_step <= stepping_clk;
+                    drv8825_enable_n<='0';
+                    if is_tmc2226 = '1' then
+					  drv8825_rst_n <= '0';
+					else
+					  drv8825_sleep_n<= '1';
+					  drv8825_rst_n  <= '1';  
+					end if;
+                    ctrl_status(2) <= '1';
+                    ctrl_status(1) <= '1';
+                    --ctrl_status(0) <= '0';
                 when others => 
                     drv8825_direction_out <= '0';
                     drv8825_step <= '0';
@@ -358,6 +370,7 @@ command_block: block
     signal ctr_cmdcancel_in : std_logic := '0';
     signal ctr_cmdcancelnow_in : std_logic := '0';
     signal ctr_goto_in : std_logic := '0';
+    signal ctr_park_in : std_logic := '0';
     signal ctr_cmdmode_in : std_logic_vector(2 downto 0) := "000";
     
     signal ctr_backlash_tick_in  : integer range 0 to 2**30-1 := 1;
@@ -372,23 +385,23 @@ command_block: block
     signal target_counter_int : std_logic_vector(29 downto 0) := (others => '0');
     
     
-    signal ctr_cmd_buf : std_logic := '0';
-    signal use_acceleration, use_acceleration_track : std_logic := '0';
-    signal done_acceleration, done_acceleration_track : std_logic := '0';
+    signal ctr_cmd_buf, ctr_park_buf : std_logic := '0';
+    signal use_acceleration : std_logic := '0';
+    signal done_acceleration : std_logic := '0';
     
     
-    signal issue_direction, issue_stop, tracker_increase : std_logic := '1';
-    signal issue_speed, current_track_speed, target_track_speed, delta_track_speed, factor_track_speed    : integer range 0 to 2**30-1;
+    signal issue_direction, issue_stop : std_logic := '1';
+    signal issue_speed     : integer range 0 to 2**30-1;
     signal issue_mode : std_logic_vector(2 downto 0) := "000";
     signal state_motor_buf : state_machine_motor := idle;
     
-    signal acceleration_counter, acceleration_counter_tracker  : integer range 0 to 12500000 := 12500000;
-    signal current_speed_buffer, issue_tack  : std_logic_vector (31 downto 0) := (others => '1');
+    signal acceleration_counter  : integer range 0 to 12500000 := 12500000;
+    signal current_speed_buffer  : std_logic_vector (31 downto 0) := (others => '1');
     signal current_scaled_buffer  : std_logic_vector (31 downto 0) := (others => '1');
     signal init_count, cutoff_count  : std_logic_vector (29 downto 0) := (others => '0');
     signal current_scaled_buffer2     : integer range 0 to 2**30-1;
     constant aceel_steps : integer := 7;
-    signal divider, divider_tracker : integer range 0 to 7 := aceel_steps;
+    signal divider : integer range 0 to 7 := aceel_steps;
     type array_30 is array (0 to 7) of std_logic_vector (29 downto 0);
     type array_i30 is array (0 to 7) of integer range 0 to 2**30-1;
     type array_i32 is array (0 to 7) of integer range -2**30-1 to 2**30-1;
@@ -401,9 +414,9 @@ command_block: block
     signal cutoff_signed : integer := 0;
     
     
-    ATTRIBUTE MARK_DEBUG of divider, current_track_speed, use_acceleration_track, use_acceleration, done_acceleration_track, done_acceleration, acceleration_counter, acceleration_map, decceleration_map: SIGNAL IS "TRUE";
-    ATTRIBUTE MARK_DEBUG of ctr_cmd_in, ctr_cmdcancel_in, ctr_goto_in, cuttoff_special, ctr_cmdtick_in, ctr_cmdduration_in: SIGNAL IS "TRUE";
-    ATTRIBUTE MARK_DEBUG of issue_tack, issue_speed, ctr_track_enabled_in, ctr_track_direction_in, ctr_tracktick_in, target_counter_int: SIGNAL IS "TRUE";
+    ATTRIBUTE MARK_DEBUG of divider, use_acceleration, done_acceleration, acceleration_counter, acceleration_map, decceleration_map: SIGNAL IS "TRUE";
+    ATTRIBUTE MARK_DEBUG of ctr_cmd_in, ctr_cmdcancel_in, ctr_goto_in, ctr_park_in, cuttoff_special, ctr_cmdtick_in, ctr_cmdduration_in: SIGNAL IS "TRUE";
+    ATTRIBUTE MARK_DEBUG of ctr_track_enabled_in, ctr_track_direction_in, ctr_tracktick_in, target_counter_int: SIGNAL IS "TRUE";
     
 begin
     current_speed_buffer <= std_logic_vector(to_unsigned(issue_speed, current_speed_buffer'length));
@@ -420,21 +433,9 @@ begin
             decceleration_map <= (others => (others => '0'));
             acceleration_map <= (others => (others => '0'));
             done_acceleration <= '0';
-            divider <= 0;
+            divider <= aceel_steps;
             speedmap_map <= (others => 100000);
             decceleration_map_buf <= (others => 0);
-            
-            use_acceleration_track <= '0';
-            delta_track_speed <= 0;
-            done_acceleration_track <= '1';
-            target_track_speed <= 0;
-            delta_track_speed <= 0;
-            current_track_speed <= 0;
-            divider_tracker <= aceel_steps;
-            acceleration_counter_tracker <= total_accel_count;
-            tracker_increase <= '0';
-            factor_track_speed     <= 0;
-            issue_tack <= (others => '0');
         elsif (rising_edge(clk_50)) then
             current_direction_buf(3 downto 1) <= current_direction_buf(2 downto 0);
             current_speed_buf(1 to 3) <= current_speed_buf(0 to 2);
@@ -451,18 +452,7 @@ begin
             acceleration_map(0) <= init_count;
             decceleration_map_buf <= decceleration_map_buf;
 
-            target_track_speed <= target_track_speed;
-            delta_track_speed <= delta_track_speed;
-            use_acceleration_track <= use_acceleration_track;
-            done_acceleration_track <= done_acceleration_track;
-            delta_track_speed <= delta_track_speed;
-            current_track_speed <= current_track_speed;
-            divider_tracker <= divider_tracker;
-            acceleration_counter_tracker <= acceleration_counter_tracker;
-            tracker_increase <= tracker_increase;
-            factor_track_speed   <= factor_track_speed   ;
-            issue_tack <= issue_tack;
-            if (state_motor = command) then  
+            if (state_motor = park or state_motor = command) then  
                 if (use_acceleration = '1') then
                     --current_speed_buf(0) <= issue_speed;
                     acceleration_counter <= acceleration_counter - 1;
@@ -470,8 +460,27 @@ begin
                     done_acceleration <= done_acceleration or issue_stop;
                     --current_scaled_buffer(31 downto 0+divider) <= current_speed_buffer(31-divider downto 0);
                     speedmap_map(0) <= issue_speed;
+                    speedmap_map(1) <= to_integer(unsigned(current_scaled_buffer(31 downto 7))) 
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 6)));
+                    speedmap_map(2) <= to_integer(unsigned(current_scaled_buffer(31 downto 6)))  
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 5)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 4)));
+                    speedmap_map(3) <= to_integer(unsigned(current_scaled_buffer(31 downto 5)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 4)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 3)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 2)));
+                    speedmap_map(4) <= to_integer(unsigned(current_scaled_buffer(31 downto 4)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 3))) 
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 2)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 1)));
+                    speedmap_map(5) <= to_integer(unsigned(current_scaled_buffer(31 downto 3)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 2)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 1)));
+                    speedmap_map(6) <= to_integer(unsigned(current_scaled_buffer(31 downto 2)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 1)));
+                    speedmap_map(7) <= to_integer(unsigned(current_scaled_buffer(31 downto 1)));
                     for I in 1 to aceel_steps loop
-                        speedmap_map(I) <= to_integer(unsigned(current_scaled_buffer(31 downto 8-I)));
+                        --speedmap_map(I) <= to_integer(unsigned(current_scaled_buffer(31 downto 8-I)));
                         if (issue_direction = '1') then
                             if cuttoff_special = '0' then 
                                 decceleration_map_buf(I) <= to_integer(unsigned(target_counter_int) - unsigned(acceleration_map(I)) - unsigned(cutoff_count));
@@ -523,109 +532,14 @@ begin
                     current_speed_buf(0) <= issue_speed;
                 end if;
             else
-                if (state_motor = tracking) then 
-                
-                    if (use_acceleration_track = '1') then
-                        if (divider_tracker = 7) then 
-                            divider_tracker <= 0;
-                            acceleration_counter_tracker <= total_accel_count;
-                            use_acceleration_track <= '0';
-                            done_acceleration_track <= '1';
-                            delta_track_speed <= 0;
-                            current_track_speed <= target_track_speed;
-                         else
-                            acceleration_counter_tracker <= acceleration_counter_tracker - 1;
-                            if (acceleration_counter_tracker = 0) then
-                                acceleration_counter_tracker <= total_accel_count;
-                                divider_tracker <= divider_tracker + 1;
-                                if (tracker_increase = '0') then
-                                    current_track_speed <= current_track_speed + delta_track_speed;
-                                else
-                                    current_track_speed <= current_track_speed - delta_track_speed;
-                                end if;
-                            end if;
-                         end if;
-                    elsif (target_track_speed /= issue_speed) then    
-                        --target_track_speed <= issue_speed;  
-                        acceleration_counter_tracker <= total_accel_count;
-                        
-                        case (divider_tracker) is
-                            when 0 =>  -- check if accel/deaccel is needed
-                                if (issue_speed > 32768 and current_track_speed > 32768) then
-                                    target_track_speed <= issue_speed;
-                                    current_track_speed <= issue_speed;
-                                else
-                                    divider_tracker <= 1;
-                                end if;
-                                tracker_increase <= '0';
-                                factor_track_speed <= 0;
-                                issue_tack <= (others => '0');
-                            when 1 => -- check if it is accel or deaccel
-                                --divider_tracker <= divider_tracker + 1;
-                                if (current_track_speed > issue_speed) then --acceleration 999999   750
-                                    delta_track_speed <= (current_track_speed - issue_speed);
-                                    factor_track_speed <= issue_speed + issue_speed;
-                                    issue_tack <= std_logic_vector(to_unsigned(current_track_speed - issue_speed, 32));
-                                    divider_tracker <= 2;
-                                    tracker_increase <= '1';
-                                elsif (current_track_speed < issue_speed) then --deacceleration  750 999999
-                                    divider_tracker <= 3;
-                                    tracker_increase <= '0';
-                                    delta_track_speed <= (issue_speed - current_track_speed);
-                                    issue_tack <= std_logic_vector(to_unsigned(issue_speed - current_track_speed, 32));
-                                    factor_track_speed <= current_track_speed * 2;
-                                else
-                                    divider_tracker <= 0;
-                                    target_track_speed <= issue_speed;
-                                end if;
-                                
-                            when 2 =>  -- accel   current_track_speed > issue_speed
-                                target_track_speed <= issue_speed;
-                                if (current_track_speed > factor_track_speed) then -- deaccel   current_track_speed > issue_speed
-                                    done_acceleration_track <= '0';
-                                    use_acceleration_track <= '1';
-                                    delta_track_speed <= to_integer(unsigned( issue_tack(31 downto 3) )) ;
-                                else
-                                    current_track_speed <= issue_speed;
-                                    delta_track_speed <= 0;
-                                end if;
-                                divider_tracker <= 0;
-                            when 3 =>  -- accel
-                                -- deaccel   current_track_speed > issue_speed
-                                target_track_speed <= issue_speed;
-                                if (issue_speed > factor_track_speed) then -- deaccel   current_track_speed > issue_speed
-                                    done_acceleration_track <= '0';
-                                    use_acceleration_track <= '1';
-                                    delta_track_speed <= to_integer(unsigned( issue_tack(31 downto 3) )) ;
-                                else
-                                    
-                                    current_track_speed <= issue_speed;
-                                    delta_track_speed <= 0;
-                                end if;
-                                divider_tracker <= 0;
-                                
-                            when others =>
-                                divider_tracker <= 0;
-                        end case;
-                        
-                        
-                       
-                    else
-                        divider_tracker <= 0;
-                    end if;
-                    current_speed_buf(0) <= current_track_speed;
-                else
-                    current_track_speed <= 1073741823;
-                    divider_tracker <= 0;
-                    current_speed_buf(0) <= current_track_speed;
-                    acceleration_counter <= total_accel_count;
-                    divider <= aceel_steps;
-                    done_acceleration <= '0';
-                    decceleration_map <= (others => (others => '0'));
-                    acceleration_map <= (others => (others => '0'));
-                    speedmap_map <= (others => 100000);
-                    decceleration_map_buf <= (others => 0);
-                end if;       
+                current_speed_buf(0) <= issue_speed;
+                acceleration_counter <= total_accel_count;
+                divider <= aceel_steps;
+                done_acceleration <= '0';
+                decceleration_map <= (others => (others => '0'));
+                acceleration_map <= (others => (others => '0'));
+                speedmap_map <= (others => 100000);
+                decceleration_map_buf <= (others => 0);
             end if;
             
         end if;
@@ -637,11 +551,12 @@ begin
             state_motor <= idle;
             state_motor_buf <= idle;
             issue_mode <= "000";
-            issue_speed <= 1073741823;
+            issue_speed <= 147483647;
             issue_direction <= '0';
             --stepper_counter_int  <= 0;
             target_counter_int  <= (others=> '0');
             ctr_cmd_buf <= '0';
+            ctr_park_buf <= '0';
             init_count <= (others => '0');
             cutoff_count <= (others => '0');
             issue_stop <= '0';
@@ -653,6 +568,7 @@ begin
             state_motor <= state_motor_buf;
             state_motor_buf <= state_motor_buf;
             ctr_cmd_buf <= ctr_cmd_in;
+            ctr_park_buf <= ctr_park_in;
             issue_direction <= issue_direction;
             issue_mode <= issue_mode;
             init_count <= init_count;
@@ -711,6 +627,39 @@ begin
                     elsif (target_counter_int = current_stepper_counter and stepping_clk = '0') then
                          state_motor_buf <= idle;
                     end if;
+                when park =>
+                    if (ctr_cmdcancel_in = '1') then 
+                        if (ctr_cmdcancelnow_in = '1' or use_acceleration = '0') then
+                            state_motor_buf <= idle;
+                        else
+                            if (issue_stop = '0') then
+                                if (issue_direction = '1') then
+                                --cutoff_count <=  std_logic_vector( (unsigned(current_stepper_counter) - unsigned(target_counter_int) + unsigned(acceleration_map(1)) + unsigned(max_counter2) ) mod unsigned(max_counter2));
+                                if unsigned(target_counter_int) > unsigned(current_stepper_counter) then
+                                    cutoff_signed <=  to_integer( unsigned(target_counter_int) - unsigned(current_stepper_counter) - unsigned(acceleration_map(1)));
+                                    cuttoff_special <= '0';
+                                else
+                                    cutoff_signed <=  to_integer( (unsigned(current_stepper_counter) - unsigned(target_counter_int) + unsigned(acceleration_map(1)) ) );
+                                    cuttoff_special <= '1';
+                                end if;
+                                else
+                                if unsigned(target_counter_int) > unsigned(current_stepper_counter) then
+                                    cutoff_signed <=  to_integer( unsigned(max_counter2) - unsigned(target_counter_int) + unsigned(current_stepper_counter) - unsigned(acceleration_map(1)));
+                                    cuttoff_special <= '1';
+                                else
+                                    cutoff_signed <=  to_integer( (unsigned(current_stepper_counter) - unsigned(target_counter_int) - unsigned(acceleration_map(1)) ) );
+                                    cuttoff_special <= '0';
+                                end if;
+                                end if;
+                            end if;
+                            issue_stop <= '1';
+                            if (divider = 7) then
+                                state_motor_buf <= idle;
+                            end if;
+                        end if;
+                    elsif (target_counter_int = current_stepper_counter and stepping_clk = '0') then
+                         state_motor_buf <= idle;
+                    end if;
                 when others =>
                     if (ctr_cmd_buf = '0' and ctr_cmd_in = '1') then
                         state_motor_buf <= command;
@@ -736,19 +685,20 @@ begin
                         init_count <= current_stepper_counter;
                         issue_speed <= ctr_cmdtick_in;
                         cutoff_count <= (others => '0');
+                    elsif (ctr_park_buf = '0' and ctr_park_in = '1') then
+                        state_motor_buf <= park;
+                        issue_direction <= ctr_cmd_direction_in;
+                        issue_speed <= ctr_cmdtick_in;
+                        issue_mode <= ctr_cmdmode_in;
+                        target_counter_int <= (others => '0');
+                        cutoff_count <= (others => '0');
                     elsif (ctr_track_enabled_in = '1') then
                         state_motor_buf <= tracking;
                         issue_direction <= ctr_track_direction_in;
                         issue_speed <= ctr_tracktick_in;
                         issue_mode <= ctr_trackmode_in;
-                    else
-                        if (state_motor_buf /= tracking ) then
-                            state_motor_buf <= idle;
-                        elsif (current_track_speed = 1073741823 ) then
-                            state_motor_buf <= idle;
-                        end if;
-                        
-                        issue_speed <= 1073741823;
+                    else 
+                        state_motor_buf <= idle;
                     end if; 
                     --cuttoff_special <= '0';
                     cutoff_signed <= 0;
@@ -768,6 +718,7 @@ begin
             ctr_goto_in  <= '0';
             ctr_cmdtick_in <= 1;
             ctr_cmdcancel_in <= '0';
+            ctr_park_in <= '0';
             use_acceleration <= '0';
             ctr_cmdcancelnow_in <= '0';
             
@@ -787,6 +738,7 @@ begin
             ctr_goto_in  <=  ctr_goto_in;
             ctr_cmdtick_in  <= ctr_cmdtick_in  ;
             ctr_cmdcancel_in <= '0';
+            ctr_park_in <= ctr_park_in;
             ctr_cmdcancelnow_in  <= ctr_cmdcancelnow_in;
             
             ctr_tracktick_in <= ctr_tracktick_in ;
@@ -804,6 +756,7 @@ begin
                 ctr_cmd_direction_in  <= ctrl_cmdcontrol(2);
                 ctr_cmd_in <= ctrl_cmdcontrol(0);
                 ctr_goto_in  <=  ctrl_cmdcontrol(1);
+                ctr_park_in <= ctrl_cmdcontrol(3);
                 ctr_cmdmode_in <= ctrl_cmdcontrol(6 downto 4);
                 ctr_cmdduration_in(29 downto 0) <= ctrl_cmdduration(29 downto 0);
                 
@@ -820,7 +773,7 @@ begin
                 --ctr_track_enabled_buf <= ctr_track_enabled_in;
                 --ctr_track_direction_buf <= ctr_track_direction_in;
                 ctr_cmdcancel_in <= '0';
-            elsif state_motor = command then
+            elsif state_motor = command or state_motor = park then
                 ctr_cmdcancel_in <= ctrl_cmdcontrol(31);
                 ctr_cmdcancelnow_in <= ctrl_cmdcontrol(30);
             end if;
@@ -889,7 +842,7 @@ begin
                 elsif (max_counter(30) = '0' and current_stepper_counter = current_stepper_max and stepping_clk = '0') then
                     state_counter <= buf0;
                     load_counter <= max_counter(29 downto 0) - x"2";
-                elsif ((state_motor /= command) and stepping_clk = '0') then
+                elsif ((state_motor /= park) and (state_motor /= command) and stepping_clk = '0') then
                     if (ctrl_counter_load(31) = '1' and pulse_load = '0') then
                         state_counter <= buf0;
                         load_counter_buf <= ctrl_counter_load(29 downto 0);
