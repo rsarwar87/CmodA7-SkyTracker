@@ -145,8 +145,6 @@ signal is_tmc_buf, is_tmc_sync, ip_addr_buf, led_brightness, camera_trig : STD_L
 signal led_count : STD_LOGIC_VECTOR (7 downto 0) := (others => '0');
 signal led_out : STD_LOGIC := '0';
 
-ATTRIBUTE MARK_DEBUG of ctrl_acknowledge, ctrl_address, ctrl_bus_enable, ctrl_read_data: SIGNAL IS "TRUE";
-ATTRIBUTE MARK_DEBUG of de_cmdduration_sync, de_counter_max_sync, de_counter_load_sync, de_trackctrl_sync: SIGNAL IS "TRUE";
 begin
 
   camera_trigger <= camera_trig(1 downto 0);

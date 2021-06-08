@@ -174,6 +174,9 @@ begin
 		datain(0) 	=> pi_pwm_led_out, 
 		oe(0) 		=> IS_OUT,
 		dataio(0)	=> GPIO_1(33),
+		
+		
+		
 		dataout(0)  => open
 	);
 	-- ==================================== fpga polar led/camera trigger

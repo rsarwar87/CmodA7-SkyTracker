@@ -79,10 +79,6 @@ architecture Behavioral of drv8825 is
     TYPE state_change_trigger_machine IS (normal, direction, direction_speed, speed);  -- Define the states
     signal state_change_trigger : state_change_trigger_machine := normal;
     
-    ATTRIBUTE MARK_DEBUG of current_mode_out, current_speed_buf: SIGNAL IS "TRUE";
-    ATTRIBUTE MARK_DEBUG of stepping_clk, state_change_trigger, state_motor, current_stepper_counter, cnt_enable: SIGNAL IS "TRUE";
-    ATTRIBUTE MARK_DEBUG of state_backlash, ctr_backlash_tick_buf, ctr_backlash_duration_buf: SIGNAL IS "TRUE";
-    
     signal max_counter : std_logic_vector (30 downto 0) := (others => '1');
 	signal delta_counter : unsigned (6 downto 0) := "0000001";
 	signal tmc_mode_buf : std_logic_vector(1 downto 0) := "00";
@@ -413,10 +409,6 @@ command_block: block
     
     signal cutoff_signed : integer := 0;
     
-    
-    ATTRIBUTE MARK_DEBUG of divider, use_acceleration, done_acceleration, acceleration_counter, acceleration_map, decceleration_map: SIGNAL IS "TRUE";
-    ATTRIBUTE MARK_DEBUG of ctr_cmd_in, ctr_cmdcancel_in, ctr_goto_in, ctr_park_in, cuttoff_special, ctr_cmdtick_in, ctr_cmdduration_in: SIGNAL IS "TRUE";
-    ATTRIBUTE MARK_DEBUG of ctr_track_enabled_in, ctr_track_direction_in, ctr_tracktick_in, target_counter_int: SIGNAL IS "TRUE";
     
 begin
     current_speed_buffer <= std_logic_vector(to_unsigned(issue_speed, current_speed_buffer'length));
