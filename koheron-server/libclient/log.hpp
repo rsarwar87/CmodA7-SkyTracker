@@ -70,7 +70,20 @@ protected:
     {
         if(buffer.size())
         {
-            syslog(level, "%s", buffer.data());
+          std::string output;
+          for (const char c: buffer) {
+             switch (c) {
+                 case '\a':  output += "\\a";        break;
+                 case '\b':  output += "\\b";        break;
+                 case '\f':  output += "\\f";        break;
+                 case '\n':  output += "\\n";        break;
+                 case '\r':  output += "\\r";        break;
+                 case '\t':  output += "\\t";        break;
+                 case '\v':  output += "\\v";        break;
+                 default:    output += c;            break;
+             }
+          }
+            syslog(level, "%s", output.data());
 
             buffer.clear();
             level = ini_level;
