@@ -139,6 +139,25 @@ class SkyTrackerInterface {
     };
     return ret;
   }
+  bool restore_steps_per_rotation(uint8_t axis) {
+    if (!check_axis_id(axis, __func__)) return false;
+    if (axis == 0) stepper.set_max_step<0>(get_steps_per_rotation(0));
+    else if (axis == 2) stepper.set_max_step<2>(get_steps_per_rotation(2));
+    else stepper.set_max_step<1>(get_steps_per_rotation(1));
+    return true;
+  }
+  bool override_steps_per_rotation(uint8_t axis, uint32_t steps) {
+    if (!check_axis_id(axis, __func__)) return false;
+    if (steps > 0x3FFFFFFF) {
+      ctx.log<ERROR>("%s(%u): %u steps (Max %u ticks)\n", __func__, axis, steps,
+                     0x3FFFFFFF);
+      return false;
+    }
+    if (axis == 0) stepper.set_max_step<0>(steps);
+    else if (axis == 2) stepper.set_max_step<2>(steps);
+    else stepper.set_max_step<1>(steps);
+    return true;
+  }
   bool set_steps_per_rotation(uint8_t axis, uint32_t steps) {
     if (!check_axis_id(axis, __func__)) return false;
     if (steps > 0x3FFFFFFF) {
