@@ -460,8 +460,27 @@ begin
                     done_acceleration <= done_acceleration or issue_stop;
                     --current_scaled_buffer(31 downto 0+divider) <= current_speed_buffer(31-divider downto 0);
                     speedmap_map(0) <= issue_speed;
+                    speedmap_map(1) <= to_integer(unsigned(current_scaled_buffer(31 downto 7))) 
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 6)));
+                    speedmap_map(2) <= to_integer(unsigned(current_scaled_buffer(31 downto 6)))  
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 5)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 4)));
+                    speedmap_map(3) <= to_integer(unsigned(current_scaled_buffer(31 downto 5)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 4)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 3)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 2)));
+                    speedmap_map(4) <= to_integer(unsigned(current_scaled_buffer(31 downto 4)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 3))) 
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 2)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 1)));
+                    speedmap_map(5) <= to_integer(unsigned(current_scaled_buffer(31 downto 3)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 2)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 1)));
+                    speedmap_map(6) <= to_integer(unsigned(current_scaled_buffer(31 downto 2)))
+                                        + to_integer(unsigned(current_scaled_buffer(31 downto 1)));
+                    speedmap_map(7) <= to_integer(unsigned(current_scaled_buffer(31 downto 1)));
                     for I in 1 to aceel_steps loop
-                        speedmap_map(I) <= to_integer(unsigned(current_scaled_buffer(31 downto 8-I)));
+                        --speedmap_map(I) <= to_integer(unsigned(current_scaled_buffer(31 downto 8-I)));
                         if (issue_direction = '1') then
                             if cuttoff_special = '0' then 
                                 decceleration_map_buf(I) <= to_integer(unsigned(target_counter_int) - unsigned(acceleration_map(I)) - unsigned(cutoff_count));
