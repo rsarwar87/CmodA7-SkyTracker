@@ -131,6 +131,7 @@ class FocuserInterface {
   float GetTemp_pi1w()
   {
     float ret = -6666.66;
+    if (!found) return ret;
     try
     {
       w1_mutex.lock();
@@ -216,6 +217,7 @@ class FocuserInterface {
 
   const std::string path = "/sys/bus/w1/devices/";
   std::string dev_path;
+  bool found = false;
 
 
   void ds_lookup(){
@@ -230,10 +232,12 @@ class FocuserInterface {
       {
         dev_path = path + dirent->d_name + "/w1_slave";
         ctx.log<INFO>("FocuserInteface - Found temp pi sensor: %s\n", __func__, dev_path);
+        found = true;
         break;
       }
     }
-
+    ctx.log<ERROR>("FocuserInteface - Found no temp pi sensor\n");
+    found = false;
   }
 
 
