@@ -555,13 +555,13 @@ class SkyTrackerInterface {
     {
       bool isInHighSpeed = m_status[axis].currentPeriod < 7000;
       bool isNewHighSpeed = periodticks < 7000;
-      if (isInHighSpeed & isInHighSpeed) // both high speed
+      if (!isInHighSpeed & !isNewHighSpeed) // both slow speed
+        update = true;
+      else if (isInHighSpeed & isInHighSpeed) // both high speed
       {
         stopFirst = true;
         update = false;
       }
-      else if (!isInHighSpeed & !isNewHighSpeed) // both slow speed
-        update = true;
       else if (!isInHighSpeed & isNewHighSpeed) // low to high speed
         update = false;
       else if (isInHighSpeed & !isNewHighSpeed) // high to low speed
