@@ -46,4 +46,11 @@ typedef struct {
     bool  initialized[3]; 
   } parameters;
 
+typedef struct {
+    std::atomic<bool> isGoto;
+    std::atomic<bool> isSlew;
+    std::atomic<bool> isRunning;
+    uint32_t currentPeriod;
+    std::atomic<bool> currentDirection;
+} ip_status;
 #endif

@@ -100,6 +100,10 @@ class ASCOMInterface {
     ret = { sti.get_init(axis),  running,
       direction, speedmode, isGoto, isSlew, backlash, fault
     };
+    sti.m_status[axis].isGoto = isGoto;
+    sti.m_status[axis].isSlew = isSlew;
+    sti.m_status[axis].isRunning = running;
+    sti.m_status[axis].currentDirection = direction;
     return ret;
   }
   // SetMotionMode             = 'G', mode and direction
