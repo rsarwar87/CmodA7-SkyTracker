@@ -425,9 +425,8 @@ class SkyTrackerInterface {
                   m_params.period_ticks[isSlew][axis]);
 
     if (isSlew)
-      if ((get_raw_status(axis) & 0x1) == 1)
+      if (m_status[axis].isSlew & m_status[axis].isRunning)
       {
-        ctx.log<INFO>("%s(%u): updating speed\n", __func__, axis);
         start_raw_tracking(axis, m_params.motorDirection[isSlew][axis],
                               m_params.period_ticks[isSlew][axis],
                               m_params.motorMode[isSlew][axis], true);
@@ -545,13 +544,40 @@ class SkyTrackerInterface {
                           uint8_t mode, bool update = false) {
     if (!check_axis_id(axis, __func__)) return false;
     uint32_t isSlew = true;
-    m_params.highSpeedMode_fpga[isSlew][axis] = periodticks < 7000;
+    if (m_status[axis].isGoto & m_status[axis].isRunning)
+    {
+      ctx.log<ERROR>("ASCOMInteface: %s- Motor already in goto state: %u\n", __func__, axis);
+      return false;
+    }
+    update &= m_status[axis].isSlew & m_status[axis].isRunning;
+    bool stopFirst = false;
+    if (update)
+    {
+      bool isInHighSpeed = m_status[axis].currentPeriod < 7000;
+      bool isNewHighSpeed = periodticks < 7000;
+      if (isInHighSpeed & isInHighSpeed) // both high speed
+      {
+        stopFirst = true;
+        update = false;
+      }
+      else if (!isInHighSpeed & !isNewHighSpeed) // both slow speed
+        update = true;
+      else if (!isInHighSpeed & isNewHighSpeed) // low to high speed
+        update = false;
+      else if (isInHighSpeed & !isNewHighSpeed) // high to low speed
+      {
+        stopFirst = true;
+        update = true;
+      }
+    }
     if (axis == 0)
-      stepper.enable_tracking<0>(isForward, periodticks, mode, update);
+      stepper.enable_tracking<0>(isForward, periodticks, mode, update, stopFirst);
     else if (axis == 2)
-      stepper.enable_tracking<2>(isForward, periodticks, mode, update);
+      stepper.enable_tracking<2>(isForward, periodticks, mode, update, stopFirst);
     else
-      stepper.enable_tracking<1>(isForward, periodticks, mode, update);
+      stepper.enable_tracking<1>(isForward, periodticks, mode, update, stopFirst);
+    m_params.highSpeedMode_fpga[isSlew][axis] = periodticks < 7000;
+    m_status[axis].currentPeriod = periodticks;
     return true;
   }
   bool park_raw_telescope(uint8_t axis, bool isForward, uint32_t period_ticks,
@@ -576,6 +602,11 @@ class SkyTrackerInterface {
   bool send_raw_command(uint8_t axis, bool isForward, uint32_t ncycles,
                         uint32_t period_ticks, uint8_t mode, bool isGoTo, bool use_accel) {
     if (!check_axis_id(axis, __func__)) return true;
+    if (m_status[axis].isGoto & m_status[axis].isRunning)
+    {
+      ctx.log<ERROR>("ASCOMInteface: %s- Motor already in goto state: %u\n", __func__, axis);
+      return false;
+    }
     if (axis == 0)
       stepper.set_command<0>(isForward, ncycles, period_ticks, mode, isGoTo, use_accel);
     else if (axis == 2)
@@ -645,6 +676,7 @@ class SkyTrackerInterface {
     m_debug = value;
     stepper.m_debug = value;
   }
+  ip_status m_status[3];
 
  private:
   Context& ctx;
