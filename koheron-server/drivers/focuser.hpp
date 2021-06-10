@@ -233,7 +233,7 @@ class FocuserInterface {
         dev_path = path + dirent->d_name + "/w1_slave";
         ctx.log<INFO>("FocuserInteface - Found temp pi sensor: %s\n", __func__, dev_path);
         found = true;
-        break;
+        return;
       }
     }
     ctx.log<ERROR>("FocuserInteface - Found no temp pi sensor\n");
