@@ -181,8 +181,8 @@ begin
         end if;
     end process; 
         
-	 drv8825_direction_buf <= not drv8825_direction_out when REVERSE_DIRECTION = true else drv8825_direction_out;
-	 drv8825_direction <= not drv8825_direction_buf when is_tmc2226 = '1' else drv8825_direction_buf;
+	-- drv8825_direction_buf <= not drv8825_direction_out when REVERSE_DIRECTION = true else drv8825_direction_out;
+	-- drv8825_direction <= not drv8825_direction_buf when is_tmc2226 = '1' else drv8825_direction_buf;
     registered_output : process(clk_50, rstn_50) begin
         if (rstn_50 = '0') then
             drv8825_enable_n<='1';
@@ -192,7 +192,14 @@ begin
             drv8825_mode <= (others => '0');
             drv8825_step <= '0';
             ctrl_status <= (others => '0');
+            drv8825_direction_buf <= '0';
+            drv8825_direction <= '0';
         elsif (rising_edge(clk_50)) then
+            if (REVERSE_DIRECTION = true) then
+                drv8825_direction_buf <= not drv8825_direction_out;
+            else
+                drv8825_direction_buf <= drv8825_direction_out;
+            end if;
             if (ALWAYS_ENABLE = false) then
                 drv8825_enable_n<='1';
                 drv8825_sleep_n<= '0';
@@ -231,8 +238,10 @@ begin
             if is_tmc2226 = '1' then
 			  drv8825_mode(1 downto 0) <= tmc_mode_buf;
 			  drv8825_mode(2) <= '1';
+			  drv8825_direction <= not drv8825_direction_buf;
 			else
 			  drv8825_mode <= current_mode_out;
+			  drv8825_direction <= drv8825_direction_buf;
 			end if;
             
             case state_motor is
