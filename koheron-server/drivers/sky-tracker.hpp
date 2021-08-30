@@ -69,7 +69,6 @@ class SkyTrackerInterface {
       set_backlash(i, 45, 300, 7);
      // set_steps_per_rotation(i, get_steps_per_rotation(i));
       set_current_position(i, get_steps_per_rotation(i)/2);
-
     }
     ctx.log<INFO>("SkyTrackerInterface: %s Finished\n", __func__);
     pi = make_unique<PiPolarLed>("RPI@0", 256);
@@ -189,18 +188,18 @@ class SkyTrackerInterface {
     m_params.mount_gearticks[axis] = mount_gear;
     m_params.high_gear_ticks[axis] = high_gear;
     m_params.low_gear_ticks [axis] = low_gear; 
-    ctx.log<INFO>("%s(%u): %u total ticks, %u ticks/rev, %u ustepping, %u mount gear teeth," 
-        "%u high gear teeth, %u low gear teeth\n", __func__, axis,
-        m_params.stepPerRotation[axis], m_params.motor_revticks [axis],
-        m_params.motor_ustepping[axis], m_params.mount_gearticks[axis],
-        m_params.high_gear_ticks[axis], m_params.low_gear_ticks [axis]);
-
     m_params.stepPerRotation      [axis] =
           m_params.motor_revticks [axis]*
           m_params.motor_ustepping[axis]*
           m_params.mount_gearticks[axis]*
           m_params.high_gear_ticks[axis]/
           m_params.low_gear_ticks [axis];  //_aVal: Steps per axis revolution
+    ctx.log<INFO>("%s(%u): %u total ticks, %u ticks/rev, %u ustepping, %u mount gear teeth," 
+        "%u high gear teeth, %u low gear teeth\n", __func__, axis,
+        m_params.stepPerRotation[axis], m_params.motor_revticks [axis],
+        m_params.motor_ustepping[axis], m_params.mount_gearticks[axis],
+        m_params.high_gear_ticks[axis], m_params.low_gear_ticks [axis]);
+
     //if (m_debug)
     if (axis == 0) stepper.set_max_step<0>(m_params.stepPerRotation[0]);
     else if (axis == 2) stepper.set_max_step<2>(m_params.stepPerRotation[2]);
@@ -555,13 +554,13 @@ class SkyTrackerInterface {
     {
       bool isInHighSpeed = m_status[axis].currentPeriod < 7000;
       bool isNewHighSpeed = periodticks < 7000;
-      if (!isInHighSpeed & !isNewHighSpeed) // both slow speed
-        update = true;
-      else if (isInHighSpeed & isInHighSpeed) // both high speed
+      if (isInHighSpeed & isInHighSpeed) // both high speed
       {
         stopFirst = true;
         update = false;
       }
+      else if (!isInHighSpeed & !isNewHighSpeed) // both slow speed
+        update = true;
       else if (!isInHighSpeed & isNewHighSpeed) // low to high speed
         update = false;
       else if (isInHighSpeed & !isNewHighSpeed) // high to low speed

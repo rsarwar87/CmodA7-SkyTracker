@@ -155,7 +155,7 @@ class SpiManager
 
     SpiDev& get(const std::string& devname,
                 uint8_t mode = SPI_MODE_0,
-                uint32_t speed = 15600000,
+                uint32_t speed = 15600000/2,
                 uint8_t word_length = 8);
 
   private:
