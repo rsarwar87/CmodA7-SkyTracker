@@ -171,19 +171,6 @@ int main(int argc, char const *argv[]) {
   client->connect();
   klog << "Initialization completed" << std::endl;
 
-  client->call<op::ASCOMInterface::SwpCmdInitialize>((uint8_t)1);
-  client->recv<op::ASCOMInterface::SwpCmdInitialize, bool>();
-  client->call<op::ASCOMInterface::SwpCmdInitialize>((uint8_t)0);
-  client->recv<op::ASCOMInterface::SwpCmdInitialize, bool>();
-  uint32_t rev = 0;
-  client->call<op::ASCOMInterface::SwpGetGridPerRevolution>((uint8_t)1);
-  rev = client->recv<op::ASCOMInterface::SwpGetGridPerRevolution, uint32_t>();
-  client->call<op::ASCOMInterface::SwpSetAxisPosition>((uint8_t)0, (uint32_t)(rev/2));
-  client->recv<op::ASCOMInterface::SwpSetAxisPosition, bool>();
-  client->call<op::ASCOMInterface::SwpSetAxisPosition>((uint8_t)1, (uint32_t)(rev*3/4));
-  client->recv<op::ASCOMInterface::SwpSetAxisPosition, bool>();
-
-
   /*
   client->call<op::SkyTrackerInterface::override_steps_per_rotation>((uint8_t)0, (uint32_t)0xFFFFFF);
   client->recv<op::SkyTrackerInterface::override_steps_per_rotation, bool>();
@@ -213,7 +200,7 @@ int main(int argc, char const *argv[]) {
           resp =
               client->recv<op::ASCOMInterface::SwpGetAxisPosition, uint32_t>();
           //buffer[Commands_getLength(buffer[1], 1) + 3] = '\0'; 
-          synta_assembleResponse(command, buffer[1], resp + 0x800000 - rev/2);
+          synta_assembleResponse(command, buffer[1], resp );
           send(new_socket, command, strlen(command), 0);
           break;
         }
@@ -313,7 +300,7 @@ int main(int argc, char const *argv[]) {
         }
         case 'E': {
           uint32_t resp = 0;
-          uint32_t cmd = Revu24str2long(buffer) - 0x800000 + rev/2;
+          uint32_t cmd = Revu24str2long(buffer) ;
           client->call<op::ASCOMInterface::SwpSetAxisPosition>(axis, cmd);
           resp = client->recv<op::ASCOMInterface::SwpSetAxisPosition, bool>();
           klog << "SetAxisPositionCmd Axis" << HEX(buffer[2]) - 1 << " " << cmd << std::endl;
