@@ -33,8 +33,9 @@ class ASCOMInterface {
       ret &= sti.disable_raw_tracking(i, false);
       ret &= sti.disable_raw_backlash(i);
       ret &= sti.cancel_raw_command(i, false);
-      ret &= sti.set_current_position(i, sti.get_steps_per_rotation(i)/2);
     }
+    ret &= sti.set_current_position(0, 0x800000); //sti.get_steps_per_rotation(i)/2);
+    ret &= sti.set_current_position(1, 0x800000 + sti.get_steps_per_rotation(0)/4);
     if (ret)
       ctx.log<INFO>("ASCOMInteface: %s Successful\n", __func__);
     else

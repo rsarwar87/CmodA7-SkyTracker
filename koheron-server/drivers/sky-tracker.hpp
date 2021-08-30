@@ -68,9 +68,9 @@ class SkyTrackerInterface {
       set_motor_type(i, m_params.is_TMC[i]);
       set_backlash(i, 45, 300, 7);
      // set_steps_per_rotation(i, get_steps_per_rotation(i));
-      set_current_position(i, get_steps_per_rotation(i)/2);
-
     }
+    set_current_position(0, 0x800000);
+    set_current_position(1, 0x800000);
     ctx.log<INFO>("SkyTrackerInterface: %s Finished\n", __func__);
     pi = make_unique<PiPolarLed>("RPI@0", 256);
     ctx.log<INFO>("%s(): Class initialized\n", __func__);
@@ -202,9 +202,9 @@ class SkyTrackerInterface {
           m_params.high_gear_ticks[axis]/
           m_params.low_gear_ticks [axis];  //_aVal: Steps per axis revolution
     //if (m_debug)
-    if (axis == 0) stepper.set_max_step<0>(m_params.stepPerRotation[0]);
+    if (axis == 0) stepper.set_max_step<0>(0xFFFFFF);
     else if (axis == 2) stepper.set_max_step<2>(m_params.stepPerRotation[2]);
-    else stepper.set_max_step<1>(m_params.stepPerRotation[1]);
+    else stepper.set_max_step<1>(0xFFFFFF);
     return true;
   }
 
@@ -629,11 +629,11 @@ class SkyTrackerInterface {
   }
   bool set_current_position(uint8_t axis, uint32_t val) {
     if (!check_axis_id(axis, __func__)) return false;
-    if (val > m_params.stepPerRotation[axis]) {
-      ctx.log<ERROR>("%s(%u): out of range %u; stepPerRotation=%u\n", __func__,
-                     axis, val, m_params.stepPerRotation[axis]);
+    if (val > 0xFFFFFF) { //m_params.stepPerRotation[axis]) {
+      ctx.log<ERROR>("%s(%u): out of range %u; MaxTick=%u\n", __func__,
+                     axis, val, 0xFFFFFF);//m_params.stepPerRotation[axis]);
       return false;
-    } else if (val == m_params.stepPerRotation[axis])
+    } else if (val == 0xFFFFFF) //m_params.stepPerRotation[axis])
       val = 0;
     if (axis == 0) stepper.set_current_position<0>(val);
     else if (axis == 2) stepper.set_current_position<2>(val);
@@ -650,7 +650,7 @@ class SkyTrackerInterface {
     if (!check_axis_id(axis, __func__)) return false;
     if (m_debug)
     ctx.log<INFO>("%s(%u): %u\n", __func__, axis, ncycles);
-    m_params.GotoNCycles[axis] = ncycles % m_params.stepPerRotation[axis];
+    m_params.GotoNCycles[axis] = ncycles;// % m_params.stepPerRotation[axis];
     return true;
   }
   uint32_t get_goto_target(uint8_t axis) {
@@ -661,9 +661,9 @@ class SkyTrackerInterface {
   }
   bool set_goto_target(uint8_t axis, uint32_t target) {
     if (!check_axis_id(axis, __func__)) return false;
-    if (target > m_params.stepPerRotation[axis]) {
+    if (target > 0xFFFFFF) { //m_params.stepPerRotation[axis]) {
       ctx.log<ERROR>("%s(%u) val out of range %u (max=%u)\n", __func__, axis,
-                     target, m_params.stepPerRotation[axis]);
+                     target,  0xFFFFFF); //m_params.stepPerRotation[axis]);
       return false;
     }
     if (m_debug)
