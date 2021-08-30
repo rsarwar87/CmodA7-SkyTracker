@@ -212,7 +212,7 @@ begin
 	);
 	ra_mode2 : IOBUFFER
 	port map (
-		datain(0) 	=> ra_mode(2), 
+		datain(0) 	=> ra_mode(0), 
 		oe(0) 		=> IS_OUT,
 		dataio(0)	=> GPIO_0(1),
 		dataout(0)  => open
@@ -226,7 +226,7 @@ begin
 	);
 	ra_mode0 : IOBUFFER
 	port map (
-		datain(0) 	=> ra_mode(0), 
+		datain(0) 	=> ra_mode(2), 
 		oe(0) 		=> IS_OUT,
 		dataio(0)	=> GPIO_0(5),
 		dataout(0)  => open
@@ -277,7 +277,7 @@ begin
 	);
 	de_mode2 : IOBUFFER
 	port map (
-		datain(0) 	=> de_mode(2), 
+		datain(0) 	=> de_mode(0), 
 		oe(0) 		=> IS_OUT,
 		dataio(0)	=> GPIO_0(21),
 		dataout(0)  => open
@@ -291,7 +291,7 @@ begin
 	);
 	de_mode0 : IOBUFFER
 	port map (
-		datain(0) 	=> de_mode(0), 
+		datain(0) 	=> de_mode(2), 
 		oe(0) 		=> IS_OUT,
 		dataio(0)	=> GPIO_0(25),
 		dataout(0)  => open
@@ -344,7 +344,7 @@ begin
 	);
 	fc_mode2 : IOBUFFER
 	port map (
-		datain(0) 	=> fc_mode(2), 
+		datain(0) 	=> fc_mode(0), 
 		oe(0) 		=> IS_OUT,
 		dataio(0)	=> GPIO_0(20),
 		dataout(0)  => open
@@ -358,7 +358,7 @@ begin
 	);
 	fc_mode0 : IOBUFFER
 	port map (
-		datain(0) 	=> fc_mode(0), 
+		datain(0) 	=> fc_mode(2), 
 		oe(0) 		=> IS_OUT,
 		dataio(0)	=> GPIO_0(16),
 		dataout(0)  => open
