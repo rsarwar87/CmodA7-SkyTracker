@@ -189,18 +189,18 @@ class SkyTrackerInterface {
     m_params.mount_gearticks[axis] = mount_gear;
     m_params.high_gear_ticks[axis] = high_gear;
     m_params.low_gear_ticks [axis] = low_gear; 
-    ctx.log<INFO>("%s(%u): %u total ticks, %u ticks/rev, %u ustepping, %u mount gear teeth," 
-        "%u high gear teeth, %u low gear teeth\n", __func__, axis,
-        m_params.stepPerRotation[axis], m_params.motor_revticks [axis],
-        m_params.motor_ustepping[axis], m_params.mount_gearticks[axis],
-        m_params.high_gear_ticks[axis], m_params.low_gear_ticks [axis]);
-
     m_params.stepPerRotation      [axis] =
           m_params.motor_revticks [axis]*
           m_params.motor_ustepping[axis]*
           m_params.mount_gearticks[axis]*
           m_params.high_gear_ticks[axis]/
           m_params.low_gear_ticks [axis];  //_aVal: Steps per axis revolution
+    ctx.log<INFO>("%s(%u): %u total ticks, %u ticks/rev, %u ustepping, %u mount gear teeth," 
+        "%u high gear teeth, %u low gear teeth\n", __func__, axis,
+        m_params.stepPerRotation[axis], m_params.motor_revticks [axis],
+        m_params.motor_ustepping[axis], m_params.mount_gearticks[axis],
+        m_params.high_gear_ticks[axis], m_params.low_gear_ticks [axis]);
+
     //if (m_debug)
     if (axis == 0) stepper.set_max_step<0>(m_params.stepPerRotation[0]);
     else if (axis == 2) stepper.set_max_step<2>(m_params.stepPerRotation[2]);
