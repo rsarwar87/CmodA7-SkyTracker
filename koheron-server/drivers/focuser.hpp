@@ -151,7 +151,10 @@ class FocuserInterface {
 
       strncpy(temperatureData, strstr(buf, "t=") + 2, 5);
 
-      ret = strtof(temperatureData, NULL) / 1000;
+      uint16_t val = strtoul(temperatureData, NULL, 0) ;
+      short ptr_a = reinterpret_cast<short &> (val);
+      ret = ptr_a;
+      ret /= 1000;
 
       ctx.log<INFO>("FocuserInteface: %s: %0.0f\n", __func__, (double)ret);
     }
