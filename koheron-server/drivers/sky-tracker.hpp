@@ -678,6 +678,42 @@ class SkyTrackerInterface {
   }
   ip_status m_status[3];
 
+  void set_encoder_position(uint32_t value){
+    ctx.log<INFO>("%s(): %u\n", __func__, value);
+    spi.write_at<reg::encoder_position/4, mem::control_addr, 1> (&value); 
+  }
+
+  void set_pec_calib_data(uint32_t encoder, uint32_t value){
+    ctx.log<INFO>("%s(): %u at encoder position of \n", __func__, value, encoder);
+    spi.write_at<reg::pec_calib_data/4, mem::control_addr, 1> (&value); 
+  }
+
+  uint32_t get_pec_data_readback(){
+    uint32_t value;
+    spi.read_at<reg::pec_data_readback/4, mem::status_addr, 1> (&value);
+    ctx.log<INFO>("%s(): %u\n", __func__, value);
+    return value;
+  }
+  uint32_t get_encoder_readback(){
+    uint32_t value;
+    spi.read_at<reg::encoder_position_readback/4, mem::status_addr, 1> (&value);
+    ctx.log<INFO>("%s(): %u\n", __func__, value);
+    return value;
+  }
+  uint32_t get_encoder_position(){
+    uint32_t value;
+    spi.read_at<reg::encoder_position/4, mem::control_addr, 1> (&value);
+    ctx.log<INFO>("%s(): %u\n", __func__, value);
+    return value;
+  }
+  std::array<uint32_t, 2> get_pec_calib_data(){
+    uint32_t value;
+    spi.read_at<reg::encoder_position/4, mem::control_addr, 1> (&value);
+    std::array<uint32_t, 2> ret = {value>>20, value & 0xFFFF};
+    ctx.log<INFO>("%s(): %u at encoder position of \n", __func__, ret[0], ret[1]);
+    return ret;
+  }
+
  private:
   Context& ctx;
   SpiDev& spi;
