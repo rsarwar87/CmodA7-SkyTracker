@@ -48,7 +48,7 @@ constexpr int WEBSOCK_SEND_BUF_LEN = 16384 * 16;
 // ------------------------------------------
 
 #ifndef DEBUG_KOHERON
-# define NDEBUG
+//# define NDEBUG
 #endif
 
 // ------------------------------------------
