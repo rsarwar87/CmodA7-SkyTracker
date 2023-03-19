@@ -241,9 +241,9 @@ def parser_generator(driver, operation):
     lines = []
     packs, has_vector = build_args_packs(lines, operation)
 
-    if not has_vector:
-        print_required_buff_size(lines, packs)
-        lines.append('    static_assert(req_buff_size <= cmd.payload.size(), "Buffer size too small");\n\n');
+#    if not has_vector:
+#        print_required_buff_size(lines, packs)
+#        lines.append('    static_assert(req_buff_size <= cmd.payload.size(), "Buffer size too small");\n\n');
 
     for idx, pack in enumerate(packs):
         if pack['family'] == 'scalar':

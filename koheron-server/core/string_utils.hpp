@@ -7,6 +7,7 @@
 #include <string>
 #include <array>
 #include <syslog.h>
+#include <stdexcept>
 
 namespace koheron {
 
