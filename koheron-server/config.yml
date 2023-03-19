@@ -28,14 +28,16 @@ control_registers:
   - led
   - led_pwm
   - camera_trigger
-  - temp_channel
+  - pec_calib_data
   - tmc_select
+  - encoder_position
 
 status_registers:
   - step_count[3]
   - status[3]
   - forty_two
-  - temp_sensor
+  - pec_data_readback
+  - encoder_position_readback
 
 parameters:
   fclk0: 50000000 # FPGA clock speed in Hz
