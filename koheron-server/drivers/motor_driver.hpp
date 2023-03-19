@@ -48,7 +48,7 @@ class MotorDriver
       //bool retb = (status >> 16) & 0x1;
       spi.read_at<reg::tmc_select/4, mem::control_addr, 1> (&status);
       bool retb = (status >> offset) & 0x1;
-      ctx.log<INFO>("MotorDriver-%s: status: 0x%08x, Parsed: %s %s\n", __func__, status, retb ? "True" : "False");
+      ctx.log<INFO>("MotorDriver-%s: status: 0x%08x, Parsed: %s \n", __func__, status, retb ? "True" : "False");
       return retb; 
     }
     template<uint32_t offset>
