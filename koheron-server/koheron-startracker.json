@@ -1,0 +1,52 @@
+{
+    "MinPeriodUsec": [
+        17.0,
+        17.0,
+        17.0
+    ],
+    "MaxPeriodUsec": [
+        268435.0,
+        268435.0,
+        268435.0
+    ],
+    "MotorModeSlew": [
+        7,
+        7,
+        7
+    ],
+    "MotorModeGoTo": [
+        7,
+        7,
+        7
+    ],
+    "MotorUStepping": [
+        64,
+        64,
+        64
+    ],
+    "MotorFullStepCount": [
+        200,
+        200,
+        200
+    ],
+    "HighGearTicks": [
+        48,
+        48,
+        48
+    ],
+    "LowGearTicks": [
+        12,
+        12,
+        12
+    ],
+    "MountGearTicks": [
+        180,
+        180,
+        180
+    ],
+    "IsTMC": [
+        true,
+        true,
+        false
+    ]
+}
