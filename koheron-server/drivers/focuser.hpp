@@ -164,15 +164,9 @@ class FocuserInterface {
   }
   float GetTemp_fpga(uint32_t channel)
   {
-    if (adc_ch != channel)
-    {
-      spi.write_at<reg::temp_channel/4, mem::control_addr, 1> (&channel);
-      adc_ch = channel;
-    }
-    uint32_t ret;
-    spi.read_at<reg::temp_sensor/4, mem::status_addr, 1> (&ret);
+    int32_t ret = channel - 9999;
     float temp = (ret / 4096.0 * 1.5) * 100.0;
-    ctx.log<INFO>("FocuserInteface: %s: %u %0.0f\n", __func__, ret, (double)temp);
+    ctx.log<ERROR>("FocuserInteface: implementation removed sending %0.0f for %d \n", __func__, channel, (double)temp);
     return temp;
   }
 
