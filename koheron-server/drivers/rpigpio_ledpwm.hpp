@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <string.h>
 #include <stdio.h>
+#include <filesystem>
 
 using namespace std;
 
@@ -30,6 +31,7 @@ class PiPwmWrapper
    FILE* ptr_henable = nullptr;
    FILE* ptr_hfreq = nullptr;
    FILE* ptr_hduty = nullptr;
+   bool m_error = false;
 
    public:
 
@@ -37,30 +39,41 @@ class PiPwmWrapper
       m_gpio_id = gpio;
       m_timeout = timeout;
       m_duty = 100;
-      FILE *fhandle = fopen(m_export.c_str(), "w");
-      string out = (m_gpio_id);
-      if (fwrite(out.c_str(), out.size(), 1, fhandle)){
-        fclose(fhandle);
-        m_henable = m_henable + out + "/enable";
-        m_hfreq = m_hfreq + out + "/period";
-        m_hduty = m_hduty + out + "/duty_cycle";
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(100ms);
-        SetFreq(freq);
-        SetDuty(0);
-        SetEnable(true);
+      m_error = exists_fs(m_export);
+      if (m_error == true) {
+        printf("PiPwmWrapper: ERROR: unable to find %s", m_export.c_str());
+      }
+      else
+      {
+        FILE *fhandle = fopen(m_export.c_str(), "w");
+        string out = (m_gpio_id);
+        if (fwrite(out.c_str(), out.size(), 1, fhandle)){
+          fclose(fhandle);
+          m_henable = m_henable + out + "/enable";
+          m_hfreq = m_hfreq + out + "/period";
+          m_hduty = m_hduty + out + "/duty_cycle";
+          using namespace std::chrono_literals;
+          std::this_thread::sleep_for(100ms);
+          SetFreq(freq);
+          SetDuty(0);
+          SetEnable(true);
+        }
       }
    }
    ~PiPwmWrapper()
    {
-     FILE *fhandle = fopen(m_unexport.c_str(), "w");
-     string out = (m_gpio_id);
-     fwrite(out.c_str(), out.size(), 1, fhandle);
-     fclose(fhandle);
+     if (!m_error)
+     {
+        FILE *fhandle = fopen(m_unexport.c_str(), "w");
+        string out = (m_gpio_id);
+        fwrite(out.c_str(), out.size(), 1, fhandle);
+        fclose(fhandle);
+     }
    }
 
    void SetEnable(bool value)
    {
+     if (m_error == true) return;
      string val = "1";
      if (!value) val = "0";
      ptr_henable = fopen(m_henable.c_str(), "w");
@@ -69,6 +82,7 @@ class PiPwmWrapper
    }
    bool SetFreq(uint32_t value)
    {
+     if (m_error == true) return false;
      m_freq = value;
      ptr_hfreq = fopen(m_hfreq.c_str(), "w");
      const string out = std::to_string(m_freq);
@@ -79,6 +93,7 @@ class PiPwmWrapper
    }
    bool SetDuty(uint32_t value)
    {
+     if (m_error == true) return false;
      m_duty = value % m_freq;
      ptr_hduty = fopen(m_hduty.c_str(), "w");
      const string out = std::to_string(m_duty);
@@ -87,6 +102,20 @@ class PiPwmWrapper
      fclose(ptr_hduty);
      return true;
    }
+   private:
+
+    inline bool exists_fs(const std::string& p)
+    {
+        namespace fs = std::filesystem;
+        fs::file_status s = fs::file_status{};
+        if(fs::status_known(s) ? fs::exists(s) : fs::exists(p))
+        {
+            printf("Found: %s...\n", p.c_str());
+            return true;
+        }
+        printf("Not Found: %s...\n", p.c_str());
+        return false;
+    }
 };
 
 class PiPolarLed

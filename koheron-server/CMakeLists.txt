@@ -5,7 +5,7 @@ project(koheron_server)
 # Locate GTest
 set(CMAKE_CONFIGURATION_TYPES "Release" CACHE STRING "" FORCE)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (tARM)
