@@ -684,8 +684,9 @@ class SkyTrackerInterface {
   }
 
   void set_pec_calib_data(uint32_t encoder, uint32_t value){
-    ctx.log<INFO>("%s(): %u at encoder position of \n", __func__, value, encoder);
-    spi.write_at<reg::pec_calib_data/4, mem::control_addr, 1> (&value); 
+    ctx.log<INFO>("%s(): %u at encoder position of %u \n", __func__, value, encoder);
+    uint32_t  tmp = (value & 0xFFFF) + (encoder << 20);
+    spi.write_at<reg::pec_calib_data/4, mem::control_addr, 1> (&tmp); 
   }
 
   uint32_t get_pec_data_readback(){
@@ -700,6 +701,13 @@ class SkyTrackerInterface {
     ctx.log<INFO>("%s(): %u\n", __func__, value);
     return value;
   }
+  std::array<uint16_t, 2>  get_iic_encoder(){
+    uint32_t value;
+    spi.read_at<reg::iic_encoder/4, mem::control_addr, 1> (&value);
+    std::array<uint16_t, 2> ret = {static_cast<uint16_t>(value & 0xFFFF), static_cast<uint16_t>((value >> 16) & 0x0F)};
+    ctx.log<INFO>("%s(): raw: %u, decoded %u status %u\n", __func__, value, ret[0], ret[1]);
+    return ret;
+  }
   uint32_t get_encoder_position(){
     uint32_t value;
     spi.read_at<reg::encoder_position/4, mem::control_addr, 1> (&value);
@@ -710,7 +718,7 @@ class SkyTrackerInterface {
     uint32_t value;
     spi.read_at<reg::encoder_position/4, mem::control_addr, 1> (&value);
     std::array<uint32_t, 2> ret = {value>>20, value & 0xFFFF};
-    ctx.log<INFO>("%s(): %u at encoder position of \n", __func__, ret[0], ret[1]);
+    ctx.log<INFO>("%s(): %u at encoder position of %u \n", __func__, ret[0], ret[1]);
     return ret;
   }
 

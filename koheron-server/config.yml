@@ -38,7 +38,8 @@ status_registers:
   - forty_two
   - pec_data_readback
   - encoder_position_readback
-
+  - iic_encoder
+    
 parameters:
   fclk0: 50000000 # FPGA clock speed in Hz
   focuser_id: 2 # FPGA clock speed in Hz
