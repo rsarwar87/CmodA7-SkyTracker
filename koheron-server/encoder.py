@@ -280,16 +280,16 @@ if __name__ == '__main__':
     client = connect(host, name='mars_star_tracker')
     driver = SkyTrackerInterface(client)
 
-    #for i in range(0, 4000):
-    #    driver.set_pec_calib_data(i, i*2)
     print("get_iic_encoder: {}".format(driver.get_iic_encoder()))
+    for i in range(0, 4000):
+        driver.set_pec_calib_data(i, i*2)
     #print("get_pec_calib_data: {}".format(driver.get_pec_calib_data()))
-    #print("set_encoder_position: {}".format(driver.set_encoder_position(10)))
-    #print("get_encoder_position: {}".format(driver.get_encoder_position()))
-    #print("get_encoder_readback: {}".format(driver.get_encoder_readback()))
-    #for i in range (10, 50):
-    #    driver.set_encoder_position(i)
-    #    print("get_pec_data_readback: @{}: {}".format(i, driver.get_pec_data_readback()))
+    print("get_encoder_position: {}".format(driver.get_encoder_position()))
+    print("get_encoder_readback: {}".format(driver.get_encoder_readback()))
+    for i in range (10, 50):
+        driver.set_encoder_position(i)
+        print("get_pec_data_readback: @{}: {}".format(i, driver.get_pec_data_readback()))
+    print("set_encoder_position: {}".format(driver.set_encoder_position(500)))
 
 
 

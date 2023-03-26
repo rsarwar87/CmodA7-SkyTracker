@@ -157,16 +157,16 @@ signal fc_counter_max_sync 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'
 signal fc_trackctrl_sync 		 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 
 signal pec_calib, pec_data_synced, pec_data 	 : STD_LOGIC_VECTOR (31 downto 0) := (others => '0'); -- duration of backlash
-signal encoder_position, encoder_position_in     : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+signal encoder_position                          : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 signal encoder_position_mux, iic_encoder_position_synced, encoder_position_synced     : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 
 signal is_tmc_buf, is_tmc_sync, ip_addr_buf, led_brightness, camera_trig : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 signal led_count                                                         : STD_LOGIC_VECTOR (7 downto 0) := (others => '0');
 signal led_out, bram_update, bram_update_delayed                         : STD_LOGIC := '0';
 
-
-ATTRIBUTE MARK_DEBUG of ctrl_acknowledge, ctrl_address, ctrl_bus_enable, ctrl_read_data: SIGNAL IS "TRUE";
-ATTRIBUTE MARK_DEBUG of de_cmdduration_sync, de_counter_max_sync, de_counter_load_sync, de_trackctrl_sync: SIGNAL IS "TRUE";
+ATTRIBUTE MARK_DEBUG of pec_calib, pec_data_synced, iic_encoder_status, iic_encoder_position_synced: SIGNAL IS "TRUE";
+ATTRIBUTE MARK_DEBUG of encoder_position_mux, encoder_position_synced, iic_encoder_position: SIGNAL IS "TRUE";
+ATTRIBUTE MARK_DEBUG of sts_address, sts_read_data, sts_bus_enable, ctrl_rw: SIGNAL IS "TRUE";
 begin
 
   camera_trigger <= camera_trig(1 downto 0);
@@ -226,14 +226,14 @@ begin
 				when "0010" =>
 					for byte_index in 0 to (32/8-1) loop
 						if (ctrl_byte_enable(byte_index) = '1') then
-					      sts_read_data <= de_step_count;
+					      sts_read_data <= ra_step_count;
 					      sts_ack <= '1';
 						end if;
 					end loop;
 				when "0011" => 
 					for byte_index in 0 to (32/8-1) loop
 						if (ctrl_byte_enable(byte_index) = '1') then
-					      sts_read_data <= ra_step_count;
+					      sts_read_data <= de_step_count;
 					      sts_ack <= '1';
 						end if;
 					end loop;
@@ -247,14 +247,14 @@ begin
 				when "0101" =>
 					for byte_index in 0 to (32/8-1) loop
 						if (ctrl_byte_enable(byte_index) = '1') then
-					      sts_read_data <= de_status;
+					      sts_read_data <= ra_status;
 					      sts_ack <= '1';
 						end if;
 					end loop;
 				when "0110" => 
 					for byte_index in 0 to (32/8-1) loop
 						if (ctrl_byte_enable(byte_index) = '1') then
-					      sts_read_data <= ra_status;
+					      sts_read_data <= de_status;
 					      sts_ack <= '1';
 						end if;
 					end loop;
@@ -326,13 +326,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_counter_load(byte_index*8+7 downto byte_index*8);
+						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_counter_load(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								de_counter_load(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								ra_counter_load(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
@@ -341,13 +341,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_counter_load(byte_index*8+7 downto byte_index*8);
+						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_counter_load(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								ra_counter_load(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								de_counter_load(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
@@ -371,13 +371,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_counter_max(byte_index*8+7 downto byte_index*8);
+						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_counter_max(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								de_counter_max(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								ra_counter_max(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
@@ -386,13 +386,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_counter_max(byte_index*8+7 downto byte_index*8);
+						    ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_counter_max(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								ra_counter_max(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								de_counter_max(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
@@ -422,7 +422,7 @@ begin
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								de_cmdcontrol(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								ra_cmdcontrol(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
@@ -461,13 +461,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_cmdduration(byte_index*8+7 downto byte_index*8);
+						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_cmdduration(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								de_cmdduration(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								ra_cmdduration(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
@@ -476,13 +476,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_cmdduration(byte_index*8+7 downto byte_index*8);
+						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_cmdduration(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								ra_cmdduration(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								de_cmdduration(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
@@ -507,13 +507,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_trackctrl(byte_index*8+7 downto byte_index*8);
+						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_trackctrl(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								de_trackctrl(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								ra_trackctrl(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
@@ -522,13 +522,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_trackctrl(byte_index*8+7 downto byte_index*8);
+						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_trackctrl(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								ra_trackctrl(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								de_trackctrl(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
@@ -552,13 +552,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_cmdtick(byte_index*8+7 downto byte_index*8);
+						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_cmdtick(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								de_cmdtick(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								ra_cmdtick(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
@@ -567,13 +567,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_cmdtick(byte_index*8+7 downto byte_index*8);
+						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_cmdtick(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								ra_cmdtick(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								de_cmdtick(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
@@ -597,13 +597,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_backlash_tick(byte_index*8+7 downto byte_index*8);
+						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_backlash_tick(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								de_backlash_tick(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								ra_backlash_tick(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
@@ -612,13 +612,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_backlash_tick(byte_index*8+7 downto byte_index*8);
+						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_backlash_tick(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								ra_backlash_tick(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								de_backlash_tick(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
@@ -642,13 +642,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_backlash_duration(byte_index*8+7 downto byte_index*8);
+						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_backlash_duration(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								de_backlash_duration(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								ra_backlash_duration(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
@@ -657,13 +657,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_backlash_duration(byte_index*8+7 downto byte_index*8);
+						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_backlash_duration(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								ra_backlash_duration(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								de_backlash_duration(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
