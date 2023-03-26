@@ -51,6 +51,9 @@ entity SKY_TOP is
         fc_step : out STD_LOGIC;
         fc_direction : out STD_LOGIC;
         fc_fault_n : in STD_LOGIC;
+        
+        iic_sda : inout STD_LOGIC;
+        iic_scl : inout STD_LOGIC;
         ------- Pi-SPI 			--------------------
         PI_SCLK 		: in	std_logic;
         PI_SS_N			: in	std_logic_vector(1 downto 0);
@@ -60,6 +63,22 @@ entity SKY_TOP is
 end SKY_TOP;
 
 architecture rtl of SKY_TOP is
+
+    component encoder is
+      GENERIC(
+        input_clk : INTEGER := 50_000_000; --input clock speed from user logic in Hz
+        bus_clk   : INTEGER := 400_000);   --speed the i2c bus (scl) will run at in Hz
+      Port ( 
+        clk       : IN     STD_LOGIC;                    --system clock
+        reset_n   : IN     STD_LOGIC;                    --active low reset
+        position  : OUT    STD_LOGIC_VECTOR(11 DOWNTO 0); --data read from slave
+        i2c_error : OUT    STD_LOGIC;                    --flag if improper acknowledge from slave
+        encoder_error : OUT    STD_LOGIC_VECTOR(2 downto 0);                    --flag if improper acknowledge from slave
+        sda       : INOUT  STD_LOGIC;                    --serial data output of i2c bus
+        scl       : INOUT  STD_LOGIC                   --serial clock output of i2c bus
+      );
+    end component;
+
     subtype T_MISC_SYNC_DEPTH    is integer range 2 to 16;
     component sync_Vector is
 	generic (
@@ -78,9 +97,10 @@ architecture rtl of SKY_TOP is
 	);
     end component;
 
-    constant ADDR_WIDTH : Positive range 8 to 64 := 8;
-	constant DATA_WIDTH : Positive range 8 to 64 := 32;
-	constant AUTO_INC_ADDRESS : STD_LOGIC := '0';
+    constant ADDR_WIDTH                             : Positive range 8 to 64 := 8;
+	constant DATA_WIDTH                             : Positive range 8 to 64 := 32;
+	constant AUTO_INC_ADDRESS                       : STD_LOGIC := '0';
+	
     signal sts_byte_enable                           : std_logic_vector(3 downto 0);                     -- byte_enable
     signal sts_irq                                   : std_logic                     := 'X';             -- irq
     signal sts_acknowledge                           : std_logic                     := 'X';             -- acknowledge
@@ -107,114 +127,48 @@ architecture rtl of SKY_TOP is
     signal spi_sts_read_data                             : std_logic_vector(31 downto 0) := (others => 'X'); -- read_data
     
     signal spi_delayed_clk, clock_12, clock_50, rstn_50, rstn_12 : std_logic := '0';  
-    signal clock_100, rstn_100 : std_logic := '0';
-    signal clock_125, rstn_125 : std_logic := '0';
-    signal clock_150, rstn_150 : std_logic := '0';
+    signal clock_100, rstn_100                                   : std_logic := '0';
+    signal clock_125, rstn_125                                   : std_logic := '0';
+    signal clock_150, rstn_150                                   : std_logic := '0';
     
-    signal led_level : std_logic_vector(4 downto 0) := (others => '0');
+    signal led_level            : std_logic_vector(4 downto 0) := (others => '0');
     
     
-    signal wb_strobe :  STD_LOGIC_VECTOR(1 downto 0) := "00";
-    signal spi_wb_strobe :  STD_LOGIC_VECTOR(1 downto 0) := "00";
-	  signal wb_cycle :  STD_LOGIC;
-	  signal wb_write :  STD_LOGIC;
-	  signal wb_address :  STD_LOGIC_VECTOR(ADDR_WIDTH-1 downto 0);
-	  signal wb_data_i1 :  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-	  signal wb_data_i0 :  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-	  signal wb_data_o :  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-	  signal wb_ack, spi_wb_ack :  STD_LOGIC_VECTOR(0 downto 0);
+    signal wb_strobe            :  STD_LOGIC_VECTOR(1 downto 0) := "00";
+    signal spi_wb_strobe        :  STD_LOGIC_VECTOR(1 downto 0) := "00";
+	signal wb_cycle             :  STD_LOGIC;
+	signal wb_write             :  STD_LOGIC;
+	signal wb_address           :  STD_LOGIC_VECTOR(ADDR_WIDTH-1 downto 0);
+	signal wb_data_i1           :  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+	signal wb_data_i0           :  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+	signal wb_data_o            :  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+	signal wb_ack, spi_wb_ack   :  STD_LOGIC_VECTOR(0 downto 0);
     
-    signal daddr_in : STD_LOGIC_VECTOR(7 downto 0) := X"14";
-    signal daddr_buf : STD_LOGIC_VECTOR(7 downto 0) := X"14";
-    signal alm_int: STD_LOGIC_VECTOR(7 downto 0);
-    signal enable:  STD_LOGIC;
-    signal di_in : STD_LOGIC_VECTOR(15 downto 0):= (others => '0');
-    signal dwe_in:  STD_LOGIC := '0';
+    signal daddr_in             : STD_LOGIC_VECTOR(7 downto 0) := X"14";
+    signal daddr_buf            : STD_LOGIC_VECTOR(7 downto 0) := X"14";
+    signal alm_int              : STD_LOGIC_VECTOR(7 downto 0);
+    signal enable               :  STD_LOGIC;
+    signal di_in                : STD_LOGIC_VECTOR(15 downto 0):= (others => '0');
+    signal dwe_in               :  STD_LOGIC := '0';
      
-    signal  busy_out:  STD_LOGIC;
-    signal  channel_out : STD_LOGIC_VECTOR(4 downto 0);
-    signal  do_out : STD_LOGIC_VECTOR(15 downto 0);
+    signal  busy_out            :  STD_LOGIC;
+    signal  channel_out         : STD_LOGIC_VECTOR(4 downto 0);
+    signal  do_out              : STD_LOGIC_VECTOR(15 downto 0);
     signal  aux_channel_n, aux_channel_p : STD_LOGIC_VECTOR(15 downto 0) := (others => '0');
-    signal  drdy_out:  STD_LOGIC;
-    signal  eos_out:  STD_LOGIC;
-    signal  alarm_out:  STD_LOGIC;
-    signal  adc_address : std_logic_vector (6 downto 0);
-    signal  adc_dbus : std_logic_vector (15 downto 0);
+    signal  drdy_out            :  STD_LOGIC;
+    signal  eos_out             :  STD_LOGIC;
+    signal  alarm_out           :  STD_LOGIC;
+    signal  adc_address         : std_logic_vector (6 downto 0);
+    signal  adc_dbus            : std_logic_vector (15 downto 0);
     
-    signal  led_out_hw:  STD_LOGIC;
+    signal  led_out_hw          :  STD_LOGIC;
 begin
     rstn_50 <= rstn_12;
     rstn_100 <= rstn_12;
     rstn_125 <= rstn_12;
     rstn_150 <= rstn_12;
 
-    aux_channel_n (4) <= VA_N(0);
-    aux_channel_P (4) <= VA_P(0);
-    aux_channel_n (12) <= VA_N(1);
-    aux_channel_P (12) <= VA_P(1);
-    XADC_inst : XADC
-   generic map (
-      -- INIT_40 - INIT_42: XADC configuration registers
-      INIT_40 => X"1000",
-      INIT_41 => X"21AF",
-      INIT_42 => X"0200",
-      -- INIT_48 - INIT_4F: Sequence Registers
-      INIT_48 => X"0800",
-      INIT_49 => X"1010",
-      INIT_4A => X"0000",
-      INIT_4B => X"0000",
-      INIT_4C => X"0000",
-      INIT_4D => X"0000",
-      INIT_4F => X"0000",
-      INIT_4E => X"0000",                 -- Sequence register 6
-      -- INIT_50 - INIT_58, INIT5C: Alarm Limit Registers
-      INIT_50 => X"B5ED",
-      INIT_51 => X"57E4",
-      INIT_52 => X"A147",
-      INIT_53 => X"CA33",
-      INIT_54 => X"A93A",
-      INIT_55 => X"52C6",
-      INIT_56 => X"9555",
-      INIT_57 => X"AE4E",
-      INIT_58 => X"9999",
-      INIT_5C => X"1111",
-      -- Simulation attributes: Set for proper simulation behavior
-      SIM_DEVICE => "7SERIES",            -- Select target device (values)
-      SIM_MONITOR_FILE => "design.txt"  -- Analog simulation data file name
-   )
-   port map (
-      -- ALARMS: 8-bit (each) output: ALM, OT
-      ALM => alm_int,                   -- 8-bit output: Output alarm for temp, Vccint, Vccaux and Vccbram
-      OT => open,                     -- 1-bit output: Over-Temperature alarm
-      -- Dynamic Reconfiguration Port (DRP): 16-bit (each) output: Dynamic Reconfiguration Ports
-      DO => do_out,                     -- 16-bit output: DRP output data bus
-      DRDY => drdy_out,                 -- 1-bit output: DRP data ready
-      -- STATUS: 1-bit (each) output: XADC status ports
-      BUSY => busy_out,                 -- 1-bit output: ADC busy output
-      CHANNEL => channel_out,           -- 5-bit output: Channel selection outputs
-      EOC => enable,                   -- 1-bit output: End of Conversion
-      EOS => eos_out,                   -- 1-bit output: End of Sequence
-      JTAGBUSY => open,         -- 1-bit output: JTAG DRP transaction in progress output
-      JTAGLOCKED => open,     -- 1-bit output: JTAG requested DRP port lock
-      JTAGMODIFIED => open, -- 1-bit output: JTAG Write to the DRP has occurred
-      MUXADDR => open,           -- 5-bit output: External MUX channel decode
-      -- Auxiliary Analog-Input Pairs: 16-bit (each) input: VAUXP[15:0], VAUXN[15:0]
-      VAUXN => aux_channel_n,               -- 16-bit input: N-side auxiliary analog input
-      VAUXP => aux_channel_p,               -- 16-bit input: P-side auxiliary analog input
-      -- CONTROL and CLOCK: 1-bit (each) input: Reset, conversion start and clock inputs
-      CONVST => '0',             -- 1-bit input: Convert start input
-      CONVSTCLK => '0',       -- 1-bit input: Convert start input
-      RESET => '0',               -- 1-bit input: Active-high reset
-      -- Dedicated Analog Input Pair: 1-bit (each) input: VP/VN
-      VN => VN_IN,                     -- 1-bit input: N-side analog input
-      VP => VP_IN,                     -- 1-bit input: P-side analog input
-      -- Dynamic Reconfiguration Port (DRP): 7-bit (each) input: Dynamic Reconfiguration Ports
-      DADDR => daddr_in(6 downto 0),               -- 7-bit input: DRP address bus
-      DCLK => clock_100,                 -- 1-bit input: DRP clock
-      DEN => enable,                   -- 1-bit input: DRP enable signal
-      DI => di_in,                     -- 16-bit input: DRP input data bus
-      DWE => dwe_in                    -- 1-bit input: DRP write enable
-   );
+    
    process (clock_100)
    begin
       if (rising_edge(clock_100)) then
@@ -224,163 +178,165 @@ begin
       end if;
    end process;
    
-   SyncBusToClock_adcaddr_strobe  : sync_Vector 
-   generic map (
-     MASTER_BITS => 7, SYNC_DEPTH => 2
-   )
-   port map(
-     Clock1        => clock_150 ,                                                  -- <Clock>  input clock
-	   Clock2        => clock_100 ,                                                 -- <Clock>  output clock
-	   Input         => adc_address,   -- @Clock1:  input vector
-	   Output        => daddr_buf(6 downto 0),  -- @Clock2:  output vector
-	   Busy          => open,                                                -- @Clock1:  busy bit
-	   Changed       => open                                                -- @Clock2:  changed bit
-   );
 
-   SyncBusToClock_adcdata_strobe : sync_Vector 
-   generic map (
-     MASTER_BITS => 16, SYNC_DEPTH => 2
-   )
-   port map(
-     Clock1        => clock_100,                                                  -- <Clock>  input clock
-	   Clock2        => clock_150 ,                                                 -- <Clock>  output clock
-	   Input         => do_out,   -- @Clock1:  input vector
-	   Output        => adc_dbus,  -- @Clock2:  output vector
-	   Busy          => open,                                                -- @Clock1:  busy bit
-	   Changed       => open                                                -- @Clock2:  changed bit
-   );
 
-SKYTRACKER : block
+  SKYTRACKER : block
     component sky_tracker is
     Port ( 
-		       clk_50 : in STD_LOGIC := '0';
-           rstn_50 : in STD_LOGIC := '1';
-		       clk_150 : in STD_LOGIC := '0';
-           rstn_150 : in STD_LOGIC := '1';
+		   clk_50                    : in STD_LOGIC := '0';
+           rstn_50                   : in STD_LOGIC := '1';
+           clk_150                   : in STD_LOGIC := '0';
+           rstn_150                  : in STD_LOGIC := '1';
 			  
-           ra_mode : out STD_LOGIC_VECTOR (2 downto 0);
-           ra_enable_n : out STD_LOGIC;
-           ra_sleep_n : out STD_LOGIC;
-           ra_rst_n : out STD_LOGIC;
-           ra_step : out STD_LOGIC;
-           ra_direction : out STD_LOGIC;
-           ra_fault_n : in STD_LOGIC;
+           ra_mode                   : out STD_LOGIC_VECTOR (2 downto 0); -- tmc2226: bit 0 is low power pin (always high)
+           ra_enable_n               : out STD_LOGIC;                 -- tmc2226 and drv8825 has same function  
+           ra_sleep_n                : out STD_LOGIC;                  -- tmc2226 pin is external CLK (always low)
+           ra_rst_n                  : out STD_LOGIC;                    -- tmc2226 pin is standby pin (always low)
+           ra_step                   : out STD_LOGIC;                     -- tmc2226 and drv8825 has same function 
+           ra_direction              : out STD_LOGIC;                -- tmc2226 and drv8825 has same function
+           ra_fault_n                : in STD_LOGIC;                   -- NOT CONNECTED
 		   
-		       de_mode : out STD_LOGIC_VECTOR (2 downto 0);
-           de_enable_n : out STD_LOGIC;
-           de_sleep_n : out STD_LOGIC;
-           de_rst_n : out STD_LOGIC;
-           de_step : out STD_LOGIC;
-           de_direction : out STD_LOGIC;
-           de_fault_n : in STD_LOGIC;
-		   
-		       fc_mode : out STD_LOGIC_VECTOR (2 downto 0);
-           fc_enable_n : out STD_LOGIC;
-           fc_sleep_n : out STD_LOGIC;
-           fc_rst_n : out STD_LOGIC;
-           fc_step : out STD_LOGIC;
-           fc_direction : out STD_LOGIC;
-           fc_fault_n : in STD_LOGIC;
-		       led_pwm : out STD_LOGIC;
-			  
-		       camera_trigger : out STD_LOGIC_VECTOR (1 downto 0);
-		       ip_addr : out STD_LOGIC_VECTOR (7 downto 0);
-		       led_status : out STD_LOGIC_VECTOR (7 downto 0);
-			  
-           adc_address : out std_logic_vector (6 downto 0);
-           adc_dbus : in std_logic_vector (15 downto 0);
-
-		       sts_acknowledge                           : out    std_logic                     := 'X';             -- acknowledge
-           sts_irq                                   : out    std_logic                     := 'X';             -- irq
-           sts_address                               : in   std_logic_vector(4 downto 0);                    -- address
-           sts_bus_enable                            : in    std_logic;                                        -- bus_enable
-           sts_byte_enable                           : in    std_logic_vector(3 downto 0);                     -- byte_enable
-           sts_rw                                    : in    std_logic;                                        -- rw
-           sts_write_data                            : in    std_logic_vector(31 downto 0);                    -- write_data
-           sts_read_data                             : out   std_logic_vector(31 downto 0) := (others => 'X'); -- read_data
+		   de_mode                   : out STD_LOGIC_VECTOR (2 downto 0); -- tmc2226: bit 0 is low power pin (always high)    
+           de_enable_n               : out STD_LOGIC;                 -- tmc2226 and drv8825 has same function            
+           de_sleep_n                : out STD_LOGIC;                  -- tmc2226 pin is external CLK (always low)         
+           de_rst_n                  : out STD_LOGIC;                    -- tmc2226 pin is standby pin (always low)          
+           de_step                   : out STD_LOGIC;                     -- tmc2226 and drv8825 has same function            
+           de_direction              : out STD_LOGIC;                -- tmc2226 and drv8825 has same function            
+           de_fault_n                : in STD_LOGIC;                   -- NOT CONNECTED                                    
            
-		       ctrl_acknowledge                          : out    std_logic                     := 'X';             -- acknowledge
-           ctrl_irq                                  : out    std_logic                     := 'X';             -- irq
-           ctrl_address                              : in   std_logic_vector(4 downto 0);                    -- address
-           ctrl_bus_enable                           : in   std_logic;                                        -- bus_enable
-           ctrl_byte_enable                          : in   std_logic_vector(3 downto 0);                     -- byte_enable
-           ctrl_rw                                   : in   std_logic;                                        -- rw
-           ctrl_write_data                           : in   std_logic_vector(31 downto 0);                    -- write_data
-           ctrl_read_data                            : out    std_logic_vector(31 downto 0) := (others => 'X') --; -- read_data
+           fc_mode                   : out STD_LOGIC_VECTOR (2 downto 0); -- tmc2226: bit 0 is low power pin (always high)    
+           fc_enable_n               : out STD_LOGIC;                 -- tmc2226 and drv8825 has same function            
+           fc_sleep_n                : out STD_LOGIC;                  -- tmc2226 pin is external CLK (always low)         
+           fc_rst_n                  : out STD_LOGIC;                    -- tmc2226 pin is standby pin (always low)          
+           fc_step                   : out STD_LOGIC;                     -- tmc2226 and drv8825 has same function            
+           fc_direction              : out STD_LOGIC;                -- tmc2226 and drv8825 has same function            
+           fc_fault_n                : in STD_LOGIC;                   -- NOT CONNECTED                                    
+           
+           
+           iic_encoder_status        : in std_logic_vector(3 downto 0);
+           iic_encoder_position      : in std_logic_vector(11 downto 0);
+           
+		   led_pwm                   : out STD_LOGIC;
+			      
+		   camera_trigger            : out STD_LOGIC_VECTOR (1 downto 0);
+		   ip_addr                   : out STD_LOGIC_VECTOR (7 downto 0);
+		   led_status                : out STD_LOGIC_VECTOR (7 downto 0);
+
+           adc_address               : out std_logic_vector (6 downto 0);
+           adc_dbus                  : in std_logic_vector (15 downto 0);
+
+			      
+		   sts_acknowledge           : out  std_logic                     := 'X';             -- acknowledge
+           sts_irq                   : out  std_logic                     := 'X';             -- irq
+           sts_address               : in   std_logic_vector(4 downto 0);                    -- address
+           sts_bus_enable            : in   std_logic;                                        -- bus_enable
+           sts_byte_enable           : in   std_logic_vector(3 downto 0);                     -- byte_enable
+           sts_rw                    : in   std_logic;                                        -- rw
+           sts_write_data            : in   std_logic_vector(31 downto 0);                    -- write_data
+           sts_read_data             : out  std_logic_vector(31 downto 0) := (others => 'X'); -- read_data
+     
+		   ctrl_acknowledge          : out  std_logic                     := 'X';             -- acknowledge
+           ctrl_irq                  : out  std_logic                     := 'X';             -- irq
+           ctrl_address              : in   std_logic_vector(4 downto 0);                    -- address
+           ctrl_bus_enable           : in   std_logic;                                        -- bus_enable
+           ctrl_byte_enable          : in   std_logic_vector(3 downto 0);                     -- byte_enable
+           ctrl_rw                   : in   std_logic;                                        -- rw
+           ctrl_write_data           : in   std_logic_vector(31 downto 0);                    -- write_data
+           ctrl_read_data            : out  std_logic_vector(31 downto 0) := (others => 'X') --; -- read_data
 
         );
     end component sky_tracker;
 
-    signal ip_addr, led_status, led_status_sync: STD_LOGIC_VECTOR (7 downto 0);
-    signal led_out : std_logic;
-    signal led_level0_b, led_level0_sync : std_logic_vector(0 downto 0);
-    signal led_level1_b, led_level1_sync : std_logic_vector(0 downto 0);
-    signal led_level2_b, led_level2_sync : std_logic_vector(0 downto 0);
-    signal led_level3_b, led_level3_sync : std_logic_vector(0 downto 0);
-    signal led_level4_b, led_level4_sync : std_logic_vector(0 downto 0);
-    signal led_level_sync : std_logic_vector(4 downto 0);
+    signal ip_addr, led_status, led_status_sync     : STD_LOGIC_VECTOR (7 downto 0);
+    signal led_out                                  : std_logic;
+    signal led_level0_b, led_level0_sync            : std_logic_vector(0 downto 0);
+    signal led_level1_b, led_level1_sync            : std_logic_vector(0 downto 0);
+    signal led_level2_b, led_level2_sync            : std_logic_vector(0 downto 0);
+    signal led_level3_b, led_level3_sync            : std_logic_vector(0 downto 0);
+    signal led_level4_b, led_level4_sync            : std_logic_vector(0 downto 0);
+    signal led_level_sync                           : std_logic_vector(4 downto 0);
     
+    signal encoder_status                           : std_logic_vector(3 downto 0);
+    signal encoder_position                         : std_logic_vector(11 downto 0);
 begin
-    
+        
+
+    enc: encoder 
+      GENERIC map(
+        input_clk => 150_000_000 )   --speed the i2c bus (scl) will run at in Hz
+      Port map ( 
+        clk       => clock_150,                   --system clock
+        reset_n   => rstn_150,                    --active low reset
+        position  => encoder_position, --data read from slave
+        i2c_error => encoder_status(0),                    --flag if improper acknowledge from slave
+        encoder_error => encoder_status(3 downto 1),                    --flag if improper acknowledge from slave
+        sda       => iic_sda,                    --serial data output of i2c bus
+        scl       => iic_scl                   --serial clock output of i2c bus
+      );
+      
     pi_camera_trigger_out <= pi_camera_trigger_in;
     pi_pwm_led_out        <= pi_pwm_led_in;
 
 	  U_SKYTRACKER :  component sky_tracker	
 		port map (
-		       clk_50  => clock_50,
-           rstn_50 => rstn_50,
-		       clk_150  => clock_150,
-           rstn_150 => rstn_150,
+		   clk_50                       => clock_50,
+           rstn_50                      => rstn_50,
+		   clk_150                      => clock_150,
+           rstn_150                     => rstn_150,
 			  
-           ra_mode => ra_mode,
-           ra_enable_n => ra_enable_n,
-           ra_sleep_n => ra_sleep_n,
-           ra_rst_n => ra_rst_n,
-           ra_step => ra_step,
-           ra_direction => ra_direction,
-           ra_fault_n => ra_fault_n,
+           ra_mode                      => ra_mode,
+           ra_enable_n                  => ra_enable_n,
+           ra_sleep_n                   => ra_sleep_n,
+           ra_rst_n                     => ra_rst_n,
+           ra_step                      => ra_step,
+           ra_direction                 => ra_direction,
+           ra_fault_n                   => ra_fault_n,
 		   
-		       de_mode => de_mode,
-           de_enable_n => de_enable_n,
-           de_sleep_n => de_sleep_n,
-           de_rst_n => de_rst_n,
-           de_step => de_step,
-           de_direction => de_direction,
-           de_fault_n => de_fault_n,
+		   de_mode                      => de_mode,
+           de_enable_n                  => de_enable_n,
+           de_sleep_n                   => de_sleep_n,
+           de_rst_n                     => de_rst_n,
+           de_step                      => de_step,
+           de_direction                 => de_direction,
+           de_fault_n                   => de_fault_n,
 		   
-		       fc_mode => fc_mode,
-           fc_enable_n => fc_enable_n,
-           fc_sleep_n => fc_sleep_n,
-           fc_rst_n => fc_rst_n,
-           fc_step => fc_step,
-           fc_direction => fc_direction,
-           fc_fault_n => fc_fault_n,
+		   fc_mode                      => fc_mode,
+           fc_enable_n                  => fc_enable_n,
+           fc_sleep_n                   => fc_sleep_n,
+           fc_rst_n                     => fc_rst_n,
+           fc_step                      => fc_step,
+           fc_direction                 => fc_direction,
+           fc_fault_n                   => fc_fault_n,
            
-		       led_pwm => led_out,
-		       camera_trigger => camera_triggers,
-		       ip_addr => ip_addr,
-		       led_status => led_status,
+		   led_pwm                        => led_out,
+		   camera_trigger                 => camera_triggers,
+		   ip_addr                        => ip_addr,
+		   led_status                     => led_status,
 		   
-           adc_address => adc_address,
-           adc_dbus => adc_dbus,
+           adc_address                  => adc_address,
+           adc_dbus                     => adc_dbus,
+           
+           
+           iic_encoder_status           => encoder_status,
+           iic_encoder_position         => encoder_position, 
 
-   		     sts_acknowledge                           => sts_acknowledge,                           --                            sts.acknowledge
-           
-            sts_irq                                   => sts_irq,                                   --                               .irq
-            sts_address                               => sts_address,                               --                               .address
-            sts_bus_enable                            => sts_bus_enable,                            --                               .bus_enable
-            sts_byte_enable                           => sts_byte_enable,                           --                               .byte_enable
-            sts_rw                                    => sts_rw(0),                                    --                               .rw
-            sts_write_data                            => sts_write_data,                            --                               .write_data
-            sts_read_data                             => sts_read_data,                             --                               .read_data
-            ctrl_acknowledge                          => ctrl_acknowledge,                          --                           ctrl.acknowledge
-            ctrl_irq                                  => ctrl_irq,                                  --                               .irq
-            ctrl_address                              => ctrl_address,                              --                               .address
-            ctrl_bus_enable                           => ctrl_bus_enable,                           --                               .bus_enable
-            ctrl_byte_enable                          => ctrl_byte_enable,                          --                               .byte_enable
-            ctrl_rw                                   => ctrl_rw(0),                                   --                               .rw
-            ctrl_write_data                           => ctrl_write_data,                           --                               .write_data
-            ctrl_read_data                            => ctrl_read_data --,  
+   		   sts_acknowledge              => sts_acknowledge,                           --                            sts.acknowledge
+      
+           sts_irq                      => sts_irq,                                   --                               .irq
+           sts_address                  => sts_address,                               --                               .address
+           sts_bus_enable               => sts_bus_enable,                            --                               .bus_enable
+           sts_byte_enable              => sts_byte_enable,                           --                               .byte_enable
+           sts_rw                       => sts_rw(0),                                    --                               .rw
+           sts_write_data               => sts_write_data,                            --                               .write_data
+           sts_read_data                => sts_read_data,                             --                               .read_data
+           ctrl_acknowledge             => ctrl_acknowledge,                          --                           ctrl.acknowledge
+           ctrl_irq                     => ctrl_irq,                                  --                               .irq
+           ctrl_address                 => ctrl_address,                              --                               .address
+           ctrl_bus_enable              => ctrl_bus_enable,                           --                               .bus_enable
+           ctrl_byte_enable             => ctrl_byte_enable,                          --                               .byte_enable
+           ctrl_rw                      => ctrl_rw(0),                                   --                               .rw
+           ctrl_write_data              => ctrl_write_data,                           --                               .write_data
+           ctrl_read_data               => ctrl_read_data --,  
 	 );
 	 SyncBusToClock_led_status : sync_Vector 
       generic map (
@@ -395,19 +351,19 @@ begin
 		Changed       => open                                                -- @Clock2:  changed bit
       );
 	               -- acknowledge
-	 sts_address <= ctrl_address;
-     sts_bus_enable  <= wb_address(5) and (spi_wb_strobe(0) or spi_wb_strobe(1));              -- bus_enable
-     sts_byte_enable <= "1111";             -- byte_enable
-     sts_rw          <= ctrl_rw;               -- rw
-     sts_write_data  <= spi_ctrl_write_data;             -- write_data
-     wb_data_i0      <= spi_sts_read_data when wb_address(5) = '1' else spi_ctrl_read_data;                -- read_data
+	 sts_address            <= ctrl_address;
+     sts_bus_enable         <= wb_address(5) and (spi_wb_strobe(0) or spi_wb_strobe(1));              -- bus_enable
+     sts_byte_enable        <= "1111";                                                                -- byte_enable
+     sts_rw                 <= ctrl_rw;                                                               -- rw
+     sts_write_data         <= spi_ctrl_write_data;                                                   -- write_data
+     wb_data_i0             <= spi_sts_read_data when wb_address(5) = '1' else spi_ctrl_read_data;                -- read_data
     
-     spi_ctrl_address     <= wb_address(4 downto 0);             -- address
-     ctrl_bus_enable  <= not wb_address(5) and (spi_wb_strobe(0) or spi_wb_strobe(1));           -- bus_enable
-     ctrl_byte_enable <= "1111";           -- byte_enable
-     spi_ctrl_rw(0)          <= not wb_write;           -- rw
-     spi_ctrl_write_data  <= wb_data_o;           -- write_data
-     wb_data_i1       <= spi_ctrl_read_data ;              --; -- read_data
+     spi_ctrl_address       <= wb_address(4 downto 0);                                                -- address
+     ctrl_bus_enable        <= not wb_address(5) and (spi_wb_strobe(0) or spi_wb_strobe(1));           -- bus_enable
+     ctrl_byte_enable       <= "1111";                                                                -- byte_enable
+     spi_ctrl_rw(0)         <= not wb_write;                                                   -- rw
+     spi_ctrl_write_data    <= wb_data_o;                                                         -- write_data
+     wb_data_i1             <= spi_ctrl_read_data ;              --; -- read_data
      
      spi_wb_ack(0)          <= ctrl_acknowledge or sts_acknowledge; 
       
