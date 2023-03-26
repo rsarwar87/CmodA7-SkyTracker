@@ -703,7 +703,7 @@ class SkyTrackerInterface {
   }
   std::array<uint16_t, 2>  get_iic_encoder(){
     uint32_t value;
-    spi.read_at<reg::iic_encoder/4, mem::control_addr, 1> (&value);
+    spi.read_at<reg::iic_encoder/4, mem::status_addr, 1> (&value);
     std::array<uint16_t, 2> ret = {static_cast<uint16_t>(value & 0xFFFF), static_cast<uint16_t>((value >> 16) & 0x0F)};
     ctx.log<INFO>("%s(): raw: %u, decoded %u status %u\n", __func__, value, ret[0], ret[1]);
     return ret;
