@@ -153,6 +153,8 @@ set files [list \
  [file normalize "${origin_dir}/hdl/drv8825.vhd" ]\
  [file normalize "${origin_dir}/hdl/sky-tracker.vhd" ]\
  [file normalize "${origin_dir}/hdl/spi_slave.vhd" ]\
+ [file normalize "${origin_dir}/hdl/encoder.vhd" ]\
+ [file normalize "${origin_dir}/hdl/i2c_master.vhd" ]\
  [file normalize "${origin_dir}/hdl/top.vhd" ]\
 ]
 set imported_files [import_files -fileset sources_1 $files]
@@ -216,6 +218,28 @@ set_property -name "used_in" -value "synthesis simulation" -objects $file_obj
 set_property -name "used_in_simulation" -value "1" -objects $file_obj
 set_property -name "used_in_synthesis" -value "1" -objects $file_obj
 
+set file "hdl/encoder.vhd"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "VHDL" -objects $file_obj
+set_property -name "is_enabled" -value "1" -objects $file_obj
+set_property -name "is_global_include" -value "0" -objects $file_obj
+set_property -name "library" -value "xil_defaultlib" -objects $file_obj
+set_property -name "path_mode" -value "RelativeFirst" -objects $file_obj
+set_property -name "used_in" -value "synthesis simulation" -objects $file_obj
+set_property -name "used_in_simulation" -value "1" -objects $file_obj
+set_property -name "used_in_synthesis" -value "1" -objects $file_obj
+
+set file "hdl/i2c_master.vhd"
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -name "file_type" -value "VHDL" -objects $file_obj
+set_property -name "is_enabled" -value "1" -objects $file_obj
+set_property -name "is_global_include" -value "0" -objects $file_obj
+set_property -name "library" -value "xil_defaultlib" -objects $file_obj
+set_property -name "path_mode" -value "RelativeFirst" -objects $file_obj
+set_property -name "used_in" -value "synthesis simulation" -objects $file_obj
+set_property -name "used_in_simulation" -value "1" -objects $file_obj
+set_property -name "used_in_synthesis" -value "1" -objects $file_obj
+
 set file "hdl/top.vhd"
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "VHDL" -objects $file_obj
@@ -246,6 +270,10 @@ set_property -name "verilog_define" -value "" -objects $obj
 set_property -name "verilog_uppercase" -value "0" -objects $obj
 set_property -name "verilog_version" -value "verilog_2001" -objects $obj
 set_property -name "vhdl_version" -value "vhdl_2k" -objects $obj
+
+add_files -norecurse "ip/blk_mem_gen_0_1/blk_mem_gen_0.xci"
+#export_ip_user_files -of_objects  [get_files  "ip/blk_mem_gen_0_1/blk_mem_gen_0.xci"] -lib_map_path [list {modelsim=/media/wkspace/wkspace1/fpga/CmodA7-SkyTracker/Cmod-A7-35T-SkyTracker/Cmod-A7-35T-SkyTracker.cache/compile_simlib/modelsim} {questa=/media/wkspace/wkspace1/fpga/CmodA7-SkyTracker/Cmod-A7-35T-SkyTracker/Cmod-A7-35T-SkyTracker.cache/compile_simlib/questa} {ies=/media/wkspace/wkspace1/fpga/CmodA7-SkyTracker/Cmod-A7-35T-SkyTracker/Cmod-A7-35T-SkyTracker.cache/compile_simlib/ies} {xcelium=/media/wkspace/wkspace1/fpga/CmodA7-SkyTracker/Cmod-A7-35T-SkyTracker/Cmod-A7-35T-SkyTracker.cache/compile_simlib/xcelium} {vcs=/media/wkspace/wkspace1/fpga/CmodA7-SkyTracker/Cmod-A7-35T-SkyTracker/Cmod-A7-35T-SkyTracker.cache/compile_simlib/vcs} {riviera=/media/wkspace/wkspace1/fpga/CmodA7-SkyTracker/Cmod-A7-35T-SkyTracker/Cmod-A7-35T-SkyTracker.cache/compile_simlib/riviera}] -force -quiet
+update_compile_order -fileset sources_1
 
 # Create 'constrs_1' fileset (if not found)
 if {[string equal [get_filesets -quiet constrs_1] ""]} {
