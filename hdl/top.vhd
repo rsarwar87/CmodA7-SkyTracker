@@ -25,7 +25,7 @@ entity SKY_TOP is
         LED_RBG 	: out	std_logic_vector(2 downto 0);
         LED     	: out	std_logic_vector(1 downto 0);
         
-        led_polar   : out STD_LOGIC;
+        led_polar   : out STD_LOGIC_VECTOR(1 downto 0);
         camera_triggers : out STD_LOGIC_VECTOR (1 downto 0);
         
         ra_mode : out STD_LOGIC_VECTOR (2 downto 0);
@@ -216,7 +216,7 @@ begin
            iic_encoder_status        : in std_logic_vector(3 downto 0);
            iic_encoder_position      : in std_logic_vector(11 downto 0);
            
-		   led_pwm                   : out STD_LOGIC;
+		   led_pwm                   : out std_logic_vector(1 downto 0);
 			      
 		   camera_trigger            : out STD_LOGIC_VECTOR (1 downto 0);
 		   ip_addr                   : out STD_LOGIC_VECTOR (7 downto 0);
@@ -308,7 +308,7 @@ begin
            fc_direction                 => fc_direction,
            fc_fault_n                   => fc_fault_n,
            
-		   led_pwm                        => led_out,
+		   led_pwm                        => led_polar,
 		   camera_trigger                 => camera_triggers,
 		   ip_addr                        => ip_addr,
 		   led_status                     => led_status,

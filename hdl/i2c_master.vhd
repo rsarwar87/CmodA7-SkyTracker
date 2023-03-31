@@ -119,11 +119,12 @@ BEGIN
       data_rd_v<= '0';
     ELSIF(clk'EVENT AND clk = '1') THEN
       ack_error <= ack_err;
-      data_rd_v<= '0';
+      --data_rd_v<= '0';
       IF(data_clk = '1' AND data_clk_prev = '0') THEN  --data clock rising edge
         data_rd_v<= '0';
         CASE state IS
           WHEN ready =>                      --idle state
+            ack_err <= '0';
             IF(ena = '1') THEN               --transaction requested
               busy <= '1';                   --flag busy
               addr_rw <= addr & rw;          --collect requested slave address and command

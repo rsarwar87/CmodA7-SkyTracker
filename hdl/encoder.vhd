@@ -70,16 +70,19 @@ signal ena       : STD_LOGIC;                    --latch in command
 signal addr      : STD_LOGIC_VECTOR(7 DOWNTO 0) := x"36"; --address of target slave
 signal rw        : STD_LOGIC := '1';                    --'0' is write, '1' is read
 signal data_wr   : STD_LOGIC_VECTOR(7 DOWNTO 0) := "00001011"; --data to write to slave
-signal busy      : STD_LOGIC;                    --indicates transaction in progress
+signal busy, busy_delay      : STD_LOGIC;                    --indicates transaction in progress
 signal data_rd_v : STD_LOGIC; --data read from slave
 signal data_rd   : STD_LOGIC_VECTOR(7 DOWNTO 0);
 signal ack_error : STD_LOGIC; 
 TYPE machine IS(RESET, PAUSE, ADDRESS, STATUS, FIRST, SECOND, OUTP); --needed states
-SIGNAL state         : machine := RESET;                       --state machine
+SIGNAL state_b, state         : machine := RESET;                       --state machine
 
 signal count : integer := 0;
 
 signal position_buffer, position_tmp  : STD_LOGIC_VECTOR(11 DOWNTO 0) := (others => '0');
+
+ATTRIBUTE MARK_DEBUG : string;
+ATTRIBUTE MARK_DEBUG of state_b, data_rd, position_buffer, busy_delay: SIGNAL IS "TRUE";
 begin
 
     process (clk, reset_n)
@@ -91,10 +94,13 @@ begin
             count <= 0;
             i2c_error <= '0';
             rw <= '0';
+            busy_delay <= '0';
         elsif rising_edge(clk) then
             i2c_error <= ack_error;
             position <= position_buffer; 
             position_tmp <= position_tmp;
+            busy_delay <= busy;
+            state_b <= state;
             case state is
                 when RESET => 
                     count <= 0;
@@ -113,28 +119,28 @@ begin
                 when ADDRESS => 
                     ena <= '1';
                     rw <= '0';
-                    if data_rd_v <= '1' then
+                    if busy = '0' and busy_delay = '1' then
                         state <= STATUS;
                         rw <= '1';
                     end if;
                 when STATUS => 
                     rw <= '1';
                     ena <= '1';
-                    if data_rd_v <= '1' then
+                    if busy = '0' and busy_delay = '1'  then
                         state <= FIRST;
                         encoder_error <= data_rd(5 downto 3);
                     end if;
                 when FIRST =>
                     rw <= '1';
                     ena <= '1';
-                    if data_rd_v <= '1' then
+                    if busy = '0' and busy_delay = '1'  then
                         state <= SECOND;
                         position_tmp(11 downto 8) <= data_rd(3 downto 0);
                     end if;
                 when SECOND =>
                     rw <= '1';
                     ena <= '1';
-                    if data_rd_v <= '1' then
+                    if busy = '0' and busy_delay = '1'  then
                         state <= OUTP;
                         position_tmp(7 downto 0) <= data_rd;
                         ena <= '0';
@@ -143,10 +149,7 @@ begin
                     rw <= '0';
                     position_buffer <= position_tmp;
                     ena <= '0';
-                    if data_rd_v <= '1' then
-                        state <= RESET;
-                        encoder_error <= data_rd(5 downto 3);
-                    end if;
+                    state <= RESET;
                 when OTHERS =>
                     state <= RESET;
              end case;

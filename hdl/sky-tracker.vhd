@@ -42,7 +42,7 @@ entity sky_tracker is
            iic_encoder_status        : in std_logic_vector(3 downto 0);
            iic_encoder_position      : in std_logic_vector(11 downto 0);
            
-		   led_pwm                   : out STD_LOGIC;
+		   led_pwm                   : out std_logic_vector(1 downto 0);
 			      
 		   camera_trigger            : out STD_LOGIC_VECTOR (1 downto 0);
 		   ip_addr                   : out STD_LOGIC_VECTOR (7 downto 0);
@@ -162,7 +162,8 @@ signal encoder_position_mux, iic_encoder_position_synced, encoder_position_synce
 
 signal is_tmc_buf, is_tmc_sync, ip_addr_buf, led_brightness, camera_trig : STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
 signal led_count                                                         : STD_LOGIC_VECTOR (7 downto 0) := (others => '0');
-signal led_out, bram_update, bram_update_delayed                         : STD_LOGIC := '0';
+signal  led_count2                                                         : STD_LOGIC_VECTOR (15 downto 0) := (others => '0');
+signal led_out, led_out2, bram_update, bram_update_delayed                         : STD_LOGIC := '0';
 
 ATTRIBUTE MARK_DEBUG of pec_calib, pec_data_synced, iic_encoder_status, iic_encoder_position_synced: SIGNAL IS "TRUE";
 ATTRIBUTE MARK_DEBUG of encoder_position_mux, encoder_position_synced, iic_encoder_position: SIGNAL IS "TRUE";
@@ -171,7 +172,8 @@ begin
 
   camera_trigger <= camera_trig(1 downto 0);
   ip_addr <= ip_addr_buf(7 downto 0);
-  led_pwm <= led_out;
+  led_pwm(0) <= led_out;
+  led_pwm(1) <= led_out2;
 
 
 bus_imp : block
@@ -193,7 +195,22 @@ begin
 			end if;
 		end if;
 	end process;
-	
+		process (clk_50, rstn_50) 
+	begin
+		if (rstn_50 = '0') then
+			led_out2 <= '0';
+			led_count2 <= (others => '0');
+		elsif (rising_edge(clk_50)) then
+			led_count2 <= std_logic_vector(unsigned(led_count2) + 1);
+			led_out2 <= led_out2;
+			if (led_count2 = "0000000000000000") then
+				led_out2 <= '1';
+			end if;
+			if (led_count2 = led_brightness(31 downto 16)) then
+				led_out2 <= '0';
+			end if;
+		end if;
+	end process;
 	ctrl_irq <= '0';
 	sts_irq <= '0';
 
