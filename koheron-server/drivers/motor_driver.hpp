@@ -29,13 +29,13 @@ class MotorDriver
       //if (is_tmc == get_motor_type<offset>()) return true;
       uint32_t ret = 0x0;
       spi.read_at<reg::tmc_select/4, mem::control_addr, 1> (&ret);
-      ctx.log<INFO>("MotorDriver-%s: Current value: 0x%08x\n", __func__, ret);
+      ctx.log<INFO>("MotorDriver-%s(%u): Current value: 0x%08x\n", __func__, ret);
       uint32_t rets = ret;
       if (is_tmc)
          rets |= (1UL << offset);
       else
         rets &= ~(1UL << offset);
-      ctx.log<INFO>("MotorDriver-%s: New value: 0x%08x\n", __func__, rets);
+      ctx.log<INFO>("MotorDriver%s()-%u): New value: 0x%08x\n", __func__, offset, rets);
       spi.write_at<reg::tmc_select/4, mem::control_addr, 1>(&rets);
       print_debug<offset>(__func__, ret, rets);
       return true;
@@ -48,7 +48,7 @@ class MotorDriver
       //bool retb = (status >> 16) & 0x1;
       spi.read_at<reg::tmc_select/4, mem::control_addr, 1> (&status);
       bool retb = (status >> offset) & 0x1;
-      ctx.log<INFO>("MotorDriver-%s: status: 0x%08x, Parsed: %s \n", __func__, status, retb ? "True" : "False");
+      ctx.log<INFO>("MotorDriver-%s(%u): status: 0x%08x, Parsed: %s \n", __func__, offset, status, retb ? "True" : "False");
       return retb; 
     }
     template<uint32_t offset>
@@ -128,7 +128,7 @@ class MotorDriver
         uint32_t duration = n_cycle* period_ticks;
         spi.write_at<reg::backlash_duration0/4 + offset, mem::control_addr, 1> (&duration);
         if (m_debug)
-        ctx.log<INFO>("MotorDriver-%s: %s: period=0x%08x, cycle=%u, cmd=0x%08x, duration=0x%08x \n", 
+        ctx.log<INFO>("MotorDriver-%u: %s: period=0x%08x, cycle=%u, cmd=0x%08x, duration=0x%08x \n", 
             get_name<offset>(), __func__,
             (period_ticks), n_cycle, cmd, duration);
     }
@@ -146,7 +146,7 @@ class MotorDriver
         uint32_t cmd = 1 + (isGoto << 1) + (isCCW << 2) + (mode << 4) + (use_accel << 7);
         spi.write_at<reg::cmdcontrol0/4 + offset, mem::control_addr, 1> (&cmd);
         if (m_debug)
-        ctx.log<INFO>("MotorDriver-%s: %s: CCW=%u, period=0x%08x, %s=%u mode=%u, cmd=0x%08x \n", 
+        ctx.log<INFO>("MotorDriver-%u: %s: CCW=%u, period=0x%08x, %s=%u mode=%u, cmd=0x%08x \n", 
             get_name<offset>(), __func__,
             isCCW, (period_ticks), isGoto ? "GotoTarget" : "n_cycles", 
             target, mode, cmd);
@@ -207,7 +207,7 @@ class MotorDriver
     std::string get_name()
     {
       if (offset == 0) return "RA";
-      else if (offset == 0) return "DE";
+      else if (offset == 1) return "DE";
       else return "FOCUS";
     }
 };
