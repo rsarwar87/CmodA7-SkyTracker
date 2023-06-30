@@ -39,7 +39,7 @@ class PiPwmWrapper
       m_gpio_id = gpio;
       m_timeout = timeout;
       m_duty = 100;
-      m_error = exists_fs(m_export);
+      m_error = exists_fs(m_export) ? false : true;
       if (m_error == true) {
         printf("PiPwmWrapper: ERROR: unable to find %s", m_export.c_str());
       }
