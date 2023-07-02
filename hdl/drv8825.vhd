@@ -31,6 +31,7 @@ entity drv8825 is
 	 generic ( REVERSE_DIRECTION : boolean := true; ALWAYS_ENABLE : boolean := true );
     Port ( clk_50 : in STD_LOGIC;
            rstn_50 : in STD_LOGIC;
+           ctrl_trackctrl_pec : in STD_LOGIC_VECTOR (15 downto 0) := (others => '0');
            drv8825_mode : out STD_LOGIC_VECTOR (2 downto 0);    -- tmc2226: bit 0 is low power pin (always high)        
            drv8825_enable_n : out STD_LOGIC;                    -- tmc2226 and drv8825 has same function                
            drv8825_sleep_n : out STD_LOGIC;                     -- tmc2226 pin is external CLK (always low)             
@@ -388,6 +389,7 @@ command_block: block
     signal ctr_track_enabled_in : std_logic := '0';
     signal ctr_track_direction_in : std_logic := '0';
     signal ctr_tracktick_in : integer range 0 to 2**30-1 := 1;
+    signal ctr_tracktick_pec : integer := 0;
     signal ctr_trackmode_in : std_logic_vector(2 downto 0) := "000";
     
     --signal stepper_counter_int : integer range 0 to 2**31-1 := 1;
@@ -685,7 +687,7 @@ begin
                     elsif (ctr_track_enabled_in = '1') then
                         state_motor_buf <= tracking;
                         issue_direction <= ctr_track_direction_in;
-                        issue_speed <= ctr_tracktick_in;
+                        issue_speed <= ctr_tracktick_in + ctr_tracktick_pec;
                         issue_mode <= ctr_trackmode_in;
                     else 
                         state_motor_buf <= idle;
@@ -719,6 +721,7 @@ begin
             current_mode_back <= (others => '0');
             
             ctr_tracktick_in <= 1;
+            ctr_tracktick_pec <= 0;
             ctr_track_direction_in <=  '0';
             ctr_track_enabled_in <= '0';
             ctr_cmdduration_in <= (others => '0');
@@ -741,6 +744,7 @@ begin
             ctr_backlash_tick_buf <= ctr_backlash_tick_buf;
             ctr_cmdduration_in <= ctr_cmdduration_in;
             current_mode_back <= current_mode_back;
+            ctr_tracktick_pec <= to_integer(signed(ctrl_trackctrl_pec(15 downto 0)));
             if (state_motor /= command) then
                 ctr_cmdtick_in <= to_integer(unsigned(ctrl_cmdtick(30 downto 0)));
                 ctr_cmd_direction_in  <= ctrl_cmdcontrol(2);

@@ -36,7 +36,13 @@ entity ClockDomainSync is
      
 	 clk_50 : in STD_LOGIC := '0';
      clk_150 : in STD_LOGIC := '0';
-           
+     
+     pec_data : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+     pec_encoder : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+     iic_pec_encoder : in STD_LOGIC_VECTOR (11 downto 0) := (others => '0');
+     pec_data_synced : in STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+     pec_encoder_synced : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
+     iic_pec_encoder_synced : out STD_LOGIC_VECTOR (11 downto 0) := (others => '0');
            
      ra_step_count 		 : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
      ra_status     		 : out STD_LOGIC_VECTOR (31 downto 0) := (others => '0');
@@ -129,6 +135,44 @@ subtype T_MISC_SYNC_DEPTH    is integer range 2 to 16;
     end component;
 signal tmp :std_logic;
 begin
+    SyncBusToClock_pecdata : sync_Vector 
+      generic map (
+        MASTER_BITS => 32, SYNC_DEPTH => 3
+      )
+      port map(
+        Clock1        => clk_50 ,                                                  -- <Clock>  input clock
+		Clock2        => clk_150,                                                 -- <Clock>  output clock
+		Input         => pec_data_synced,   -- @Clock1:  input vector
+		Output        => pec_data,  -- @Clock2:  output vector
+		Busy          => open,                                                -- @Clock1:  busy bit
+		Changed       => open                                                -- @Clock2:  changed bit
+      );
+
+    SyncBusToClock_pec_encoder : sync_Vector 
+      generic map (
+        MASTER_BITS => 32, SYNC_DEPTH => 3
+      )
+      port map(
+        Clock1        => clk_150,                                                  -- <Clock>  input clock
+		Clock2        => clk_50,                                                 -- <Clock>  output clock
+		Input         => pec_encoder,   -- @Clock1:  input vector
+		Output        => pec_encoder_synced ,  -- @Clock2:  output vector
+		Busy          => open,                                                -- @Clock1:  busy bit
+		Changed       => open                                                -- @Clock2:  changed bit
+      );
+
+    SyncBusToClock_iic_pec_encoder : sync_Vector 
+      generic map (
+        MASTER_BITS => 12, SYNC_DEPTH => 3
+      )
+      port map(
+        Clock1        => clk_150,                                                  -- <Clock>  input clock
+		Clock2        => clk_50,                                                 -- <Clock>  output clock
+		Input         => iic_pec_encoder,   -- @Clock1:  input vector
+		Output        => iic_pec_encoder_synced ,  -- @Clock2:  output vector
+		Busy          => open,                                                -- @Clock1:  busy bit
+		Changed       => open                                                -- @Clock2:  changed bit
+      );
     SyncBusToClock_istmc2226 : sync_Vector 
       generic map (
         MASTER_BITS => 32, SYNC_DEPTH => 3
