@@ -433,7 +433,7 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_cmdcontrol(byte_index*8+7 downto byte_index*8);
+						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_cmdcontrol(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
@@ -448,13 +448,13 @@ begin
 					if ctrl_rw = '1' then
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= ra_cmdcontrol(byte_index*8+7 downto byte_index*8);
+						      ctrl_read_data(byte_index*8+7 downto byte_index*8) <= de_cmdcontrol(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					else
 						for byte_index in 0 to (32/8-1) loop
 							if (ctrl_byte_enable(byte_index) = '1') then
-								ra_cmdcontrol(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
+								de_cmdcontrol(byte_index*8+7 downto byte_index*8) <= ctrl_write_data(byte_index*8+7 downto byte_index*8);
 							end if;
 						end loop;
 					end if;
