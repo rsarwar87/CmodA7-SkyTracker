@@ -20,7 +20,7 @@ class MotorDriver
       //uint32_t val = 0xFFFFFFFF;
       //spi.write_at<reg::tmc_select/4, mem::control_addr, 1>(&val);
       ctx.log<INFO>("MotorDriver-%s: Class initialized\n", __func__);
-      m_debug = false;
+      m_debug = true;
     }
 
     template<uint32_t offset>
@@ -29,13 +29,13 @@ class MotorDriver
       //if (is_tmc == get_motor_type<offset>()) return true;
       uint32_t ret = 0x0;
       spi.read_at<reg::tmc_select/4, mem::control_addr, 1> (&ret);
-      ctx.log<INFO>("MotorDriver-%s(%u): Current value: 0x%08x\n", __func__, ret);
+      ctx.log<INFO>("MotorDriver-%s(%u): Current value: 0x%08x\n", __func__, reg::tmc_select/4, mem::control_addr, ret);
       uint32_t rets = ret;
       if (is_tmc)
          rets |= (1UL << offset);
       else
         rets &= ~(1UL << offset);
-      ctx.log<INFO>("MotorDriver%s()-%u): New value: 0x%08x\n", __func__, offset, rets);
+      ctx.log<INFO>("MotorDriver-%s(%s): New value: 0x%08x\n", __func__, get_name<offset>(), mem::control_addr, rets);
       spi.write_at<reg::tmc_select/4, mem::control_addr, 1>(&rets);
       print_debug<offset>(__func__, ret, rets);
       return true;
@@ -48,7 +48,7 @@ class MotorDriver
       //bool retb = (status >> 16) & 0x1;
       spi.read_at<reg::tmc_select/4, mem::control_addr, 1> (&status);
       bool retb = (status >> offset) & 0x1;
-      ctx.log<INFO>("MotorDriver-%s(%u): status: 0x%08x, Parsed: %s \n", __func__, offset, status, retb ? "True" : "False");
+      ctx.log<INFO>("MotorDriver-%s(%s): status: 0x%08x, Parsed: %s \n", __func__, get_name<offset>(), status, retb ? "True" : "False");
       return retb; 
     }
     template<uint32_t offset>
@@ -128,7 +128,7 @@ class MotorDriver
         uint32_t duration = n_cycle* period_ticks;
         spi.write_at<reg::backlash_duration0/4 + offset, mem::control_addr, 1> (&duration);
         if (m_debug)
-        ctx.log<INFO>("MotorDriver-%u: %s: period=0x%08x, cycle=%u, cmd=0x%08x, duration=0x%08x \n", 
+        ctx.log<INFO>("MotorDriver-%s(%s): period=0x%08x, cycle=%u, cmd=0x%08x, duration=0x%08x \n", 
             get_name<offset>(), __func__,
             (period_ticks), n_cycle, cmd, duration);
     }
@@ -146,8 +146,8 @@ class MotorDriver
         uint32_t cmd = 1 + (isGoto << 1) + (isCCW << 2) + (mode << 4) + (use_accel << 7);
         spi.write_at<reg::cmdcontrol0/4 + offset, mem::control_addr, 1> (&cmd);
         if (m_debug)
-        ctx.log<INFO>("MotorDriver-%u: %s: CCW=%u, period=0x%08x, %s=%u mode=%u, cmd=0x%08x \n", 
-            get_name<offset>(), __func__,
+        ctx.log<INFO>("MotorDriver-%s(%s): CCW=%u, period=0x%08x, %s=%u mode=%u, cmd=0x%08x \n", 
+            __func__,get_name<offset>(), 
             isCCW, (period_ticks), isGoto ? "GotoTarget" : "n_cycles", 
             target, mode, cmd);
         std::this_thread::sleep_for(1ms);
@@ -192,15 +192,15 @@ class MotorDriver
     void print_debug(std::string func, uint32_t dir, uint32_t period, uint32_t mode, uint32_t cmd)
     {
        if (m_debug)
-         ctx.log<INFO>("MotorDriver-%s: %s: CCW=%u, period=0x%08x, mode=%u cmd=0x%08x\n", 
-               get_name<offset>(), func, dir, period, mode, cmd);
+         ctx.log<INFO>("MotorDriverPrint-%s(%s): CCW=%u, period=0x%08x, mode=%u cmd=0x%08x\n", 
+               func, get_name<offset>(), dir, period, mode, cmd);
     }
     template<uint32_t offset>
     void print_debug(std::string func, uint32_t data, uint32_t cmd)
     {
         if (m_debug)
-        ctx.log<INFO>("MotorDriver-%s: %s; %u cmd = 0x%08x\n", get_name<offset>(), 
-            func, data, cmd);
+        ctx.log<INFO>("MotorDriverPrint %s(%s):; %u cmd = 0x%08x\n", func, get_name<offset>(), 
+            data, cmd);
     }
 
     template<uint32_t offset>
