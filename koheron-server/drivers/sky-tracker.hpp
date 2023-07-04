@@ -9,7 +9,7 @@
 #include <motor_driver.hpp>
 #include <params.hpp>
 #include <rpigpio_ledpwm.hpp>
-#include <cfg_config.hpp>
+#include <yml_configs.hpp>
 
 constexpr double fclk0_period_us =
       1000000.0 / ((double)(prm::fclk0));  // Number of descriptors
@@ -24,9 +24,8 @@ class SkyTrackerInterface {
     ctx.log<INFO>("SkyTrackerInterface: %s Started\n", __func__);
     m_debug = false;
 
-    cfg = make_unique<CfgConfig>("/usr/share/koheron-startracker.json", &m_params, ctx_);
-    cfg->PrintData();
-    cfg->PullData();
+    m_params.cfg = load_settings();
+    save_settings(m_params.cfg);
 
 
     for (size_t i = 0; i < 3; i++) {
@@ -44,9 +43,9 @@ class SkyTrackerInterface {
       m_params.GotoTarget[i] = 0;
       m_params.GotoNCycles[i] = 0;
 
-      m_params.minPeriod[i] = (uint32_t)((m_params.minPeriod_usec[i] / fclk0_period_us) + .5);  // slowest speed allowed
+      m_params.minPeriod[i] = (uint32_t)((m_params.cfg[i].minPeriod_usec / fclk0_period_us) + .5);  // slowest speed allowed
       m_params.maxPeriod[i] =
-          (uint32_t)((m_params.maxPeriod_usec[i] / fclk0_period_us) + .5);  // Speed at which mount should stop. May be lower than
+          (uint32_t)((m_params.cfg[i].maxPeriod_usec / fclk0_period_us) + .5);  // Speed at which mount should stop. May be lower than
                     // minSpeed if doing a very slow IVal.
 
       m_params.motorDirection[0][i] = true;
@@ -57,15 +56,15 @@ class SkyTrackerInterface {
 
       m_params.versionNumber[i] = 0xd4444;  //_eVal: Version number
 
-      set_steps_per_rotation_params(i, m_params.motor_revticks[i],
-          m_params.motor_ustepping[i],
-          m_params.mount_gearticks[i],
-          m_params.high_gear_ticks[i],
-          m_params.low_gear_ticks[i]);  //_aVal: Steps per axis revolution
+      set_steps_per_rotation_params(i, m_params.cfg[i].motor_revticks,
+          m_params.cfg[i].motor_ustepping,
+          m_params.cfg[i].mount_gearticks,
+          m_params.cfg[i].high_gear_ticks,
+          m_params.cfg[i].low_gear_ticks);  //_aVal: Steps per axis revolution
 
       m_params.initialized[i] = false;  //_aVal: Steps per axis revolution
 
-      set_motor_type(i, m_params.is_TMC[i]);
+      set_motor_type(i, m_params.cfg[i].is_TMC);
       set_backlash(i, 45, 300, 7);
      // set_steps_per_rotation(i, get_steps_per_rotation(i));
     }
@@ -78,16 +77,11 @@ class SkyTrackerInterface {
 
   bool SaveConfig()
   {
-    if (!cfg->PushData())
+    if (!save_settings(m_params.cfg)) // cfg->PushData())
     {
       ctx.log<INFO>("SkyTrackerInterface: %s Failed to push\n", __func__);
-      cfg->PrintData();
       return false;
     }
-    cfg->PrintData();
-    cfg->SaveFileContent();
-    cfg.reset();
-    cfg = make_unique<CfgConfig>("/usr/share/koheron-startracker.json", &m_params, ctx);
     return true;
   }
 
@@ -131,11 +125,11 @@ class SkyTrackerInterface {
   std::array<uint32_t, 5> get_steps_per_rotation_params(uint8_t axis) {
     if (!check_axis_id(axis, __func__)) return std::array<uint32_t, 5> {0xfff, 0xfff, 0xfff, 0xfff, 0xfff};
     std::array<uint32_t, 5> ret = {
-     m_params.motor_ustepping[axis] ,
-     m_params.motor_revticks [axis]  ,
-     m_params.mount_gearticks[axis] ,
-     m_params.high_gear_ticks[axis] ,
-     m_params.low_gear_ticks [axis] 
+     m_params.cfg[axis].motor_ustepping ,
+     m_params.cfg[axis].motor_revticks   ,
+     m_params.cfg[axis].mount_gearticks ,
+     m_params.cfg[axis].high_gear_ticks ,
+     m_params.cfg[axis].low_gear_ticks  
     };
     return ret;
   }
@@ -184,23 +178,23 @@ class SkyTrackerInterface {
       return false;
     }
 
-    m_params.motor_revticks [axis] = rev;
-    m_params.motor_ustepping[axis] = usteps;
-    m_params.mount_gearticks[axis] = mount_gear;
-    m_params.high_gear_ticks[axis] = high_gear;
-    m_params.low_gear_ticks [axis] = low_gear; 
+    m_params.cfg[axis].motor_revticks  = rev;
+    m_params.cfg[axis].motor_ustepping = usteps;
+    m_params.cfg[axis].mount_gearticks = mount_gear;
+    m_params.cfg[axis].high_gear_ticks = high_gear;
+    m_params.cfg[axis].low_gear_ticks  = low_gear; 
     ctx.log<INFO>("%s(%u): %u total ticks, %u ticks/rev, %u ustepping, %u mount gear teeth," 
         "%u high gear teeth, %u low gear teeth\n", __func__, axis,
-        m_params.stepPerRotation[axis], m_params.motor_revticks [axis],
-        m_params.motor_ustepping[axis], m_params.mount_gearticks[axis],
-        m_params.high_gear_ticks[axis], m_params.low_gear_ticks [axis]);
+        m_params.stepPerRotation[axis], m_params.cfg[axis].motor_revticks ,
+        m_params.cfg[axis].motor_ustepping, m_params.cfg[axis].mount_gearticks,
+        m_params.cfg[axis].high_gear_ticks, m_params.cfg[axis].low_gear_ticks );
 
     m_params.stepPerRotation      [axis] =
-          m_params.motor_revticks [axis]*
-          m_params.motor_ustepping[axis]*
-          m_params.mount_gearticks[axis]*
-          m_params.high_gear_ticks[axis]/
-          m_params.low_gear_ticks [axis];  //_aVal: Steps per axis revolution
+          m_params.cfg[axis].motor_revticks *
+          m_params.cfg[axis].motor_ustepping*
+          m_params.cfg[axis].mount_gearticks*
+          m_params.cfg[axis].high_gear_ticks/
+          m_params.cfg[axis].low_gear_ticks ;  //_aVal: Steps per axis revolution
     //if (m_debug)
     if (axis == 0) stepper.set_max_step<0>(0xFFFFFF);
     else if (axis == 2) stepper.set_max_step<2>(m_params.stepPerRotation[2]);
@@ -265,12 +259,12 @@ class SkyTrackerInterface {
     ctx.log<INFO>("%s(%u): %s mode set to %s\n", __func__, axis,
                   isSlew ? "Slew" : "GoTo", val);
 
-    m_params.motorMode[isSlew][axis] = val;
+    m_params.cfg[axis].motorMode[isSlew] = val;
     return true;
   }
   uint32_t get_motor_mode(uint8_t axis, bool isSlew) {
     if (!check_axis_id(axis, __func__)) return false;
-    uint32_t ret = m_params.motorMode[isSlew][axis];
+    uint32_t ret = m_params.cfg[axis].motorMode[isSlew];
     if (m_debug)
     ctx.log<INFO>("%s(%u): %s is in %u mode\n", __func__, axis,
                   isSlew ? "Slew" : "GoTo", ret);
@@ -318,7 +312,7 @@ class SkyTrackerInterface {
           __func__, axis, val_usec, _ticks);
       return false;
     }
-    m_params.minPeriod_usec[axis] = val_usec;
+    m_params.cfg[axis].minPeriod_usec = val_usec;
     m_params.minPeriod[axis] = _ticks;
     //if (m_debug)
     ctx.log<INFO>("%s(%u): %u ticks (%9.5f usec)\n", __func__, axis,
@@ -333,7 +327,7 @@ class SkyTrackerInterface {
       return false;
     }
     uint32_t _ticks = (uint32_t)((val_usec / fclk0_period_us) + .5);
-    m_params.maxPeriod_usec[axis] = val_usec;
+    m_params.cfg[axis].maxPeriod_usec = val_usec;
     m_params.maxPeriod[axis] = _ticks;
     //if (m_debug)
     ctx.log<INFO>("%s(%u): %u ticks; %9.5f usec\n", __func__, axis, m_params.maxPeriod[axis], _ticks);
@@ -347,11 +341,11 @@ class SkyTrackerInterface {
   }
   double get_min_period(uint8_t axis) {
     if (!check_axis_id(axis, __func__)) return -1;
-    return m_params.minPeriod_usec[axis];
+    return m_params.cfg[axis].minPeriod_usec;
   }
   double get_max_period(uint8_t axis) {
     if (!check_axis_id(axis, __func__)) return -1;
-    return m_params.maxPeriod_usec[axis];
+    return m_params.cfg[axis].maxPeriod_usec;
   }
   uint32_t get_max_period_ticks(uint8_t axis) {
     if (!check_axis_id(axis, __func__)) return 0xFFFFFFFF;
@@ -368,9 +362,9 @@ class SkyTrackerInterface {
   }
   bool set_motor_type(uint8_t axis, bool is_tmc) {
     if (!check_axis_id(axis, __func__)) return false;
-    m_params.is_TMC[axis] = is_tmc;
+    m_params.cfg[axis].is_TMC = is_tmc;
     ctx.log<INFO>("%s(%u): %s-%s\n", __func__, axis, is_tmc ? "True" : "False",
-        m_params.is_TMC[axis] ? "True" : "False");
+        m_params.cfg[axis].is_TMC ? "True" : "False");
     //return true;
     if (axis == 0) return stepper.set_motor_type<0>(is_tmc);
     else if (axis == 1) return stepper.set_motor_type<1>(is_tmc);
@@ -383,7 +377,7 @@ class SkyTrackerInterface {
     if (axis == 0) is_tmc =  stepper.get_motor_type<0>();
     else if (axis == 1) is_tmc = stepper.get_motor_type<1>();
     else is_tmc = stepper.get_motor_type<2>();
-    m_params.is_TMC[axis] = is_tmc; 
+    m_params.cfg[axis].is_TMC = is_tmc; 
     return is_tmc;
   }
   double get_motor_period_usec(uint8_t axis, bool isSlew) {
@@ -429,7 +423,7 @@ class SkyTrackerInterface {
       {
         start_raw_tracking(axis, m_params.motorDirection[isSlew][axis],
                               m_params.period_ticks[isSlew][axis],
-                              m_params.motorMode[isSlew][axis], true);
+                              m_params.cfg[axis].motorMode[axis], true);
       }
     return true;
   }
@@ -538,7 +532,7 @@ class SkyTrackerInterface {
       uint32_t isSlew = true;
       return start_raw_tracking(axis, m_params.motorDirection[isSlew][axis],
                               m_params.period_ticks[isSlew][axis],
-                              m_params.motorMode[isSlew][axis]);
+                              m_params.cfg[axis].motorMode[isSlew]);
   }
   bool start_raw_tracking(uint8_t axis, bool isForward, uint32_t periodticks,
                           uint8_t mode, bool update = false) {
@@ -597,7 +591,7 @@ class SkyTrackerInterface {
       return send_raw_command(axis, m_params.motorDirection[isSlew][axis],
                              isGoto ? m_params.GotoTarget[axis] : m_params.GotoNCycles[axis],
                              m_params.period_ticks[isSlew][axis],
-                             m_params.motorMode[isSlew][axis], isGoto, use_accel);
+                             m_params.cfg[axis].motorMode[isSlew], isGoto, use_accel);
   }
   bool send_raw_command(uint8_t axis, bool isForward, uint32_t ncycles,
                         uint32_t period_ticks, uint8_t mode, bool isGoTo, bool use_accel) {
@@ -730,7 +724,6 @@ class SkyTrackerInterface {
   std::unique_ptr<PiPolarLed> pi;
 
   parameters m_params;
-  std::unique_ptr<CfgConfig> cfg;
 
   bool check_axis_id(uint8_t axis, std::string str) {
     if (axis > 2) {
@@ -739,6 +732,42 @@ class SkyTrackerInterface {
     }
     return true;
   }
+  const std::string fn = "/usr/share/koheron-startracker.yaml";
+  std::array<settings, 3> load_settings() {
+    std::array<settings, 3> data;
+    YAML::Node config;
+
+    try {
+      YAML::Node config2 = YAML::LoadFile(fn);
+    } catch (const std::exception& ex) {
+      std::cout << ex.what();
+      return data;
+    } catch (...) {
+      std::cout << "anable to open config";
+      return data;
+    }
+
+    data[0] = config["RA"].as<settings>();
+    data[1] = config["DEC"].as<settings>();
+    data[2] = config["FOCUSER"].as<settings>();
+    std::cout << config;
+    return data;
+  }
+
+  bool save_settings(std::array<settings, 3>& cfg) {
+    YAML::Node config;
+    config["RA"] = cfg[0];
+    config["DEC"] = cfg[1];
+    config["FOCUSER"] = cfg[2];
+
+    std::cout << config;
+
+    std::ofstream fout(fn);
+    if (!fout.is_open()) return false;
+    fout << config;
+    fout.close();
+    return 0;
+  }  // namespace CfgHelper
 };
 
 #endif  // __DRIVERS_LED_BLINKER_HPP__

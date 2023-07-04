@@ -1,0 +1,3 @@
+[submodule "koheron-server/external/yaml-cpp"]
+	path = koheron-server/external/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp

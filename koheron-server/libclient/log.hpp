@@ -7,7 +7,7 @@
 
 #include <syslog.h>
 
-namespace log
+namespace logkk
 {
 
 enum level
@@ -49,7 +49,7 @@ class syslog_stream;
 class syslog_streambuf: public std::basic_streambuf<char>
 {
 public:
-    explicit syslog_streambuf(const std::string& name, log::type type):
+    explicit syslog_streambuf(const std::string& name, logkk::type type):
         std::basic_streambuf<char>()
     {
         openlog(name.size() ? name.data() : nullptr, LOG_PID, type);
@@ -92,11 +92,11 @@ protected:
     }
 
     friend class syslog_stream;
-    void set_level(log::level new_level) noexcept { level = new_level; }
+    void set_level(logkk::level new_level) noexcept { level = new_level; }
 
 private:
-    static constexpr log::level ini_level = log::info;
-    log::level level = ini_level;
+    static constexpr logkk::level ini_level = logkk::info;
+    logkk::level level = ini_level;
 
     std::string buffer;
 };
@@ -104,12 +104,12 @@ private:
 class syslog_stream: public std::basic_ostream<char>
 {
 public:
-    explicit syslog_stream(const std::string& name = std::string(), log::type type = log::user):
+    explicit syslog_stream(const std::string& name = std::string(), logkk::type type = logkk::user):
         std::basic_ostream<char>(&streambuf),
         streambuf(name, type)
     { }
 
-    syslog_stream& operator<<(log::level level) noexcept
+    syslog_stream& operator<<(logkk::level level) noexcept
     {
         streambuf.set_level(level);
         return (*this);

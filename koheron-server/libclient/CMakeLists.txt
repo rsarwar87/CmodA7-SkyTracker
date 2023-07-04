@@ -43,9 +43,9 @@ add_library(fpgafocuser SHARED driver_focuser.cpp)
 set_target_properties(fpgafocuser  PROPERTIES PUBLIC_HEADER "fpgafocuser.hpp")
 install(TARGETS fpgafocuser LIBRARY DESTINATION lib PUBLIC_HEADER DESTINATION include)
 
-add_executable(ascom_server ascom_server.cpp)
-target_link_libraries (ascom_server pthread)
-install(TARGETS ascom_server RUNTIME DESTINATION bin )
+#add_executable(ascom_server ascom_server.cpp)
+#target_link_libraries (ascom_server pthread)
+#install(TARGETS ascom_server RUNTIME DESTINATION bin )
 
 # create static library
 add_library(fpgaskytrackerStatic STATIC driver.cpp)

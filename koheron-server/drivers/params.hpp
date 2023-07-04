@@ -1,5 +1,20 @@
 #ifndef __HEADER_PARAMS_
 #define __HEADER_PARAMS_
+#include <array>
+typedef struct {
+
+    uint16_t motorMode[2] = {7, 7};  // microsteps
+
+    double minPeriod_usec = 17.0;  // slowest speed allowed
+    double maxPeriod_usec = 268435.0;  // Speed at which mount should stop. May be lower
+
+    uint16_t  motor_ustepping = 64;
+    uint16_t  motor_revticks = 200;
+    uint16_t  mount_gearticks = 180;
+    uint16_t  high_gear_ticks = 48;
+    uint16_t  low_gear_ticks = 12;
+    bool  is_TMC = true; 
+  } settings;
 typedef struct {
     // class variables
     double period_usec[2][3];      // time period in us
@@ -8,7 +23,6 @@ typedef struct {
     bool highSpeedMode[2][3];
     bool highSpeedMode_fpga[2][3];
 
-    uint8_t motorMode[2][3];  // microsteps
     bool motorDirection[2][3];
 
     uint32_t GotoTarget[3];
@@ -19,8 +33,6 @@ typedef struct {
     uint32_t stepPerRotation[3];  //_aVal: Steps per axis revolution
     uint32_t stepsPerWorm[3];     //_sVal: Steps per worm gear revolution
 
-    double minPeriod_usec[3];  // slowest speed allowed
-    double maxPeriod_usec[3];  // Speed at which mount should stop. May be lower
     uint32_t minPeriod[3];  // slowest speed allowed
     uint32_t maxPeriod[3];  // Speed at which mount should stop. May be lower
                             // than minSpeed if doing a very slow IVal.
@@ -36,13 +48,8 @@ typedef struct {
     uint32_t
         backlash_ncycle[3];  // Speed at which mount should stop. May be lower
                              // than minSpeed if doing a very slow IVal.
-    uint8_t  motor_ustepping[3];
-    uint8_t  motor_revticks[3];
-    uint8_t  mount_gearticks[3];
-    uint8_t  high_gear_ticks[3];
-    uint8_t  low_gear_ticks[3];
-    bool  is_TMC[3]; 
 
+    std::array<settings, 3> cfg;
     bool  initialized[3]; 
   } parameters;
 
