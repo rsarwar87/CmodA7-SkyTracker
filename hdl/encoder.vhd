@@ -96,7 +96,6 @@ begin
             rw <= '0';
             busy_delay <= '0';
         elsif rising_edge(clk) then
-            i2c_error <= ack_error;
             position <= position_buffer; 
             position_tmp <= position_tmp;
             busy_delay <= busy;
@@ -150,12 +149,14 @@ begin
                     position_buffer <= position_tmp;
                     ena <= '0';
                     state <= RESET;
+                    i2c_error <= '0';
                 when OTHERS =>
                     state <= RESET;
              end case;
                 
              if  ack_error = '1' then
                 state <= RESET;
+                i2c_error <= '1';
              end if; 
         end if;
     end process;

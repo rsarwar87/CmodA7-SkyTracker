@@ -63,7 +63,7 @@ architecture Behavioral of drv8825 is
     signal current_mode_buf : std_logic_vector(2 downto 0) := "000";
     signal current_mode_out : std_logic_vector(2 downto 0) := "000";
     signal current_mode_back : std_logic_vector(2 downto 0) := "000";
-    signal drv8825_direction_buf : STD_LOGIC := '0';                   -- tmc2226 and drv8825 has same function                
+    signal drv8825_direction_buf, ctrl_enable_pec : STD_LOGIC := '0';                   -- tmc2226 and drv8825 has same function                
     
     signal max_counter2: std_logic_vector (29 downto 0) := (others => '0');
     
@@ -226,10 +226,12 @@ begin
             drv8825_step <= '0';
             drv8825_mode <= "000";
             ctrl_status <= (others => '0');
+            ctrl_status(15) <= ctrl_enable_pec;
             ctrl_status(16) <= is_tmc2226;
 			      ctrl_status(11 downto 5) <= std_logic_vector(delta_counter);
             ctrl_status(3) <= drv8825_fault_n;          
             ctrl_status(2 downto 0) <= "000";
+            ctrl_status(31 downto 17) <= ctrl_trackctrl_pec(14 downto 0);
             if  state_backlash = disabled then 
                 ctrl_status(4) <= '0';
             else 
@@ -687,7 +689,11 @@ begin
                     elsif (ctr_track_enabled_in = '1') then
                         state_motor_buf <= tracking;
                         issue_direction <= ctr_track_direction_in;
-                        issue_speed <= ctr_tracktick_in + ctr_tracktick_pec;
+                        if ctrl_enable_pec = '1' then
+                            issue_speed <= ctr_tracktick_in + ctr_tracktick_pec;
+                        else
+                            issue_speed <= ctr_tracktick_in;
+                        end if;
                         issue_mode <= ctr_trackmode_in;
                     else 
                         state_motor_buf <= idle;
@@ -760,10 +766,11 @@ begin
                     use_acceleration <= '1' and ctrl_cmdcontrol(7);
                 end if;
                 
-                ctr_tracktick_in <= to_integer(unsigned(ctrl_trackctrl(31 downto 5)));
+                ctr_tracktick_in <= to_integer(unsigned(ctrl_trackctrl(31 downto 6)));
                 ctr_track_enabled_in <= ctrl_trackctrl(0);
                 ctr_track_direction_in <= ctrl_trackctrl(1);
                 ctr_trackmode_in <= ctrl_trackctrl(4 downto 2);
+                ctrl_enable_pec <= ctrl_trackctrl(5);
                 --ctr_track_enabled_buf <= ctr_track_enabled_in;
                 --ctr_track_direction_buf <= ctr_track_direction_in;
                 ctr_cmdcancel_in <= '0';
