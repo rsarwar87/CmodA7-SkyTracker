@@ -121,7 +121,7 @@ class FocuserInterface {
     uint32_t isSlew = true;
     if (!sti.set_motor_period_ticks(prm::focuser_id, isSlew, period_ticks)) return false;
     if (!sti.set_motor_direction(prm::focuser_id, isSlew, direction)) return false;
-    return sti.start_tracking(prm::focuser_id);
+    return sti.start_tracking(prm::focuser_id, false);
   }
 
   uint32_t GetFocuserHomePosition() {

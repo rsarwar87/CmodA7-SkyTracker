@@ -113,9 +113,9 @@ bool ASCOM_sky_interface::SwpSetMotionModeDirection(uint8_t axis,
 }
 
 // GetAxisStatus             = 'f',
-std::array<bool, 8> ASCOM_sky_interface::SwpGetAxisStatus(uint8_t axis) {
+std::array<bool, 10> ASCOM_sky_interface::SwpGetAxisStatus(uint8_t axis) {
   client->call<op::ASCOMInterface::SwpGetAxisStatus>(axis);
-  auto buffer = client->recv<op::ASCOMInterface::SwpGetAxisStatus, std::array<bool, 8>>();
+  auto buffer = client->recv<op::ASCOMInterface::SwpGetAxisStatus, std::array<bool, 10>>();
   return buffer;
 }
 
@@ -276,6 +276,11 @@ bool ASCOM_sky_interface::set_steps_per_rotation_params(uint8_t axis, uint8_t re
   client->call<op::SkyTrackerInterface::set_steps_per_rotation_params>(axis, rev, usteps, 
           mount_gear, high_gear, low_gear);
   auto buffer = client->recv<op::SkyTrackerInterface::set_steps_per_rotation_params, bool>();
+  return buffer;
+}
+std::array<uint16_t, 2> ASCOM_sky_interface::get_iic_encoder() {
+  client->call<op::SkyTrackerInterface::get_iic_encoder>();
+  auto buffer = client->recv<op::SkyTrackerInterface::get_iic_encoder, std::array<uint16_t, 2>>();
   return buffer;
 }
 std::array<uint32_t, 5> ASCOM_sky_interface::get_steps_per_rotation_params(uint8_t axis) {

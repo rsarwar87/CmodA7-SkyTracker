@@ -40,6 +40,8 @@ class SkyTrackerInterface {
       m_params.highSpeedMode_fpga[1][i] = false;
       m_params.highSpeedMode[0][i] = false;
       m_params.highSpeedMode[1][i] = false;
+      m_params.pec_at[i] = 0;
+      m_params.enable_pec[i] = false;
       m_params.GotoTarget[i] = 0;
       m_params.GotoNCycles[i] = 0;
 
@@ -528,8 +530,10 @@ class SkyTrackerInterface {
       stepper.disable_tracking<1>(instant);
     return true;
   }
-  bool start_tracking(uint8_t axis) {
+  bool start_tracking(uint8_t axis, bool enable_pec) {
       uint32_t isSlew = true;
+      m_params.enable_pec[axis] = enable_pec;
+      if (enable_pec) m_params.pec_at[axis] = m_params.period_ticks[isSlew][axis];
       return start_raw_tracking(axis, m_params.motorDirection[isSlew][axis],
                               m_params.period_ticks[isSlew][axis],
                               m_params.cfg[axis].motorMode[isSlew]);
@@ -545,10 +549,12 @@ class SkyTrackerInterface {
     }
     update &= m_status[axis].isSlew & m_status[axis].isRunning;
     bool stopFirst = false;
+    bool enablePEC = m_params.enable_pec[axis];
     if (update)
     {
       bool isInHighSpeed = m_status[axis].currentPeriod < 7000;
       bool isNewHighSpeed = periodticks < 7000;
+      enablePEC = (m_params.pec_at[axis] == periodticks);
       if (!isInHighSpeed & !isNewHighSpeed) // both slow speed
         update = true;
       else if (isInHighSpeed & isInHighSpeed) // both high speed
@@ -565,11 +571,11 @@ class SkyTrackerInterface {
       }
     }
     if (axis == 0)
-      stepper.enable_tracking<0>(isForward, periodticks, mode, update, stopFirst);
+      stepper.enable_tracking<0>(isForward, periodticks, mode, update, stopFirst, enablePEC);
     else if (axis == 2)
-      stepper.enable_tracking<2>(isForward, periodticks, mode, update, stopFirst);
+      stepper.enable_tracking<2>(isForward, periodticks, mode, update, stopFirst, enablePEC);
     else
-      stepper.enable_tracking<1>(isForward, periodticks, mode, update, stopFirst);
+      stepper.enable_tracking<1>(isForward, periodticks, mode, update, stopFirst, enablePEC);
     m_params.highSpeedMode_fpga[isSlew][axis] = periodticks < 7000;
     m_status[axis].currentPeriod = periodticks;
     return true;

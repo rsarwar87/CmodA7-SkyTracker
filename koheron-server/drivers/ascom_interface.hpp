@@ -86,20 +86,22 @@ class ASCOMInterface {
     return sti.get_raw_stepcount(axis);
   }
   // GetAxisStatus             = 'f',
-  std::array<bool, 8> SwpGetAxisStatus(uint8_t axis) {
+  std::array<bool, 10> SwpGetAxisStatus(uint8_t axis) {
     // Initialized, running, direction, speedmode, isGoto, isSlew
-    std::array<bool, 8> ret;
+    std::array<bool, 10> ret;
     if (!check_axis_id(axis, __func__)) return ret;
     uint32_t status = sti.get_raw_status(axis);
     bool isGoto = (status >> 1) & 0x1;
     bool isSlew = status & 0x1;
     bool fault = (status >> 3) & 0x1;
     bool backlash = (status >> 4) & 0x1;
+    bool pec = (status >> 17) & 0x1;
+    bool tmc = (status >> 16) & 0x1;
     bool direction = sti.get_motor_direction(axis, !isGoto);
     bool running = isGoto || isSlew;
     bool speedmode = sti.get_motor_highspeedmode(axis, isSlew);
     ret = { sti.get_init(axis),  running,
-      direction, speedmode, isGoto, isSlew, backlash, fault
+      direction, speedmode, isGoto, isSlew, backlash, fault, pec, tmc
     };
     sti.m_status[axis].isGoto = isGoto;
     sti.m_status[axis].isSlew = isSlew;
@@ -163,7 +165,7 @@ class ASCOMInterface {
 
     bool ret = false;
     if (isSlew)
-      ret = sti.start_tracking(axis);
+      ret = sti.start_tracking(axis, use_accel); // accel == pec_enable
     else
       ret = sti.send_command(axis, use_accel, isGoto);
     return ret;

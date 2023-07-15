@@ -21,6 +21,8 @@ typedef struct {
     uint32_t period_ticks[2][3];  // time period in 20ns ticks
     double speed_ratio[2][3];      // speed of motor
     bool highSpeedMode[2][3];
+    bool enable_pec[3];
+    uint32_t pec_at[3];  // time period in 20ns ticks
     bool highSpeedMode_fpga[2][3];
 
     bool motorDirection[2][3];

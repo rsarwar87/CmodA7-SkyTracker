@@ -42,7 +42,7 @@ class ASCOM_sky_interface {
   bool SwpSetMotionModeDirection(uint8_t axis, bool isForward, bool isSlew,
                                    bool isHighSpeed);
   // GetAxisStatus             = 'f',
-  std::array<bool, 8> SwpGetAxisStatus(uint8_t axis);
+  std::array<bool, 10> SwpGetAxisStatus(uint8_t axis);
   // GetAxisPosition           = 'j', // current position
   uint32_t SwpGetAxisPosition(uint8_t axis); 
   // SetAxisPositionCmd        = 'E', set current position
@@ -85,6 +85,7 @@ class ASCOM_sky_interface {
   std::array<uint32_t, 5> get_steps_per_rotation_params(uint8_t axis);
   uint32_t get_motor_mode(uint8_t axis, bool isSlew);
   bool set_motor_mode(uint8_t axis, bool isSlew, uint8_t val);
+  std::array<uint16_t, 2>  get_iic_encoder();
  private:
 };
 
