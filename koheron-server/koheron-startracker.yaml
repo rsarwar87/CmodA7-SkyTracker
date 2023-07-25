@@ -1,0 +1,33 @@
+RA:
+  Mode_Track: 7
+  Mode_GoTo: 7
+  MinPeriodUsec: 19
+  MaxPeriodUsec: 268435
+  is_TMC: true
+  LowGearTicks: 12
+  HighGearTicks: 48
+  MountGearTicks: 180
+  UStepping: 64
+  MotorSteps: 200
+DEC:
+  Mode_Track: 7
+  Mode_GoTo: 7
+  MinPeriodUsec: 19
+  MaxPeriodUsec: 268435
+  is_TMC: true
+  LowGearTicks: 12
+  HighGearTicks: 48
+  MountGearTicks: 180
+  UStepping: 64
+  MotorSteps: 200
+FOCUSER:
+  Mode_Track: 7
+  Mode_GoTo: 7
+  MinPeriodUsec: 19
+  MaxPeriodUsec: 268435
+  is_TMC: true
+  LowGearTicks: 12
+  HighGearTicks: 48
+  MountGearTicks: 180
+  UStepping: 64
+  MotorSteps: 200
