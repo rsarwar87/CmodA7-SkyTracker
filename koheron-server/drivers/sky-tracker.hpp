@@ -73,7 +73,7 @@ class SkyTrackerInterface {
     set_current_position(0, 0x800000);
     set_current_position(1, 0x800000);
     ctx.log<INFO>("SkyTrackerInterface: %s Finished\n", __func__);
-    pi = make_unique<PiPolarLed>("RPI@0", 256);
+    //pi = make_unique<PiPolarLed>("RPI@0", 256);
     ctx.log<INFO>("%s(): Class initialized\n", __func__);
   }
 
@@ -88,6 +88,7 @@ class SkyTrackerInterface {
   }
 
   bool set_led_pwm(uint8_t val, bool fpga) {
+    return true;
     uint32_t value = val;
     if (fpga)
       spi.write_at<reg::led_pwm/4, mem::control_addr, 1> (&value); 
@@ -704,7 +705,7 @@ class SkyTrackerInterface {
   std::array<uint16_t, 2>  get_iic_encoder(){
     uint32_t value;
     spi.read_at<reg::iic_encoder/4, mem::status_addr, 1> (&value);
-    std::array<uint16_t, 2> ret = {static_cast<uint16_t>(value & 0xFFFF), static_cast<uint16_t>((value >> 16) & 0x0F)};
+    std::array<uint16_t, 2> ret = {static_cast<uint16_t>(value & 0xFFF), static_cast<uint16_t>((value >> 16) & 0x0F)};
     ctx.log<INFO>("%s(): raw: %u, decoded %u status %u\n", __func__, value, ret[0], ret[1]);
     return ret;
   }

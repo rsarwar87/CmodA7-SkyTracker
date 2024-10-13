@@ -63,6 +63,7 @@ class SpiDev
         struct spi_ioc_transfer tr{};
         tr.tx_buf = reinterpret_cast<unsigned long>(tx_buff);
         tr.rx_buf = reinterpret_cast<unsigned long>(rx_buff);
+        tr.speed_hz = speed;
     	  tr.cs_change = 0;
         tr.len = len;
         
@@ -138,7 +139,7 @@ class SpiDev
 
     uint8_t mode = SPI_MODE_0;
     uint32_t mode32 = SPI_MODE_0;
-    uint32_t speed = 31200000; // SPI bus speed
+    uint32_t speed = 25000000; // SPI bus speed
     uint8_t word_length = 8;
 
     int fd = -1;
@@ -155,7 +156,7 @@ class SpiManager
 
     SpiDev& get(const std::string& devname,
                 uint8_t mode = SPI_MODE_0,
-                uint32_t speed = 31200000,
+                uint32_t speed = 25000000,
                 uint8_t word_length = 8);
 
   private:
